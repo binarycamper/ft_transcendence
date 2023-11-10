@@ -1,0 +1,98 @@
+version: '3.8'
+
+name: ft_transcendence
+
+networks:
+  internal:
+    driver: bridge
+    name: transcendence_network
+
+services:
+  backend:
+    build:
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    image: backend
+    init: true
+    networks:
+      - internal
+    ports:
+      - '8080:3000'
+    restart: unless-stopped
+    volumes:
+      - backend_volume:/usr/src/app
+  frontend:
+    build:
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    depends_on:
+      - backend
+    env_file: .env
+    image: frontend
+    init: true
+    networks:
+      - internal
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    volumes:
+      - frontend_volume:/usr/src/app
+  postgres:
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_URL: ${POSTGRES_URL}
+      POSTGRES_USER: ${POSTGRES_USER}
+    expose:
+      - '5432'
+    image: postgres:16
+    init: true
+    healthcheck:
+      interval: 1s
+      retries: 5
+      #test: [ "CMD", "pg_isready" ]
+      test: pg_isready -U ${POSTGRES_USER} -h ${POSTGRES_HOST} -p 5432
+      timeout: 5s
+    hostname: ${POSTGRES_HOST}
+    networks:
+      - internal
+    ports:
+      - '5432:5432'
+    restart: unless-stopped
+    user: ${POSTGRES_USER}
+    #volumes:
+      #- postgres_volume:/var/lib/postgresql/data
+
+volumes:
+  backend_volume:
+    driver: local
+    driver_opts:
+      device: ${BACKEND_VOLUME}
+      o: bind
+      type: none
+    name: backend_volume
+  frontend_volume:
+    driver: local
+    driver_opts:
+      device: ${FRONTEND_VOLUME}
+      o: bind
+      type: none
+    name: frontend_volume
+  postgres_volume:
+    driver: local
+    driver_opts:
+      device: ${POSTGRES_VOLUME}
+      o: bind
+      type: none
+    name: postgres_volume
