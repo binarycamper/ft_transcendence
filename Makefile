@@ -3,7 +3,7 @@ NAME := ft_transcendence
 ENV_FILE := .env
 include $(ENV_FILE)
 
-VOLUMES := $(BACKEND_VOLUME) $(FRONTEND_VOLUME) $(POSTGRES_VOLUME)
+VOLUMES := $(BACKEND_VOLUME) $(FRONTEND_VOLUME)
 
 DOCKER_COMPOSE := docker-compose --env-file=$(ENV_FILE)
 

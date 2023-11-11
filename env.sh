@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function echo_color()  { printf "$1"; echo "${@:2}"; printf '\033[0m'; }
 function echo_red()    { echo_color '\033[31m' $@; }
@@ -17,12 +17,10 @@ read ENV_FILE; ENV_FILE=${ENV_FILE:-.env}
 
 # VOLUMES
 echo_green 'Please set the path for each volume directory:'
-echo_blue 'BACKEND_VOLUME [backend]'
-read BACKEND_VOLUME; BACKEND_VOLUME=${BACKEND_VOLUME:-backend}
-echo_blue 'FRONTEND_VOLUME [frontend]'
-read FRONTEND_VOLUME; FRONTEND_VOLUME=${FRONTEND_VOLUME:-frontend}
-echo_blue 'POSTGRES_VOLUME [postgres]'
-read POSTGRES_VOLUME; POSTGRES_VOLUME=${POSTGRES_VOLUME:-postgres}
+echo_blue 'BACKEND_VOLUME [./backend]'
+read BACKEND_VOLUME; BACKEND_VOLUME=${BACKEND_VOLUME:-./backend}
+echo_blue 'FRONTEND_VOLUME [./frontend]'
+read FRONTEND_VOLUME; FRONTEND_VOLUME=${FRONTEND_VOLUME:-./frontend}
 
 # NODE
 echo_green 'Please set the following Node.js variables:'
@@ -41,14 +39,12 @@ echo_blue 'POSTGRES_USER [postgres]'
 read POSTGRES_USER; POSTGRES_USER=${POSTGRES_USER:-postgres}
 
 
-
-<<EOF cat > $SCRIPT_PATH/$ENV_FILE
+<<EOF cat > "$SCRIPT_PATH/$ENV_FILE"
 # ENVIRONMENT VARIABLES
 
 # VOLUMES
 BACKEND_VOLUME=$BACKEND_VOLUME
 FRONTEND_VOLUME=$FRONTEND_VOLUME
-POSTGRES_VOLUME=$POSTGRES_VOLUME
 
 # NODE
 NODE_ENV=$NODE_ENV

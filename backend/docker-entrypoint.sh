@@ -2,14 +2,16 @@
 
 if   [ "$NODE_ENV" = 'development' ]; then
 	echo development
-	while true; do sleep 20; done
 	npm install
-	npm run-script dev
+	# development
+	npm run-script start
+	# watch mode
+	#npm run-script start:dev
 elif [ "$NODE_ENV" = 'production' ]; then
 	echo production
-	rm -rf ./build
 	npm install
-	npm run-script build
+	# production mode
+	npm run-script start:prod
 fi
 
 

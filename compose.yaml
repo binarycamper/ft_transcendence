@@ -12,8 +12,8 @@ services:
     build:
       args:
         NODE_VERSION: ${NODE_VERSION}
-      context: ./backend
-      dockerfile: Dockerfile
+      #context: ${BACKEND_VOLUME}
+      dockerfile: ./Dockerfile
     container_name: backend
     depends_on:
       postgres:
@@ -27,13 +27,13 @@ services:
       - '8080:3000'
     restart: unless-stopped
     volumes:
-      - backend_volume:/usr/src/app
+      - ${BACKEND_VOLUME}:/usr/src/app
   frontend:
     build:
       args:
         NODE_VERSION: ${NODE_VERSION}
-      context: ./frontend
-      dockerfile: Dockerfile
+      #context: ${FRONTEND_VOLUME}
+      dockerfile: ./Dockerfile
     container_name: frontend
     depends_on:
       - backend
@@ -44,9 +44,10 @@ services:
       - internal
     ports:
       - '3000:3000'
+      - '5173:5173'
     restart: unless-stopped
     volumes:
-      - frontend_volume:/usr/src/app
+      - ${FRONTEND_VOLUME}:/usr/src/app
   postgres:
     container_name: postgres
     environment:
@@ -71,28 +72,3 @@ services:
       - '5432:5432'
     restart: unless-stopped
     user: ${POSTGRES_USER}
-    #volumes:
-      #- postgres_volume:/var/lib/postgresql/data
-
-volumes:
-  backend_volume:
-    driver: local
-    driver_opts:
-      device: ${BACKEND_VOLUME}
-      o: bind
-      type: none
-    name: backend_volume
-  frontend_volume:
-    driver: local
-    driver_opts:
-      device: ${FRONTEND_VOLUME}
-      o: bind
-      type: none
-    name: frontend_volume
-  postgres_volume:
-    driver: local
-    driver_opts:
-      device: ${POSTGRES_VOLUME}
-      o: bind
-      type: none
-    name: postgres_volume
