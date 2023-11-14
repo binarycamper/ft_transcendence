@@ -11,11 +11,11 @@ export class User {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@Column({ unique: true, nullable: true }) // Add this line
-	intraId: number; // Add this line
+	@Column({ unique: true, nullable: true }) // Add this line into databse in 'User' Table
+	intraId: number;
 
-	@Column({ unique: true, nullable: true }) // Add this line
-	email: string; // Add this line
+	@Column({ unique: true, nullable: true })
+	email: string;
 
 	@Column({ unique: true })
 	username: string;
@@ -29,7 +29,8 @@ export class User {
 	@Column({ default: 'default-avatar.png' })
 	defaultAvatar: string;
 
-	/*
+	/* **Will be used soon**
+
 	@OneToMany(() => ChatMessage, (message) => message.user)
 	messages: ChatMessage[];
 
@@ -39,7 +40,7 @@ export class User {
 	@OneToOne(() => MatchHistory)
 	@JoinColumn()
 	matchHistory: MatchHistory;
-*/
+	*/
 
 	@OneToMany(() => AuthToken, token => token.user)
 	tokens: AuthToken[];
