@@ -57,7 +57,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
     expose:
       - '5432'
-    image: postgres:16
+    image: postgres:latest
     init: true
     healthcheck:
       interval: 1s
@@ -72,3 +72,16 @@ services:
       - '5432:5432'
     restart: unless-stopped
     user: ${POSTGRES_USER}
+  pgadmin:
+    container_name: pgadmin
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+    image: dpage/pgadmin4:latest
+    networks:
+      - internal
+    ports:
+      - '8000:80'
+    restart: unless-stopped
