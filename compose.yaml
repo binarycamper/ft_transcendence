@@ -71,7 +71,7 @@ services:
     ports:
       - '5432:5432'
     restart: unless-stopped
-    user: ${POSTGRES_USER}
+    #user: ${POSTGRES_USER} (jjesberg postgres Error response from daemon: unable to find user user1: no matching entries in passwd file)
   pgadmin:
     container_name: pgadmin
     depends_on:
