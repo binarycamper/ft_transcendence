@@ -1,15 +1,40 @@
-import { Controller, Get, Param, Post, Body, Delete, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Delete, Req, Res, UseGuards, Query } from '@nestjs/common';
 import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/user.dto';
-import { CompleteProfileDto } from './dto/completeProfile.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Adjust the path based on your directory structure
 
-@Controller('users')
+@Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-	@UseGuards(JwtAuthGuard) // Add this line to guard the endpoint
+	@Post('/register')
+	async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+		return this.userService.create(createUserDto);
+	}
+
+	@Get('/users')
+	async getAll(): Promise<User[]> {
+		return this.userService.findAll();
+	}
+
+	@Post('/update')
+	async editUser(
+		@Body() updateUserDto: CreateUserDto,
+		@Query('userId') userId: string,  //TODO: Use authtoken or Cookie instead id as query /user/update?${id}
+	  ): Promise<User> {
+		return this.userService.update(userId, updateUserDto);
+	}
+
+	@Post(':userId/friends/:friendId')
+	async addFriend(@Param('userId') userId: string, @Param('friendId') friendId: string) {
+		return this.userService.addFriend(userId, friendId);
+	}
+
+	@Delete(':userId/friends/:friendId')
+	async removeFriend(@Param('userId') userId: string, @Param('friendId') friendId: string) {
+		return this.userService.removeFriend(userId, friendId);
+	}
+	/*@UseGuards(JwtAuthGuard) // Add this line to guard the endpoint
 	@Post('complete-profile')
 	async completeProfile(@Body() completeProfileDto: CompleteProfileDto, @Req() req, @Res() res) {
 	  if (!req.user || !req.user.id) {
@@ -54,7 +79,7 @@ export class UserController {
 	@Delete(':id')
     remove(@Param('id') id: string): Promise<void> {
         return this.userService.remove(id);
-    }
+    }*/
 
     // Add other CRUD operations as needed
 }

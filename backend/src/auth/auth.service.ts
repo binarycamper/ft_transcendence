@@ -53,7 +53,7 @@ export class AuthService {
     if (!user) {
 		user = new User();
 		user.intraId = userData.id;
-		user.username = userData.login;
+		user.name = userData.login;
 		user.email = userData.email;
 		user.password = 'temporaryPassword'; // or some hashed/random value
 		// ... any other fields you want to store ...
@@ -68,7 +68,7 @@ export class AuthService {
     await this.authTokenRepository.save(authToken);
 
 	// Create a JWT payload
-    const payload = { username: user.username, sub: user.id };
+    const payload = { username: user.name, sub: user.id };
 
 	const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' }); // 7 days for example
@@ -111,7 +111,7 @@ export class AuthService {
 	  }
   
 	  // Create a new JWT payload
-	  const payload = { username: user.username, sub: user.id };
+	  const payload = { username: user.name, sub: user.id };
   
 	  // Generate a new access token
 	  const newAccessToken = this.jwtService.sign(payload);
