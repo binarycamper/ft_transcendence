@@ -15,8 +15,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(User) // This decorator tells NestJS to inject the User repository
     private readonly userRepository: Repository<User>, // This is the correct type
   ) {
-	// console.log('JWT Secret:', configService.get<string>('JWT_SECRET'));
-	// console.log(process.env.JWT_SECRET);
+	 	console.log('JWT Secret:', configService.get<string>('JWT_SECRET'));
+		console.log(process.env.JWT_SECRET);
     super({
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: configService.get<string>('JWT_SECRET'), // Use your secret key or better yet, get it from a config service

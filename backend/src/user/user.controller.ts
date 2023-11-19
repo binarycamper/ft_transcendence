@@ -1,16 +1,26 @@
-import { Controller, Get, Param, Post, Body, Delete, Req, Res, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Delete, Req, Res, UseGuards, Query, Logger } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 
 @Controller('user')
 export class UserController {
+	private readonly logger = new Logger(UserController.name);
     constructor(private readonly userService: UserService) {}
 
-	@Post('/register')
-	async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-		return this.userService.create(createUserDto);
-	}
+
+    @Post('/register')
+    async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+        this.logger.log(`Registering user with email: ${createUserDto.email}`);
+        try {
+            const newUser = await this.userService.create(createUserDto);
+            this.logger.log(`Registered user with id: ${newUser.id}`);
+            return newUser;
+        } catch (error) {
+            this.logger.error(`Registration failed: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
 
 	@Get('/users')
 	async getAll(): Promise<User[]> {
@@ -71,10 +81,6 @@ export class UserController {
         return this.userService.findOne(id);
     }
 
-	@Post()
-	create(@Body() createUserDto: CreateUserDto): Promise<User> {
-		return this.userService.create(createUserDto);
-	}
 
 	@Delete(':id')
     remove(@Param('id') id: string): Promise<void> {

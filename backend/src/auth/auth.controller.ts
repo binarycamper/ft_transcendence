@@ -32,31 +32,31 @@ export class AuthController {
   }
 
 
-@Post('callback')
-async authenticate(@Body() authCallbackDto: AuthCallbackDto, @Res() res: Response): Promise<void> {
-    const { accessToken, refreshToken } = await this.authService.authenticate(authCallbackDto.code);
+	@Post('callback')
+	async authenticate(@Body() authCallbackDto: AuthCallbackDto, @Res() res: Response): Promise<void> {
+		const { accessToken, refreshToken } = await this.authService.authenticate(authCallbackDto.code);
 
-    res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: 86400000 * 7, sameSite: 'lax', secure: false }); // 7 days expiry
+		res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: 86400000 * 7, sameSite: 'lax', secure: false }); // 7 days expiry
 
-    res.status(200).send({ accessToken: accessToken, message: 'Logged in successfully' });
-}
+		res.status(200).send({ accessToken: accessToken, message: 'Logged in successfully' });
+	}
 
-  @Get('check-auth')
-  async checkAuth(@Req() req, @Res() res) {
-    const isAuthenticated = await this.authService.checkAuthentication(req);
-    if (isAuthenticated) {
-      return res.status(200).send({ isAuthenticated: true });
-    } else {
-		console.log('Not authenticated');
-      return res.status(401).send({ isAuthenticated: false });
-    }
-  }
+	@Get('check-auth')
+	async checkAuth(@Req() req, @Res() res) {
+		const isAuthenticated = await this.authService.checkAuthentication(req);
+		if (isAuthenticated) {
+		return res.status(200).send({ isAuthenticated: true });
+		} else {
+			console.log('Not authenticated');
+		return res.status(401).send({ isAuthenticated: false });
+		}
+	}
 
-@Post('logout')
-async logout(@Req() req, @Res() res: Response) {
-  // Clear the session or JWT token. This is just a basic example.
-  res.clearCookie('Newsession');
-  return res.status(200).send({ message: 'Logged out successfully' });
-}
+	@Post('logout')
+	async logout(@Req() req, @Res() res: Response) {
+	// Clear the session or JWT token. This is just a basic example.
+	res.clearCookie('Newsession');
+		return res.status(200).send({ message: 'Logged out successfully' });
+	}
 
 }
