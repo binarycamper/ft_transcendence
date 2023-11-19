@@ -10,7 +10,7 @@ async function bootstrap() {
 	app.use((req, res, next) => {
 		logger.log(`Incoming request for: ${req.method} ${req.url}`);
 		next();
-	  });
+	});
 	// Set up cookie parser middleware
 	app.use(cookieParser());
 
@@ -24,15 +24,15 @@ async function bootstrap() {
 	// Set up global validation pipe
 	app.useGlobalPipes(
 		new ValidationPipe({
-		  whitelist: true,
-		  forbidNonWhitelisted: true,
-		  transform: true,
-		  exceptionFactory: (errors) => {
-			console.log(errors);
-			return new BadRequestException(errors);
-		},
-	}));
-
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+			exceptionFactory: (errors) => {
+				console.log(errors);
+				return new BadRequestException(errors);
+			},
+		}),
+	);
 	await app.listen(3000);
 }
 bootstrap();
