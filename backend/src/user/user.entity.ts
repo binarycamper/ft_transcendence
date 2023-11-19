@@ -26,7 +26,7 @@ export class User {
 
 	//auth stuff
 	@Column()
-	tokens: string;
+	tokens: number;
 
 	@Column()
 	intraId: string;
