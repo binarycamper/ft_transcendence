@@ -28,7 +28,7 @@ export class AuthService {
     const clientSecret = this.configService.get<string>('MY_42_INTRANET_CLIENT_SECRET');
 	console.log('Client ID:', clientId);
 	console.log('Client Secret:', clientSecret);
-    const redirectUri = 'http://localhost:8081/auth/callback'; // Adjust this to your setup
+    const redirectUri = 'http://localhost:8080/auth/callback'; // Adjust this to your setup
 
     const response = await this.httpService.post('https://api.intra.42.fr/oauth/token', {
       grant_type: 'authorization_code',
