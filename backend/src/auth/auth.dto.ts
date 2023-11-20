@@ -2,8 +2,7 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 
 export class AuthCallbackDto {
-	@IsString()
-    @IsNotEmpty()
+	@IsNotEmpty()
 	code: string;
   }
   
