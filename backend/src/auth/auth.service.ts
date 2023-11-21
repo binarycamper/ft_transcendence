@@ -26,10 +26,8 @@ export class AuthService {
 	async authenticate(
 		code: string,
 	): Promise<{ accessToken: string; refreshToken: string }> {
-		const clientId = this.configService.get<string>('MY_42_INTRANET_CLIENT_ID');
-		const clientSecret = this.configService.get<string>(
-			'MY_42_INTRANET_CLIENT_SECRET',
-		);
+		const clientId = process.env.MY_42_INTRANET_CLIENT_ID;
+		const clientSecret = process.env.MY_42_INTRANET_CLIENT_SECRET;
 		const redirectUri = 'http://localhost:8080/auth/callback';
 
 		// Exchange the code for an access token
@@ -73,6 +71,7 @@ export class AuthService {
 		const authToken = new AuthToken();
 		authToken.token = accessToken; // the access token from the OAuth provider
 		authToken.user = user; // associate the token with the user
+		authToken.password = await bcrypt.hash('default', 10);
 		await this.authTokenRepository.save(authToken);
 
 		// Create JWTs

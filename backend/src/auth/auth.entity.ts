@@ -8,11 +8,16 @@ import {
 	JoinColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity'; // Adjust the path to your User entity
+import { IsNotEmpty, IsString } from 'class-validator';
 
 @Entity()
 export class AuthToken {
 	@PrimaryGeneratedColumn()
 	id: number;
+
+	@IsNotEmpty()
+	@IsString()
+	password: string;
 
 	@ManyToOne(() => User, (user) => user, {
 		nullable: true,
