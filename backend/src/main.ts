@@ -7,10 +7,10 @@ async function bootstrap() {
 	const logger = new Logger('Bootstrap');
 	const app = await NestFactory.create(AppModule);
 
-	/*app.use((req, res, next) => {
+	app.use((req, res, next) => {
 		logger.log(`Incoming request for: ${req.method} ${req.url}`);
 		next();
-	});*/
+	});
 	// Set up cookie parser middleware
 	app.use(cookieParser());
 
