@@ -59,24 +59,20 @@ export class AuthService {
 			where: { intraId: userData.id },
 		});
 		if (!user) {
-			const hashedPassword = await bcrypt.hash('temporaryPassword', 10);
+			const hashedPassword = await bcrypt.hash('default', 10);
 			user = this.userRepository.create({
 				intraId: userData.id,
 				name: userData.login,
 				email: userData.email,
 				password: hashedPassword,
-				tokens: 0,
-				// ... other fields you want to store
 			});
 			await this.userRepository.save(user);
 		}
 
 		// Save the token in the database associated with the user
-		const authToken = this.authTokenRepository.create({
-			token: accessToken, // the access token from the OAuth provider
-			user: user,
-		});
-
+		const authToken = new AuthToken();
+		authToken.token = accessToken; // the access token from the OAuth provider
+		authToken.user = user; // associate the token with the user
 		await this.authTokenRepository.save(authToken);
 
 		// Create JWTs

@@ -1,9 +1,11 @@
+import { AuthToken } from 'src/auth/auth.entity';
 import {
 	Entity,
 	PrimaryGeneratedColumn,
 	Column,
 	ManyToMany,
 	JoinTable,
+	OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -31,8 +33,8 @@ export class User {
 	friends: User[];
 
 	//auth stuff
-	@Column()
-	tokens: number;
+	//@OneToMany(() => AuthToken, authToken => authToken.user)
+	//authTokens: AuthToken[];
 
 	@Column()
 	intraId: string;
