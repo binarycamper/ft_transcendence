@@ -13,7 +13,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 @Entity()
 export class AuthToken {
 	@PrimaryGeneratedColumn()
-	id: number;
+	id: string;
 
 	@IsNotEmpty()
 	@IsString()
@@ -27,7 +27,7 @@ export class AuthToken {
 	user: User;
 
 	@Column({ nullable: true })
-	userId: number;
+	userId: string;
 
 	@Column()
 	token: string;

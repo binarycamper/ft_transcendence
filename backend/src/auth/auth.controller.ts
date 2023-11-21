@@ -53,8 +53,14 @@ export class AuthController {
 	}*/
 
 	@Get('callback')
-	async handleCallback(@Query('code') code: string, @Res() res: Response) {
+	async handleCallback(@Query('code') code: string, @Res() res: Response): Promise<void> {
 		try {
+			const token = await this.authService.authenticate(code);
+			res.redirect('http://localhost:5173/form?token=${token}');
+		} catch (error) {
+			throw error;
+		}
+			/* Old Code
 			// Exchange the code for an access token and refresh token
 			const { accessToken, refreshToken } = await this.authService.authenticate(
 				code,
@@ -78,7 +84,7 @@ export class AuthController {
 			res
 				.status(500)
 				.json({ message: 'Authentication failed', error: error.message });
-		}
+		}*/
 	}
 
 	/*@Post('callback')
