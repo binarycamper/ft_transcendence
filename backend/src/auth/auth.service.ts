@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import axios from "axios"
 
 @Injectable()
 export class AuthService {
@@ -28,18 +29,16 @@ export class AuthService {
 	): Promise<{ accessToken: string; refreshToken: string }> {
 		const clientId = process.env.MY_42_INTRANET_CLIENT_ID;
 		const clientSecret = process.env.MY_42_INTRANET_CLIENT_SECRET;
-		const redirectUri = 'http://localhost:8080/auth/callback';
+		const redirectUri =  process.env.REDIR_URL;
 
 		// Exchange the code for an access token
-		const tokenResponse = await this.httpService
-			.post('https://api.intra.42.fr/oauth/token', {
+		const tokenResponse = await axios.post('https://api.intra.42.fr/oauth/token', {
 				grant_type: 'authorization_code',
 				client_id: clientId,
 				client_secret: clientSecret,
-				code: code,
+				code,
 				redirect_uri: redirectUri,
-			})
-			.toPromise();
+			});
 
 		const accessToken = tokenResponse.data.access_token;
 
