@@ -22,7 +22,7 @@ async function bootstrap() {
 	});
 
 	// Set up global validation pipe
-	/*app.useGlobalPipes(
+	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
 			forbidNonWhitelisted: true,
@@ -32,7 +32,7 @@ async function bootstrap() {
 				return new BadRequestException(errors);
 			},
 		}),
-	);*/
+	);
 	await app.listen(3000);
 }
 bootstrap();
