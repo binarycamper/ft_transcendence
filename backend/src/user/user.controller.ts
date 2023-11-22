@@ -29,7 +29,7 @@ export class UserController {
 		@Body() body: { nickname: string; password: string },
 		@Req() req,
 	) {
-		console.log('Request headers:', req.headers);
+		//console.log('Request headers:', req.headers);
 		//console.log('Request body:', body);
 		// With JwtAuthGuard used, you can now access the user from the request object
 		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
@@ -45,6 +45,17 @@ export class UserController {
 			);
 		}
 
+		const isProfileComplete = await this.userService.isProfileComplete(userId);
+		if (isProfileComplete) {
+			throw new HttpException(
+				{
+					status: HttpStatus.SEE_OTHER,
+					error: 'Profile already complete, use Profile-page to change pw!',
+					location: '/', // Indicating the location where the client should redirect
+				},
+				HttpStatus.SEE_OTHER,
+			);
+		}
 		// Call the service method to update the nickname and password
 		const updatedUser = await this.userService.complete(
 			userId,

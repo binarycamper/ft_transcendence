@@ -43,6 +43,18 @@ export class UserService {
 		return this.userRepository.save(user);
 	}
 
+	async isProfileComplete(userId: string): Promise<boolean> {
+		// Retrieve the user by the provided userId
+		const user = await this.userRepository.findOne({ where: { id: userId } });
+
+		// Check if the user exists
+		if (!user) {
+			return false;
+		}
+
+		return true;
+	}
+
 	async create(createUserDto: CreateUserDto): Promise<User> {
 		// Check if a user with the given name or email already exists.
 		const existingUser = await this.userRepository.findOne({

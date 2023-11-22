@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 
 export const CompleteProfile = () => {
-	console.log('START COMPLET_PROFILE!!!!!');
 	const [nickname, setNickname] = useState('');
 	const [password, setPassword] = useState('');
 
