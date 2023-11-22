@@ -38,21 +38,27 @@ export class UserService {
 		// Update the user's nickname and password
 		user.nickname = nickname;
 		user.password = hashedPassword;
+		user.status = 'created';
 
 		// Save the updated user
 		return this.userRepository.save(user);
 	}
 
 	async isProfileComplete(userId: string): Promise<boolean> {
-		// Retrieve the user by the provided userId
 		const user = await this.userRepository.findOne({ where: { id: userId } });
 
-		// Check if the user exists
 		if (!user) {
-			return false;
+			throw new Error('User not found');
 		}
 
-		return true;
+		// A profile is considered complete if email and nickname are not null and not default
+		const isNicknameDefault = user.nickname === 'default_user';
+		const isPasswordDefault = user.password === 'default_pw';
+
+		const profileComplete =
+			user.email !== null && !isNicknameDefault && !isPasswordDefault;
+
+		return profileComplete;
 	}
 
 	async create(createUserDto: CreateUserDto): Promise<User> {

@@ -17,6 +17,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Response } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -28,6 +29,7 @@ export class UserController {
 	async completeProfile(
 		@Body() body: { nickname: string; password: string },
 		@Req() req,
+		@Res() res: Response,
 	) {
 		//console.log('Request headers:', req.headers);
 		//console.log('Request body:', body);
@@ -64,7 +66,7 @@ export class UserController {
 		);
 
 		// Return a success response
-		return { message: 'Profile updated successfully', updatedUser };
+		res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
 	}
 
 	@Post('/register')
@@ -88,7 +90,7 @@ export class UserController {
 	@Post('/update')
 	async editUser(
 		@Body() updateUserDto: CreateUserDto,
-		@Query('userId') userId: string, //TODO: Use authtoken or Cookie instead id as query /user/update?${id}
+		@Query('userId') userId: string,
 	): Promise<User> {
 		return this.userService.update(userId, updateUserDto);
 	}

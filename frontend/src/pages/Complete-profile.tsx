@@ -18,14 +18,18 @@ export const CompleteProfile = () => {
 				credentials: 'include',
 			});
 
-			const data = await response.json();
-
-			if (response.ok) {
+			if (response.status === 200) {
+				window.location.href = '/';
+			} else if (response.status === 303) {
+				// If server indicates a See Other response, redirect to the provided location
+				const location = response.headers.get('Location');
+				window.location.href = location || '/'; // Default to root if location is not provided
+			} else if (response.ok) {
+				const data = await response.json();
 				console.log('Profile update successful:', data);
-				// Handle successful profile update, e.g., redirect or show a success message
 			} else {
-				console.error('Profile update failed:', data);
-				// Handle errors, e.g., show an error message
+				const errorData = await response.json();
+				console.error('Profile update failed:', errorData);
 			}
 		} catch (error) {
 			console.error('Network error:', error);
