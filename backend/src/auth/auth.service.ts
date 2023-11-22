@@ -7,99 +7,109 @@ import { User } from '../user/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import axios from "axios";
+import axios from 'axios';
 import { use } from 'passport';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>, // Inject the userRepository
-    @InjectRepository(AuthToken)
-    private readonly authTokenRepository: Repository<AuthToken>, // Inject the authTokenRepository
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
-  ) {}
+	constructor(
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>, // Inject the userRepository
+		@InjectRepository(AuthToken)
+		private readonly authTokenRepository: Repository<AuthToken>, // Inject the authTokenRepository
+		private readonly httpService: HttpService,
+		private readonly configService: ConfigService,
+		private readonly jwtService: JwtService,
+	) {}
 
-  async authenticate(code: string): Promise<string> {
-    try {
-      const clientId = this.configService.get<string>('MY_42_INTRANET_CLIENT_ID');
-      const clientSecret = this.configService.get<string>('MY_42_INTRANET_CLIENT_SECRET');
-      const redirectUri = this.configService.get<string>('REDIR_URL');
+	async authenticate(code: string): Promise<{ access_token: string }> {
+		try {
+			const clientId = this.configService.get<string>(
+				'MY_42_INTRANET_CLIENT_ID',
+			);
+			const clientSecret = this.configService.get<string>(
+				'MY_42_INTRANET_CLIENT_SECRET',
+			);
+			const redirectUri = this.configService.get<string>('REDIR_URL');
 
-      // Exchange the code for an access token
-      const tokenResponse = await axios.post('https://api.intra.42.fr/oauth/token', {
-        grant_type: 'authorization_code',
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      });
+			// Exchange the code for an access token
+			const tokenResponse = await axios.post(
+				'https://api.intra.42.fr/oauth/token',
+				{
+					grant_type: 'authorization_code',
+					client_id: clientId,
+					client_secret: clientSecret,
+					code,
+					redirect_uri: redirectUri,
+				},
+			);
 
-      const accessToken: string = tokenResponse.data.access_token;
+			const accessToken: string = tokenResponse.data.access_token;
 
-      // Fetch user data from 42 API using the accessToken
-      const userResponse = await this.httpService
-        .get('https://api.intra.42.fr/v2/me', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-        .toPromise();
+			// Fetch user data from 42 API using the accessToken
+			const userResponse = await this.httpService
+				.get('https://api.intra.42.fr/v2/me', {
+					headers: { Authorization: `Bearer ${accessToken}` },
+				})
+				.toPromise();
 
-      const userData = userResponse.data;
+			const userData = userResponse.data;
 
-      // Check if user exists in your database, if not, create them
-      let user = await this.userRepository.findOne({
-        where: { intraId: userData.id },
-      });
+			// Check if user exists in your database, if not, create them
+			let user = await this.userRepository.findOne({
+				where: { intraId: userData.id },
+			});
 
-      if (!user) {
-        // Generate or obtain a secure password here
-        const securePassword = 'generate-or-obtain-password-here'; // Replace this with your logic
-        const hashedPassword = await bcrypt.hash(securePassword, 10);
+			if (!user) {
+				// Generate or obtain a secure password here
+				//const securePassword = 'generate-or-obtain-password-here'; // Replace this with your logic
+				//const hashedPassword = await bcrypt.hash(securePassword, 10);
 
-        user = this.userRepository.create({
-          intraId: userData.id,
-          name: userData.login,
-          email: userData.email,
-          password: hashedPassword,
-        });
-        await this.userRepository.save(user);
-      }
+				user = this.userRepository.create({
+					intraId: userData.id,
+					name: userData.login,
+					email: userData.email,
+					password: 'default_pw',
+					nickname: 'default_user',
+				});
+				await this.userRepository.save(user);
+			}
 
-      // Create and save the auth token
-      let authToken = await this.authTokenRepository.findOne({
-        where: { user: user },
-      });
+			// Create and save the auth token
+			let authToken = await this.authTokenRepository.findOne({
+				where: { user: user },
+			});
 
-      if (!authToken) {
-        authToken = this.authTokenRepository.create({
-          token: accessToken, // Save the plain access token
-		  password: user.password,
-		  userId: user.id,
-		  user: user,
-        });
-      } else {
-        // If token exists, update it
-        authToken.token = accessToken;
-      }
+			if (!authToken) {
+				authToken = this.authTokenRepository.create({
+					token: accessToken, // Save the plain access token
+					userId: user.id,
+					user: user,
+				});
+			} else {
+				// If token exists, update it
+				authToken.token = accessToken;
+			}
 
-      await this.authTokenRepository.save(authToken);
+			await this.authTokenRepository.save(authToken);
 
-      // Generate JWT for the client
-      const payload = { username: user.name, sub: user.id };
-      const jwtToken = this.jwtService.sign(payload);
+			// Generate JWT for the client
+			const payload = { username: user.name, sub: user.id };
+			const jwtToken = this.jwtService.sign(payload);
 
-      return jwtToken; // Return the JWT to the client
-    } catch (error) {
-      console.error(error);
-      if (error.response && error.response.status === 401) {
-        throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);
-      } else {
-        throw new HttpException("Failed authentication", HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    }
-		
+			return { access_token: jwtToken };
+		} catch (error) {
+			console.error(error);
+			if (error.response && error.response.status === 401) {
+				throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+			} else {
+				throw new HttpException(
+					'Failed authentication',
+					HttpStatus.INTERNAL_SERVER_ERROR,
+				);
+			}
+		}
+
 		//Old way:
 		/*const accessToken = tokenResponse.data.access_token;
 

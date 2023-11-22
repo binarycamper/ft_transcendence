@@ -10,15 +10,51 @@ import {
 	UseGuards,
 	Query,
 	Logger,
+	HttpException,
+	HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('complete')
+	async completeProfile(
+		@Body() body: { nickname: string; password: string },
+		@Req() req,
+	) {
+		console.log('Request headers:', req.headers);
+		//console.log('Request body:', body);
+		// With JwtAuthGuard used, you can now access the user from the request object
+		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
+
+		if (!userId) {
+			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+		}
+
+		if (!body.nickname || !body.password) {
+			throw new HttpException(
+				'Missing nickname or password',
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+
+		// Call the service method to update the nickname and password
+		const updatedUser = await this.userService.complete(
+			userId,
+			body.nickname,
+			body.password,
+		);
+
+		// Return a success response
+		return { message: 'Profile updated successfully', updatedUser };
+	}
 
 	@Post('/register')
 	async create(@Body() createUserDto: CreateUserDto): Promise<User> {

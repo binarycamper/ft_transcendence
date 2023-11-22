@@ -22,6 +22,27 @@ export class UserService {
 		return this.userRepository.find();
 	}
 
+	async complete(
+		userId: string,
+		nickname: string,
+		password: string,
+	): Promise<User> {
+		const user = await this.userRepository.findOneBy({ id: userId });
+		if (!user) {
+			throw new Error('User not found');
+		}
+
+		// Hash the new password
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		// Update the user's nickname and password
+		user.nickname = nickname;
+		user.password = hashedPassword;
+
+		// Save the updated user
+		return this.userRepository.save(user);
+	}
+
 	async create(createUserDto: CreateUserDto): Promise<User> {
 		// Check if a user with the given name or email already exists.
 		const existingUser = await this.userRepository.findOne({

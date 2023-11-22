@@ -16,6 +16,7 @@ import { AuthCallbackDto } from './auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Adjust the path based on your directory structure
+import { UserController } from 'src/user/user.controller';
 
 @Controller('auth')
 export class AuthController {
@@ -53,14 +54,20 @@ export class AuthController {
 	}*/
 
 	@Get('callback')
-	async handleCallback(@Query('code') code: string, @Res() res: Response): Promise<void> {
+	async handleCallback(
+		@Query('code') code: string,
+		@Res() res: Response,
+	): Promise<void> {
 		try {
 			const token = await this.authService.authenticate(code);
-			res.redirect('http://localhost:5173/form?token=${token}');
+			console.log('TOKEN = ', res.header);
+			res.cookie('token', token.access_token, { httpOnly: true, secure: true });
+			res.redirect('http://localhost:5173/complete-profile');
 		} catch (error) {
 			throw error;
 		}
-			/* Old Code
+
+		/* Old Code
 			// Exchange the code for an access token and refresh token
 			const { accessToken, refreshToken } = await this.authService.authenticate(
 				code,

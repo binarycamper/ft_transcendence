@@ -15,10 +15,6 @@ export class AuthToken {
 	@PrimaryGeneratedColumn()
 	id: string;
 
-	@IsNotEmpty()
-	@IsString()
-	password: string;
-
 	@ManyToOne(() => User, (user) => user, {
 		nullable: true,
 		onDelete: 'CASCADE',

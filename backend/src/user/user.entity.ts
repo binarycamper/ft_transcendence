@@ -22,19 +22,18 @@ export class User {
 	@Column()
 	password: string;
 
+	@Column()
+	nickname: string;
+
 	@Column({
 		type: 'varchar',
-		default: 'online',
+		default: 'fresh',
 	})
 	status: string;
 
 	@ManyToMany(() => User)
 	@JoinTable()
 	friends: User[];
-
-	//auth stuff
-	//@OneToMany(() => AuthToken, authToken => authToken.user)
-	//authTokens: AuthToken[];
 
 	@Column()
 	intraId: string;

@@ -8,6 +8,7 @@ import { Play } from './pages/Play.page';
 import { Profile } from './pages/Profile.page';
 import { Settings } from './pages/Settings.page';
 import { Signup } from './pages/Signup.page';
+import { CompleteProfile } from './pages/Complete-profile';
 
 const router = createBrowserRouter([
 	{
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
 	{
 		path: '/login',
 		element: <Login />,
+	},
+	{
+		path: 'Complete-profile',
+		element: <CompleteProfile />,
 	},
 	{
 		path: '/signup',

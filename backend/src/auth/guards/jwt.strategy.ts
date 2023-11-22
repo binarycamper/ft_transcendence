@@ -6,28 +6,42 @@ import { User } from '../../user/user.entity'; // Adjust the path if needed
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { Request as ExpressRequest } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-	private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
-    @InjectRepository(User) // This decorator tells NestJS to inject the User repository
-    private readonly userRepository: Repository<User>, // This is the correct type
-  ) {
-	 	console.log('JWT Secret:', configService.get<string>('JWT_SECRET'));
-		console.log(process.env.JWT_SECRET);
-    super({
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: configService.get<string>('JWT_SECRET'), // Use your secret key or better yet, get it from a config service
-    });
-  }
+	constructor(
+		private readonly configService: ConfigService,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
+	) {
+		super({
+			jwtFromRequest: ExtractJwt.fromExtractors([
+				(request: ExpressRequest | any) => {
+					let jwt = null;
+					if (request && request.headers && request.headers.cookie) {
+						const cookies = request.headers.cookie.split(';');
+						const tokenCookie = cookies.find((cookie) =>
+							cookie.trim().startsWith('token='),
+						);
+						if (tokenCookie) {
+							jwt = tokenCookie.split('=')[1];
+						}
+					}
+					return jwt;
+				},
+			]),
+			secretOrKey: process.env.JWT_SECRET,
+		});
+	}
 
-  async validate(payload: any) {
-    const user = await this.userRepository.findOne({ where: { id: payload.sub } });
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return user; // This will be available in your route handlers as `req.user`
-  }
+	async validate(payload: any) {
+		const user = await this.userRepository.findOne({
+			where: { id: payload.sub },
+		});
+		if (!user) {
+			throw new UnauthorizedException();
+		}
+		return user; // This will be available in your route handlers as `req.user`
+	}
 }
