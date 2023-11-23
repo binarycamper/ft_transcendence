@@ -110,6 +110,16 @@ export class UserService {
 		return userToUpdate;
 	}
 
+	async findProfileById(userId: string): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		return user;
+	}
+
 	async addFriend(userId: string, friendId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },

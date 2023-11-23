@@ -76,6 +76,19 @@ export class UserController {
 		res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
 	}
 
+	@UseGuards(JwtAuthGuard, StatusGuard)
+	@Get('profile')
+	async getProfile(@Req() req) {
+		// Access the user's ID from the request object
+		const userId = req.user.id;
+		const userProfile = await this.userService.findProfileById(userId);
+
+		// Exclude password and other sensitive fields from the result
+		const { password, id, ...result } = userProfile;
+
+		return result;
+	}
+
 	@Post('/register')
 	async create(@Body() createUserDto: CreateUserDto): Promise<User> {
 		this.logger.log(`Registering user with email: ${createUserDto.email}`);
