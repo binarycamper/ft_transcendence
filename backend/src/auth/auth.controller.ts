@@ -10,6 +10,8 @@ import {
 	UseGuards,
 	Injectable,
 	Query,
+	HttpException,
+	HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCallbackDto } from './auth.dto';
@@ -58,11 +60,13 @@ export class AuthController {
 		@Query('code') code: string,
 		@Res() res: Response,
 	): Promise<void> {
+		if (code === undefined)
+			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 		try {
 			const token = await this.authService.authenticate(code);
-			console.log('TOKEN = ', res.header);
+			//console.log('Header = ', res.header);
 			res.cookie('token', token.access_token, { httpOnly: true, secure: true });
-			res.redirect('http://localhost:5173/complete-profile');
+			res.redirect('http://localhost:5173/complete-profile'); //redirect always sends 302 (FOUND)
 		} catch (error) {
 			throw error;
 		}

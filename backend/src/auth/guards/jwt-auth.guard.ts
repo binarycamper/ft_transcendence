@@ -8,7 +8,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 	handleRequest(err, user, info) {
 		// Log the error and info for debugging
 		if (err) {
-			this.logger.error(`Authentication Error: ${err.message}`, err.stack);
+			this.logger.log(`Authentication Error: ${err.message}`, err.stack);
 		}
 		if (info) {
 			this.logger.log(`Auth Info: ${info.message}`);
@@ -23,7 +23,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
 		// You can throw an exception based on either "info" or "err" arguments
 		if (err || !user) {
-			this.logger.error('JWT Guard error!!!');
+			this.logger.log('JWT Guard error!!!');
 			throw err || new UnauthorizedException();
 		}
 
