@@ -49,11 +49,9 @@ export class UserService {
 		}
 
 		// A profile is considered complete if email and nickname are not null and not default
-		const isNicknameDefault = user.nickname === 'default_user';
-		const isPasswordDefault = user.password === 'default_pw';
+		const isNicknameDefault = user.status === 'fresh';
 
-		const profileComplete =
-			user.email !== null && !isNicknameDefault && !isPasswordDefault;
+		const profileComplete = user.email !== null && !isNicknameDefault;
 
 		return profileComplete;
 	}

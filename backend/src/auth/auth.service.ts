@@ -65,7 +65,7 @@ export class AuthService {
 					name: userData.login,
 					email: userData.email,
 					password: 'default_pw',
-					nickname: 'default_user',
+					nickname: 'default_user', //Todo: wird gelöscht
 				});
 				await this.userRepository.save(user);
 			}
