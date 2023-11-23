@@ -42,7 +42,11 @@ export class UserController {
 
 		if (!body.nickname || !body.password || 'default_user' || 'default_pw') {
 			throw new HttpException(
-				'Missing nickname or password',
+				{
+					status: HttpStatus.BAD_REQUEST,
+					error: 'Invalid nickname or password',
+					location: '/user/complete',
+				},
 				HttpStatus.BAD_REQUEST,
 			);
 		}
