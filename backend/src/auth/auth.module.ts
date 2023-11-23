@@ -10,6 +10,7 @@ import { UserModule } from '../user/user.module'; // Import UserModule
 import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigService as well
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './guards/jwt.strategy'; // Import JwtStrategy
+import { StatusGuard } from './guards/status.guard';
 
 @Module({
 	imports: [
@@ -26,7 +27,7 @@ import { JwtStrategy } from './guards/jwt.strategy'; // Import JwtStrategy
 			inject: [ConfigService],
 		}),
 	],
-	providers: [AuthService, JwtStrategy], // Add JwtStrategy to providers
+	providers: [AuthService, JwtStrategy, StatusGuard], // Add JwtStrategy to providers
 	controllers: [AuthController],
 })
 export class AuthModule {}

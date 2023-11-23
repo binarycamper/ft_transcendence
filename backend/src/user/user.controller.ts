@@ -18,13 +18,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
+import { StatusGuard } from 'src/auth/guards/status.guard';
 
 @Controller('user')
 export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Post('complete')
 	async completeProfile(
 		@Body() body: { nickname: string; password: string },
@@ -36,19 +37,9 @@ export class UserController {
 		// With JwtAuthGuard used, you can now access the user from the request object
 		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
 
+		//console.log('userid: ', userId);
 		if (!userId) {
 			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-		}
-
-		if (!body.nickname || !body.password || 'default_user' || 'default_pw') {
-			throw new HttpException(
-				{
-					status: HttpStatus.BAD_REQUEST,
-					error: 'Invalid nickname or password',
-					location: '/user/complete',
-				},
-				HttpStatus.BAD_REQUEST,
-			);
 		}
 
 		const isProfileComplete = await this.userService.isProfileComplete(userId);
@@ -62,6 +53,18 @@ export class UserController {
 				HttpStatus.SEE_OTHER,
 			);
 		}
+
+		if (!body.nickname || !body.password || 'default_user' || 'default_pw') {
+			throw new HttpException(
+				{
+					status: HttpStatus.BAD_REQUEST,
+					error: 'Invalid nickname or password',
+					location: '/user/complete',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+
 		// Call the service method to update the nickname and password
 		const updatedUser = await this.userService.complete(
 			userId,
