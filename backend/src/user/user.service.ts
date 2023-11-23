@@ -22,18 +22,13 @@ export class UserService {
 		return this.userRepository.find();
 	}
 
-	async complete(
-		userId: string,
-		nickname: string,
-		password: string,
-	): Promise<User> {
+	async complete(userId: string, password: string): Promise<User> {
 		const user = await this.userRepository.findOneBy({ id: userId });
 		if (!user) {
 			throw new Error('User not found');
 		}
 
-		// Update the user's nickname and password
-		user.nickname = nickname;
+		// Update the user's password
 		user.password = await bcrypt.hash(password, 10);
 		user.status = 'created';
 
@@ -48,10 +43,8 @@ export class UserService {
 			throw new Error('User not found');
 		}
 
-		// A profile is considered complete if email and nickname are not null and not default
-		const isNicknameDefault = user.status === 'fresh';
-
-		const profileComplete = user.email !== null && !isNicknameDefault;
+		const status = user.status === 'fresh';
+		const profileComplete = user.email !== null && !status;
 
 		return profileComplete;
 	}
@@ -118,39 +111,5 @@ export class UserService {
 			throw new Error('User not found');
 		}
 		return user;
-	}
-
-	async addFriend(userId: string, friendId: string): Promise<User> {
-		const user = await this.userRepository.findOne({
-			where: { id: userId },
-			relations: ['friends'],
-		});
-		const friend = await this.userRepository.findOne({
-			where: { id: friendId },
-		});
-
-		if (!user || !friend) {
-			throw new NotFoundException('User not found.');
-		}
-
-		if (user.friends.some((f) => f.id === friendId)) {
-			throw new BadRequestException('Users are already friends.');
-		}
-		user.friends.push(friend);
-		return this.userRepository.save(user);
-	}
-
-	async removeFriend(userId: string, friendId: string): Promise<User> {
-		const user = await this.userRepository.findOne({
-			where: { id: userId },
-			relations: ['friends'],
-		});
-
-		if (!user) {
-			throw new NotFoundException('User not found.');
-		}
-
-		user.friends = user.friends.filter((f) => f.id !== friendId);
-		return this.userRepository.save(user);
 	}
 }

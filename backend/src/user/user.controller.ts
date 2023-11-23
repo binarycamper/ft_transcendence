@@ -28,7 +28,7 @@ export class UserController {
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Post('complete')
 	async completeProfile(
-		@Body() body: { nickname: string; password: string },
+		@Body() body: { password: string },
 		@Req() req,
 		@Res() res: Response,
 	) {
@@ -54,23 +54,19 @@ export class UserController {
 			);
 		}
 
-		if (!body.nickname || !body.password) {
+		if (!body.password) {
 			throw new HttpException(
 				{
 					status: HttpStatus.BAD_REQUEST,
-					error: 'Invalid nickname or password',
+					error: 'Invalid password',
 					location: '/user/complete',
 				},
 				HttpStatus.BAD_REQUEST,
 			);
 		}
 
-		// Call the service method to update the nickname and password
-		const updatedUser = await this.userService.complete(
-			userId,
-			body.nickname,
-			body.password,
-		);
+		// Call the service method to update password
+		const updatedUser = await this.userService.complete(userId, body.password);
 
 		// Return a success response
 		res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
@@ -115,21 +111,6 @@ export class UserController {
 		return this.userService.update(userId, updateUserDto);
 	}
 
-	@Post(':userId/friends/:friendId')
-	async addFriend(
-		@Param('userId') userId: string,
-		@Param('friendId') friendId: string,
-	) {
-		return this.userService.addFriend(userId, friendId);
-	}
-
-	@Delete(':userId/friends/:friendId')
-	async removeFriend(
-		@Param('userId') userId: string,
-		@Param('friendId') friendId: string,
-	) {
-		return this.userService.removeFriend(userId, friendId);
-	}
 	/*@UseGuards(JwtAuthGuard) // Add this line to guard the endpoint
 	@Post('complete-profile')
 	async completeProfile(@Body() completeProfileDto: CompleteProfileDto, @Req() req, @Res() res) {

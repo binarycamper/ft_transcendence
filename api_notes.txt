@@ -1,0 +1,15 @@
+backend   | USERDATA Properties:  [
+backend   |   'id',               'email',             'login',
+backend   |   'first_name',       'last_name',         'usual_full_name',
+backend   |   'usual_first_name', 'url',               'phone',
+backend   |   'displayname',      'kind',              'image',
+backend   |   'staff?',           'correction_point',  'pool_month',
+backend   |   'pool_year',        'location',          'wallet',
+backend   |   'anonymize_date',   'data_erasure_date', 'created_at',
+backend   |   'updated_at',       'alumnized_at',      'alumni?',
+backend   |   'active?',          'groups',            'cursus_users',
+backend   |   'projects_users',   'languages_users',   'achievements',
+backend   |   'titles',           'titles_users',      'partnerships',
+backend   |   'patroned',         'patroning',         'expertises_users',
+backend   |   'roles',            'campus',            'campus_users'
+backend   | ]

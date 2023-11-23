@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import axios from 'axios';
 import { use } from 'passport';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class AuthService {
@@ -55,20 +56,22 @@ export class AuthService {
 				where: { intraId: userData.id },
 			});
 
-			if (!user) {
-				// Generate or obtain a secure password here
-				//const securePassword = 'generate-or-obtain-password-here'; // Replace this with your logic
-				//const hashedPassword = await bcrypt.hash(securePassword, 10);
+			const userPayload = {
+				name: userData.login,
+				email: userData.email,
+				password: 'hashed-password', // Replace with actual hashed password
+				intraId: userData.id,
+				imageUrl: userData.image?.versions?.medium, // Use optional chaining
+			};
 
-				user = this.userRepository.create({
-					intraId: userData.id,
-					name: userData.login,
-					email: userData.email,
-					password: 'default_pw',
-					nickname: 'default_user', //Todo: wird gelöscht
-				});
-				await this.userRepository.save(user);
+			if (!user) {
+				user = this.userRepository.create(userPayload);
+			} else {
+				// Update existing user
+				this.userRepository.merge(user, userPayload);
 			}
+
+			await this.userRepository.save(user);
 
 			// Create and save the auth token
 			let authToken = await this.authTokenRepository.findOne({

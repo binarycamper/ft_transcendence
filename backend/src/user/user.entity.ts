@@ -1,3 +1,4 @@
+import { ServerStreamFileResponseOptions } from 'http2';
 import { AuthToken } from 'src/auth/auth.entity';
 import {
 	Entity,
@@ -13,22 +14,16 @@ export class User {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@Column({ unique: true })
+	@Column({ unique: true, length: 100 })
 	name: string;
 
-	@Column({ unique: true, nullable: true })
+	@Column({ unique: true, nullable: true, length: 100 })
 	email: string;
 
-	@Column()
+	@Column({ select: false }) // Exclude password field by default
 	password: string;
 
-	@Column()
-	nickname: string;
-
-	@Column({
-		type: 'varchar',
-		default: 'fresh',
-	})
+	@Column({ default: 'fresh' })
 	status: string;
 
 	@ManyToMany(() => User)
@@ -37,4 +32,7 @@ export class User {
 
 	@Column()
 	intraId: string;
+
+	@Column({ nullable: true, type: 'varchar' })
+	imageUrl: string;
 }

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 type UserProfile = {
 	name: string;
 	email: string;
-	nickname: string;
 	status: string;
 	intraId: number;
 	// Include other properties as needed
@@ -48,7 +47,6 @@ export function Profile() {
 			<h1>Profile</h1>
 			<p>Name: {profile.name}</p>
 			<p>Email: {profile.email}</p>
-			<p>Nickname: {profile.nickname}</p>
 			<p>Status: {profile.status}</p>
 			<p>IntraId: {profile.intraId}</p>
 			{/* Display other user profile data here */}

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 
 export const CompleteProfile = () => {
-	const [nickname, setNickname] = useState('');
 	const [password, setPassword] = useState('');
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -14,7 +13,7 @@ export const CompleteProfile = () => {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ nickname, password }),
+				body: JSON.stringify({ password }),
 				credentials: 'include',
 			});
 
@@ -41,16 +40,6 @@ export const CompleteProfile = () => {
 		<div>
 			<h1>Complete Your Profile</h1>
 			<form onSubmit={handleSubmit}>
-				<div>
-					<label htmlFor="nickname">Nickname:</label>
-					<input
-						id="nickname"
-						type="text"
-						value={nickname}
-						onChange={(e) => setNickname(e.target.value)}
-						required
-					/>
-				</div>
 				<div>
 					<label htmlFor="password">Password:</label>
 					<input

@@ -60,16 +60,21 @@ export class AuthController {
 		@Query('code') code: string,
 		@Res() res: Response,
 	): Promise<void> {
-		if (code === undefined)
+		if (code === undefined) {
 			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-		try {
-			const token = await this.authService.authenticate(code);
-			//console.log('Header = ', res.header);
-			res.cookie('token', token.access_token, { httpOnly: true, secure: true });
-			res.redirect('http://localhost:5173/complete-profile'); //redirect always sends 302 (FOUND)
-		} catch (error) {
-			throw error;
-		}
+		} else
+			try {
+				//console.log('code: ', code);
+				const token = await this.authService.authenticate(code);
+				//console.log('Header = ', res.header);
+				res.cookie('token', token.access_token, {
+					httpOnly: true,
+					secure: true,
+				});
+				res.redirect('http://localhost:5173/complete-profile'); //redirect always sends 302 (FOUND)
+			} catch (error) {
+				throw error;
+			}
 
 		/* Old Code
 			// Exchange the code for an access token and refresh token
