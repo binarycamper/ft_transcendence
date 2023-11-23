@@ -40,7 +40,7 @@ export class UserController {
 			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 		}
 
-		if (!body.nickname || !body.password) {
+		if (!body.nickname || !body.password || 'default_user' || 'default_pw') {
 			throw new HttpException(
 				'Missing nickname or password',
 				HttpStatus.BAD_REQUEST,

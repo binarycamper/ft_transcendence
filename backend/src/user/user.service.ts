@@ -32,12 +32,9 @@ export class UserService {
 			throw new Error('User not found');
 		}
 
-		// Hash the new password
-		const hashedPassword = await bcrypt.hash(password, 10);
-
 		// Update the user's nickname and password
 		user.nickname = nickname;
-		user.password = hashedPassword;
+		user.password = await bcrypt.hash(password, 10);
 		user.status = 'created';
 
 		// Save the updated user
