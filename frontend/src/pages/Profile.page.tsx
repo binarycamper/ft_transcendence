@@ -21,7 +21,9 @@ export function Profile() {
 				});
 				if (!response.ok) {
 					// If the response is not ok, navigate to the error page with the status text
-					navigate('/error', { state: { statusText: response.statusText } });
+					navigate('/complete-profile', {
+						state: { statusText: response.statusText },
+					});
 					return;
 				}
 				const data: UserProfile = await response.json();

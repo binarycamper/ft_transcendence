@@ -1,8 +1,10 @@
 // CompleteProfile.page.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const CompleteProfile = () => {
 	const [password, setPassword] = useState('');
+	const navigate = useNavigate();
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -16,14 +18,16 @@ export const CompleteProfile = () => {
 				body: JSON.stringify({ password }),
 				credentials: 'include',
 			});
+			const locationUrl = response.headers.get('Location');
 
 			if (response.status === 200) {
-				window.location.href = '/';
+				navigate('/');
 			} else if (response.status === 303) {
-				// If server indicates a See Other response, redirect to the provided location
-				const location = response.headers.get('Location');
-				window.location.href = location || '/'; // Default to root if location is not provided
-			} else if (response.ok) {
+				if (locationUrl) {
+					navigate(locationUrl);
+				} else {
+					console.error('Location header is missing');
+				}
 				const data = await response.json();
 				console.log('Profile update successful:', data);
 			} else {

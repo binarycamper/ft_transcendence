@@ -5,7 +5,6 @@ import {
 	HttpException,
 	HttpStatus,
 } from '@nestjs/common';
-import { use } from 'passport';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -14,7 +13,7 @@ export class StatusGuard implements CanActivate {
 		context: ExecutionContext,
 	): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context.switchToHttp().getRequest();
-		const user = request.user?.id;
+		const user = request.user;
 
 		//console.log('user:: ', user);
 
@@ -31,6 +30,7 @@ export class StatusGuard implements CanActivate {
 		}
 
 		if (user.status === 'fresh') {
+			//console.log('StatusGuard detect fresh user');
 			throw new HttpException(
 				{
 					status: HttpStatus.SEE_OTHER,

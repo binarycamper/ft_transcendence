@@ -25,7 +25,7 @@ export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
-	@UseGuards(JwtAuthGuard, StatusGuard)
+	@UseGuards(JwtAuthGuard)
 	@Post('complete')
 	async completeProfile(
 		@Body() body: { password: string },
@@ -36,10 +36,18 @@ export class UserController {
 		//console.log('Request body:', body);
 		// With JwtAuthGuard used, you can now access the user from the request object
 		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
-
 		//console.log('userid: ', userId);
-		if (!userId) {
-			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+		if (!req.user?.id || req.user?.status != 'fresh') {
+			throw new HttpException(
+				{
+					status: HttpStatus.UNAUTHORIZED,
+					error:
+						'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
+					// Optionally, you can include a 'location' key if you want the frontend to redirect
+					location: '/login', // This can be used by the frontend to redirect
+				},
+				HttpStatus.UNAUTHORIZED,
+			);
 		}
 
 		const isProfileComplete = await this.userService.isProfileComplete(userId);
