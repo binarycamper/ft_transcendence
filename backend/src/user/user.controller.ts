@@ -54,7 +54,6 @@ export class UserController {
 			);
 		}
 
-		//TODO: Default pw && default nickname. need other solution Just handle unique names!
 		if (!body.nickname || !body.password) {
 			throw new HttpException(
 				{

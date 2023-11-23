@@ -16,9 +16,18 @@ export class StatusGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 		const user = request.user?.id;
 
-		console.log('user:: ', user);
+		//console.log('user:: ', user);
+
+		//if used without jwt-guard, because jwt-guard also handle that but without redirect:
 		if (!user) {
-			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+			throw new HttpException(
+				{
+					status: HttpStatus.UNAUTHORIZED,
+					error: 'Please login',
+					location: '/login',
+				},
+				HttpStatus.UNAUTHORIZED,
+			);
 		}
 
 		if (user.status === 'fresh') {
@@ -26,7 +35,7 @@ export class StatusGuard implements CanActivate {
 				{
 					status: HttpStatus.SEE_OTHER,
 					error: 'Please complete your profile',
-					location: '/complete', // You might need to adjust this based on how you handle routing on the client side.
+					location: '/complete-profile', // You might need to adjust this based on how you handle routing on the client side.
 				},
 				HttpStatus.SEE_OTHER,
 			);
