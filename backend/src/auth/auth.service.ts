@@ -24,13 +24,8 @@ export class AuthService {
 
 	async authenticate(code: string): Promise<{ access_token: string }> {
 		try {
-			const clientId = this.configService.get<string>(
-				'MY_42_INTRANET_CLIENT_ID',
-			);
-			const clientSecret = this.configService.get<string>(
-				'MY_42_INTRANET_CLIENT_SECRET',
-			);
-			const redirectUri = this.configService.get<string>('REDIR_URL');
+			const clientId = this.configService.get<string>('INTRA_UID');
+			const clientSecret = this.configService.get<string>('INTRA_SECRET');
 
 			// Exchange the code for an access token
 			const tokenResponse = await axios.post(
@@ -40,7 +35,7 @@ export class AuthService {
 					client_id: clientId,
 					client_secret: clientSecret,
 					code,
-					redirect_uri: redirectUri,
+					redirect_uri: 'http://localhost:8080/auth/callback',
 				},
 			);
 
