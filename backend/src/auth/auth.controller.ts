@@ -132,8 +132,7 @@ export class AuthController {
 
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
-		// Todoo: add sensefull Logout!
 		res.clearCookie('token');
-		return res.status(200).send({ message: 'Logged out not implemented yet' });
+		return res.status(200).send({ message: 'Logged out succefully' });
 	}
 }
