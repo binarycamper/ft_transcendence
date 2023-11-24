@@ -38,7 +38,7 @@ export class UserController {
 		// With JwtAuthGuard used, you can now access the user from the request object
 		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
 		//console.log('userid: ', userId);
-		if (!req.user?.id) {
+		if (!userId) {
 			throw new HttpException(
 				{
 					status: HttpStatus.UNAUTHORIZED,
@@ -68,7 +68,7 @@ export class UserController {
 				{
 					status: HttpStatus.BAD_REQUEST,
 					error: 'Invalid password',
-					location: '/user/complete',
+					location: '/signup',
 				},
 				HttpStatus.BAD_REQUEST,
 			);

@@ -17,21 +17,16 @@ export function Signup() {
 				body: JSON.stringify({ password }),
 				credentials: 'include',
 			});
-			const locationUrl = response.headers.get('Location');
 
-			if (response.status === 200 || response.status === 401) {
+			if (
+				response.status === 200 ||
+				response.status === 401 ||
+				response.status === 303
+			) {
 				navigate('/profile');
-			} else if (response.status === 303) {
-				if (locationUrl) {
-					navigate(locationUrl);
-				} else {
-					console.error('Location header is missing');
-				}
+			} else {
 				const data = await response.json();
 				console.log('Profile update successful:', data);
-			} else {
-				const errorData = await response.json();
-				console.error('Profile update failed:', errorData);
 			}
 		} catch (error) {
 			console.error('Network error:', error);

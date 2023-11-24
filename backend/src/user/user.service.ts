@@ -44,7 +44,7 @@ export class UserService {
 		if (!user) {
 			throw new Error('User not found');
 		}
-		const status = user.status === 'fresh';
+		const status = user.status !== 'fresh';
 		return status;
 	}
 
