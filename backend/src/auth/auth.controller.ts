@@ -27,6 +27,13 @@ export class AuthController {
 		private readonly configService: ConfigService,
 	) {}
 
+	@Get('/status')
+	@UseGuards(JwtAuthGuard) // Ensure this endpoint is protected with JWT Guard
+	async checkAuthStatus(@Req() req) {
+		// If the request reaches here, it means the user is authenticated
+		return { isAuthenticated: true };
+	}
+
 	@Get('login')
 	async login(@Res() res: Response) {
 		const clientId = this.configService.get<string>('INTRA_UID');
@@ -125,8 +132,8 @@ export class AuthController {
 
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
-		// Clear the session or JWT token. This is just a basic example.
-		res.clearCookie('Newsession');
-		return res.status(200).send({ message: 'Logged out successfully' });
+		// Todoo: add sensefull Logout!
+		res.clearCookie('token');
+		return res.status(200).send({ message: 'Logged out not implemented yet' });
 	}
 }
