@@ -68,7 +68,7 @@ export function Profile() {
 				console.log('Account deletion successful:', result);
 
 				// Navigate to a different page upon successful deletion
-				navigate('/goodbye'); // Make sure to have this route configured in your router
+				navigate('/'); // Make sure to have this route configured in your router
 			} catch (error) {
 				console.error('There was an error deleting the account:', error);
 			}
