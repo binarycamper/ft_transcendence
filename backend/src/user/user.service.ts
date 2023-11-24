@@ -10,12 +10,15 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
+import { AuthToken } from 'src/auth/auth.entity';
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
+		@InjectRepository(AuthToken)
+		private readonly authTokenRepository: Repository<AuthToken>,
 	) {}
 
 	findAll(): Promise<User[]> {
@@ -55,10 +58,22 @@ export class UserService {
 			throw new NotFoundException('User not found');
 		}
 
+		const authToken = await this.authTokenRepository.findOne({
+			where: { user: user },
+		});
+
 		try {
-			await this.userRepository.remove(user);
+			// Use a transaction to ensure both operations complete or both fail
+			await this.userRepository.manager.transaction(async (entityManager) => {
+				if (authToken) {
+					await entityManager.remove(authToken);
+				}
+				await entityManager.remove(user);
+			});
 		} catch (error) {
-			throw new InternalServerErrorException('Error deleting user');
+			throw new InternalServerErrorException(
+				'Error deleting user and auth token',
+			);
 		}
 	}
 

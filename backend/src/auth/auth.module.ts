@@ -29,5 +29,6 @@ import { StatusGuard } from './guards/status.guard';
 	],
 	providers: [AuthService, JwtStrategy, StatusGuard], // Add JwtStrategy to providers
 	controllers: [AuthController],
+	exports: [AuthService],
 })
 export class AuthModule {}
