@@ -22,6 +22,7 @@ export class UserService {
 		return this.userRepository.find();
 	}
 
+	//completes the users account, with the last step: create pw.
 	async complete(userId: string, password: string): Promise<User> {
 		const user = await this.userRepository.findOneBy({ id: userId });
 		if (!user) {
@@ -36,6 +37,7 @@ export class UserService {
 		return this.userRepository.save(user);
 	}
 
+	//returns true when profile is created completely, or false if pw is not set or user not authenticated
 	async isProfileComplete(userId: string): Promise<boolean> {
 		const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -49,6 +51,22 @@ export class UserService {
 		return profileComplete;
 	}
 
+	//deletes a user by id, if u use in controller use jwt guard.
+	async deleteUserById(userId: string): Promise<void> {
+		const user = await this.userRepository.findOneBy({ id: userId });
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		try {
+			await this.userRepository.remove(user);
+		} catch (error) {
+			throw new InternalServerErrorException('Error deleting user');
+		}
+	}
+
+	//TODO: delete me, old code. Auth Module is the only creator of users.
+	//Unused function atm
 	async create(createUserDto: CreateUserDto): Promise<User> {
 		// Check if a user with the given name or email already exists.
 		const existingUser = await this.userRepository.findOne({
@@ -65,7 +83,7 @@ export class UserService {
 		return this.userRepository.save(newUser);
 	}
 
-	//TODOO: Ask for password, before allowing editing
+	//TODOO: Rework me, old implementation...
 	async update(userId: string, updateUserDto: CreateUserDto): Promise<User> {
 		// First, find the user by ID
 		const userToUpdate = await this.userRepository.findOneBy({ id: userId });
@@ -103,6 +121,7 @@ export class UserService {
 		return userToUpdate;
 	}
 
+	//TODOO: Rework me maybe, old implementation...
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },

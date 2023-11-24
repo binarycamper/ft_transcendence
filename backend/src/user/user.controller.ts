@@ -25,6 +25,7 @@ export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
+	//Verify pw input and creates hash, it checks if user is allowed to do so Jwt + intern logic
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
 	async completeProfile(
@@ -80,6 +81,7 @@ export class UserController {
 		res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
 	}
 
+	//Get the profile, must be complete user, gets own profile, or redirect to auth pages if unauthenticated user
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Get('profile')
 	async getProfile(@Req() req) {
@@ -93,24 +95,50 @@ export class UserController {
 		return result;
 	}
 
-	@Post('/register')
-	async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-		this.logger.log(`Registering user with email: ${createUserDto.email}`);
+	//Deletes own user account  //Todo: check edgecases!
+	@UseGuards(JwtAuthGuard)
+	@Delete('delete')
+	async deleteUser(@Req() req, @Res() res: Response) {
+		// Access the user's ID from the request object, injected by JwtAuthGuard
+		const userId = req.user.id;
+
+		// Optional: Check if the user confirmed account deletion
+		// This could be a flag sent from the client in the request body or as a query parameter
+		// For example, let's assume it's sent as a query parameter
+		const confirmDeletion = req.query.confirm === 'true';
+
+		if (!confirmDeletion) {
+			// If the user did not confirm deletion, send a bad request response
+			return res.status(HttpStatus.BAD_REQUEST).json({
+				message: 'Confirmation required to delete account',
+			});
+		}
+
 		try {
-			const newUser = await this.userService.create(createUserDto);
-			this.logger.log(`Registered user with id: ${newUser.id}`);
-			return newUser;
+			// Call the service method to delete the user
+			await this.userService.deleteUserById(userId);
+
+			// Return a success response
+			res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
+
+			// Optional: Perform any cleanup tasks, such as logging out the user
+			// This might involve clearing any session or token information on the client side
 		} catch (error) {
-			this.logger.error(`Registration failed: ${error.message}`, error.stack);
-			throw error;
+			console.error('Error deleting user:', error);
+			throw new HttpException(
+				'Failed to delete user',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		}
 	}
 
+	//returns all users
 	@Get('/users')
 	async getAll(): Promise<User[]> {
 		return this.userService.findAll();
 	}
 
+	//Todo: rework me old implementation
 	@Post('/update')
 	async editUser(
 		@Body() updateUserDto: CreateUserDto,
@@ -118,49 +146,4 @@ export class UserController {
 	): Promise<User> {
 		return this.userService.update(userId, updateUserDto);
 	}
-
-	/*@UseGuards(JwtAuthGuard) // Add this line to guard the endpoint
-	@Post('complete-profile')
-	async completeProfile(@Body() completeProfileDto: CompleteProfileDto, @Req() req, @Res() res) {
-	  if (!req.user || !req.user.id) {
-	    return res.status(401).send({ message: 'User not authenticated' });
-	  }
-	  await this.userService.completeProfile(req.user.id, completeProfileDto);
-	  return res.status(200).send({ message: 'Profile completed successfully' });
-	}
-
-	@UseGuards(JwtAuthGuard) // Add this line to guard the endpoint
-	@Get('is-profile-complete')
-	async isProfileComplete(@Req() req, @Res() res) {
-	  console.log('req.user:', req.user); // Log the req.user object
-	  if (!req.user || !req.user.id) {
-	    return res.status(401).send({ message: 'User not authenticated' });
-	  }
-	  const isComplete = await this.userService.isProfileComplete(req.user.id);
-	  return res.status(200).send({ isComplete });
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Get('me')
-	async getCurrentUser(@Req() req): Promise<User> {
-	  return this.userService.findOne(req.user.id);
-	}
-
-	@Get()
-	findAll() {
-		return this.userService.findAll();
-	}
-
-	@Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.userService.findOne(id);
-    }
-
-
-	@Delete(':id')
-    remove(@Param('id') id: string): Promise<void> {
-        return this.userService.remove(id);
-    }*/
-
-	// Add other CRUD operations as needed
 }
