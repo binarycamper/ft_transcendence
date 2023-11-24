@@ -56,7 +56,7 @@ export class UserController {
 				{
 					status: HttpStatus.SEE_OTHER,
 					error: 'Profile already complete, use Profile-page to change pw!',
-					location: '/', // Indicating the location where the client should redirect
+					location: '/profile', // Indicating the location where the client should redirect
 				},
 				HttpStatus.SEE_OTHER,
 			);

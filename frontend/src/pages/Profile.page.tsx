@@ -6,6 +6,7 @@ type UserProfile = {
 	email: string;
 	status: string;
 	intraId: number;
+	imageUrl: string; // Add this line to include the imageUrl in your type definition
 	// Include other properties as needed
 };
 
@@ -20,7 +21,7 @@ export function Profile() {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					// If the response is not ok, navigate to the error page with the status text
+					// If the response is not ok, navigate to the signin
 					navigate('/signup', {
 						state: { statusText: response.statusText },
 					});
@@ -47,6 +48,8 @@ export function Profile() {
 	return (
 		<div>
 			<h1>Profile</h1>
+			<img src={profile.imageUrl} alt={`${profile.name}'s profile`} />{' '}
+			{/* Add this line to render the image */}
 			<p>Name: {profile.name}</p>
 			<p>Email: {profile.email}</p>
 			<p>Status: {profile.status}</p>
