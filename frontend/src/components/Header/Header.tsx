@@ -1,5 +1,5 @@
-import { Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Box, Tabs, Group, Button } from '@mantine/core';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Button, Container, Group, Tabs } from '@mantine/core';
 
 export function Header() {
 	const navigate = useNavigate();
@@ -7,7 +7,7 @@ export function Header() {
 	// const { tabValue } = useParams();
 
 	return (
-		<Box pb={120}>
+		<Container size="xl">
 			<Group justify="space-between" h="100%">
 				<Group>
 					<h1 className="site-title">
@@ -25,17 +25,16 @@ export function Header() {
 					</Tabs>
 				</Group>
 				<Group>
-					<Button variant="default" component="a" href="/login">
-						Log in
-					</Button>
-					<Button component="a" href="/signup">
-						Sign up
+					<Button component="a" href="/login">
+						Sign in
 					</Button>
 				</Group>
 			</Group>
-			<div id="outlet">
-				<Outlet />
-			</div>
-		</Box>
+			<Container size="xl" py={16}>
+				<div id="outlet">
+					<Outlet />
+				</div>
+			</Container>
+		</Container>
 	);
 }

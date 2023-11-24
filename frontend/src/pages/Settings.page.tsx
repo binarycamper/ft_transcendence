@@ -1,3 +1,9 @@
+import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
+
 export function Settings() {
-	return <div>Settings</div>;
+	return (
+		<>
+			<ColorSchemeToggle />
+		</>
+	);
 }

@@ -35,7 +35,7 @@ export class StatusGuard implements CanActivate {
 				{
 					status: HttpStatus.SEE_OTHER,
 					error: 'Please complete your profile',
-					location: '/complete-profile', // You might need to adjust this based on how you handle routing on the client side.
+					location: '/signup', // You might need to adjust this based on how you handle routing on the client side.
 				},
 				HttpStatus.SEE_OTHER,
 			);

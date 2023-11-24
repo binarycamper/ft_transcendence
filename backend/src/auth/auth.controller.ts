@@ -71,7 +71,7 @@ export class AuthController {
 					httpOnly: true,
 					secure: true,
 				});
-				res.redirect('http://localhost:5173/complete-profile'); //redirect always sends 302 (FOUND)
+				res.redirect('http://localhost:5173/signup'); //redirect always sends 302 (FOUND)
 			} catch (error) {
 				throw error;
 			}

@@ -21,7 +21,7 @@ export function Profile() {
 				});
 				if (!response.ok) {
 					// If the response is not ok, navigate to the error page with the status text
-					navigate('/complete-profile', {
+					navigate('/signup', {
 						state: { statusText: response.statusText },
 					});
 					return;
