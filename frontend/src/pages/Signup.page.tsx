@@ -19,8 +19,8 @@ export function Signup() {
 			});
 			const locationUrl = response.headers.get('Location');
 
-			if (response.status === 200) {
-				navigate('/');
+			if (response.status === 200 || response.status === 401) {
+				navigate('/profile');
 			} else if (response.status === 303) {
 				if (locationUrl) {
 					navigate(locationUrl);

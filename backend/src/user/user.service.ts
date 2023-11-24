@@ -37,18 +37,15 @@ export class UserService {
 		return this.userRepository.save(user);
 	}
 
-	//returns true when profile is created completely, or false if pw is not set or user not authenticated
+	//returns true when profile is created completely
 	async isProfileComplete(userId: string): Promise<boolean> {
 		const user = await this.userRepository.findOne({ where: { id: userId } });
 
 		if (!user) {
 			throw new Error('User not found');
 		}
-
 		const status = user.status === 'fresh';
-		const profileComplete = user.email !== null && !status;
-
-		return profileComplete;
+		return status;
 	}
 
 	//deletes a user by id, if u use in controller use jwt guard.

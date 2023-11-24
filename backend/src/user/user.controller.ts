@@ -38,7 +38,7 @@ export class UserController {
 		// With JwtAuthGuard used, you can now access the user from the request object
 		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
 		//console.log('userid: ', userId);
-		if (!req.user?.id || req.user?.status != 'fresh') {
+		if (!req.user?.id) {
 			throw new HttpException(
 				{
 					status: HttpStatus.UNAUTHORIZED,

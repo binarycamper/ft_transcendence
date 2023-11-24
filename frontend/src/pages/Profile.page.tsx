@@ -21,8 +21,8 @@ export function Profile() {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					// If the response is not ok, navigate to the signin
-					navigate('/signup', {
+					// If the response is not ok, navigate to the login
+					navigate('/login', {
 						state: { statusText: response.statusText },
 					});
 					return;
@@ -41,6 +41,40 @@ export function Profile() {
 		fetchProfile();
 	}, [navigate]);
 
+	const handleDelete = async () => {
+		// Confirm with the user before sending the delete request
+		if (
+			window.confirm(
+				'Are you sure you want to delete your account? This action cannot be undone.',
+			)
+		) {
+			try {
+				// Send the delete request to the server
+				const response = await fetch(
+					'http://localhost:8080/user/delete?confirm=true',
+					{
+						method: 'DELETE',
+						credentials: 'include', // Ensures cookies are sent with the request
+					},
+				);
+
+				// Handle non-OK responses from the server
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				// Read the server's response json
+				const result = await response.json();
+				console.log('Account deletion successful:', result);
+
+				// Navigate to a different page upon successful deletion
+				navigate('/goodbye'); // Make sure to have this route configured in your router
+			} catch (error) {
+				console.error('There was an error deleting the account:', error);
+			}
+		}
+	};
+
 	if (!profile) {
 		return <div>Loading profile...</div>;
 	}
@@ -55,6 +89,7 @@ export function Profile() {
 			<p>Status: {profile.status}</p>
 			<p>IntraId: {profile.intraId}</p>
 			{/* Display other user profile data here */}
+			<button onClick={handleDelete}>Delete My Account</button>
 		</div>
 	);
 }
