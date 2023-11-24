@@ -67,7 +67,7 @@ export function Profile() {
 				const result = await response.json();
 				console.log('Account deletion successful:', result);
 				localStorage.clear(); // This clears everything in local storage
-				localStorage.removeItem('token');
+				localStorage.removeItem('cookie');
 				// Navigate to a different page upon successful deletion
 				navigate('/'); // Make sure to have this route configured in your router
 			} catch (error) {
