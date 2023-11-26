@@ -6,13 +6,22 @@ type UserProfile = {
 	email: string;
 	status: string;
 	intraId: number;
-	imageUrl: string; // Type definition for imageUrl
+	imageUrl: string;
+	image?: string; //image name ist länger deshalb '?'
 };
 
 export function Profile() {
 	const [profile, setProfile] = useState<UserProfile | null>(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [useNewImage, setUseNewImage] = useState(false);
 	const navigate = useNavigate();
+
+	const toggleImage = () => {
+		// Prüft, ob profile.image vorhanden ist, bevor der Benutzer umschalten kann
+		if (profile && profile.image) {
+			setUseNewImage(!useNewImage);
+		}
+	};
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -104,7 +113,16 @@ export function Profile() {
 	return (
 		<div>
 			<h1>Profile</h1>
-			<img src={profile.imageUrl} alt={`${profile.name}'s profile`} />
+			{/* Schaltfläche zum Umschalten des Bildes, falls profile.image vorhanden ist */}
+			<img
+				src={useNewImage && profile.image ? profile.image : profile.imageUrl}
+				alt={`${profile.name}'s profile`}
+			/>
+			{profile.image && (
+				<button onClick={toggleImage}>
+					{useNewImage ? 'Zeige Originalbild' : 'Zeige Neues Bild'}
+				</button>
+			)}
 			<p>Name: {profile.name}</p>
 			<p>Email: {profile.email}</p>
 			<p>Status: {profile.status}</p>

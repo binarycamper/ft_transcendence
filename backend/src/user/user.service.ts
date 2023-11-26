@@ -95,7 +95,7 @@ export class UserService {
 			throw new NotFoundException('User not found');
 		}
 
-		// Update the imageUrl field
+		// Update the image field
 		user.image = image;
 
 		// Save the user entity
