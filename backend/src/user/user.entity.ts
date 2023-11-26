@@ -35,4 +35,7 @@ export class User {
 
 	@Column({ nullable: true, type: 'varchar' })
 	imageUrl: string;
+
+	@Column({ nullable: true, type: 'varchar' })
+	image: string;
 }

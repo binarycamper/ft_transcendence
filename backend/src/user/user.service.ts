@@ -76,6 +76,21 @@ export class UserService {
 		}
 	}
 
+	// In your UserService
+	async updateUserImage(userId: string, imageUrl: string): Promise<void> {
+		// Fetch the user by id
+		const user = await this.userRepository.findOneBy({ id: userId });
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		// Update the imageUrl field
+		user.image = imageUrl;
+
+		// Save the user entity
+		await this.userRepository.save(user);
+	}
+
 	//TODO: delete me, old code. Auth Module is the only creator of users.
 	//Unused function atm
 	async create(createUserDto: CreateUserDto): Promise<User> {

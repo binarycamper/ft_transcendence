@@ -49,7 +49,6 @@ export function Profile() {
 
 		const formData = new FormData();
 		formData.append('image', selectedFile);
-
 		try {
 			const response = await fetch('http://localhost:8080/user/image', {
 				method: 'POST',
@@ -66,6 +65,7 @@ export function Profile() {
 		} catch (error) {
 			console.error('Error uploading image:', error);
 		}
+		window.location.reload(); // Refreshes the current page
 	};
 
 	const handleDelete = async () => {

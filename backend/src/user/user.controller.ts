@@ -12,13 +12,19 @@ import {
 	Logger,
 	HttpException,
 	HttpStatus,
+	UploadedFile,
+	UseInterceptors,
+	NotFoundException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
+import { createWriteStream } from 'fs';
+import { join } from 'path';
 
 @Controller('user')
 export class UserController {
@@ -136,6 +142,35 @@ export class UserController {
 	@Get('/users')
 	async getAll(): Promise<User[]> {
 		return this.userService.findAll();
+	}
+
+	@Post('/image')
+	@UseGuards(JwtAuthGuard)
+	@UseInterceptors(FileInterceptor('image'))
+	async uploadImage(
+		@UploadedFile() file: Express.Multer.File,
+		@Req() req,
+		@Res() res: Response,
+	) {
+		// Generate a unique filename, could be based on user's id or a new uuid
+		const filename = `${req.user.id}-${Date.now()}.${file.originalname
+			.split('.')
+			.pop()}`;
+
+		// Determine the path where the file will be saved
+		const savePath = join(__dirname, '../../uploads', filename);
+
+		// Write the file to the filesystem
+		const writeStream = createWriteStream(savePath);
+		writeStream.write(file.buffer);
+
+		// Once the file is saved, generate the URL or relative path
+		const imageUrl = `http://localhost:8080/uploads/${filename}`;
+
+		// Update the user entity with the new image URL
+		await this.userService.updateUserImage(req.user.id, imageUrl);
+
+		res.status(HttpStatus.OK).json({ imageUrl });
 	}
 
 	//Todo: rework me old implementation
