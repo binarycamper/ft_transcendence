@@ -63,7 +63,6 @@ export class UserService {
 		});
 
 		try {
-			// Use a transaction to ensure both operations complete or both fail
 			await this.userRepository.manager.transaction(async (entityManager) => {
 				if (authToken) {
 					await entityManager.remove(authToken);
