@@ -88,7 +88,7 @@ export class UserService {
 	}
 
 	// In your UserService
-	async updateUserImage(userId: string, imageUrl: string): Promise<void> {
+	async updateUserImage(userId: string, image: string): Promise<void> {
 		// Fetch the user by id
 		const user = await this.userRepository.findOneBy({ id: userId });
 		if (!user) {
@@ -96,7 +96,7 @@ export class UserService {
 		}
 
 		// Update the imageUrl field
-		user.image = imageUrl;
+		user.image = image;
 
 		// Save the user entity
 		await this.userRepository.save(user);

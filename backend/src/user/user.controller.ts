@@ -184,13 +184,13 @@ export class UserController {
 		writeStream.write(file.buffer);
 
 		// Once the new file is saved, generate the URL or relative path
-		const imageUrl = `http://localhost:8080/uploads/${filename}`;
+		const image = `http://localhost:8080/uploads/${filename}`;
 
-		// Update the user entity with the new image URL
-		await this.userService.updateUserImage(req.user.id, imageUrl);
+		// Update the user entity with the new image
+		await this.userService.updateUserImage(req.user.id, image);
 
 		// Send response back to the client
-		res.status(HttpStatus.OK).json({ imageUrl });
+		res.status(HttpStatus.OK).json({ image });
 	}
 
 	//Todo: rework me old implementation
