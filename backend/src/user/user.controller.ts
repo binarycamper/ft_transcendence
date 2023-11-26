@@ -25,6 +25,7 @@ import { Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
+import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
 
 @Controller('user')
 export class UserController {
@@ -152,6 +153,24 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
+		// Retrieve the existing user to check for an old image
+		const user = await this.userService.findProfileById(req.user.id);
+
+		if (user && user.imageUrl) {
+			// Extract the filename from the URL
+			const oldFilename = user.image.split('/').pop();
+			const oldFilePath = join(__dirname, '../../uploads', oldFilename);
+
+			// Delete the old image file
+			try {
+				await unlink(oldFilePath);
+				console.log(`Deleted old image: ${oldFilePath}`);
+			} catch (error) {
+				// Handle error (file might not exist, which is fine)
+				console.error('Error deleting old image file:', error);
+			}
+		}
+
 		// Generate a unique filename, could be based on user's id or a new uuid
 		const filename = `${req.user.id}-${Date.now()}.${file.originalname
 			.split('.')
@@ -160,16 +179,17 @@ export class UserController {
 		// Determine the path where the file will be saved
 		const savePath = join(__dirname, '../../uploads', filename);
 
-		// Write the file to the filesystem
+		// Write the new file to the filesystem
 		const writeStream = createWriteStream(savePath);
 		writeStream.write(file.buffer);
 
-		// Once the file is saved, generate the URL or relative path
+		// Once the new file is saved, generate the URL or relative path
 		const imageUrl = `http://localhost:8080/uploads/${filename}`;
 
 		// Update the user entity with the new image URL
 		await this.userService.updateUserImage(req.user.id, imageUrl);
 
+		// Send response back to the client
 		res.status(HttpStatus.OK).json({ imageUrl });
 	}
 

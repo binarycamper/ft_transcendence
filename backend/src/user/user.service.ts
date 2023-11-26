@@ -25,6 +25,17 @@ export class UserService {
 		return this.userRepository.find();
 	}
 
+	//TODOO: Rework me maybe, old implementation...
+	async findProfileById(userId: string): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		return user;
+	}
+
 	//completes the users account, with the last step: create pw.
 	async complete(userId: string, password: string): Promise<User> {
 		const user = await this.userRepository.findOneBy({ id: userId });
@@ -145,16 +156,5 @@ export class UserService {
 		await this.userRepository.save(userToUpdate);
 
 		return userToUpdate;
-	}
-
-	//TODOO: Rework me maybe, old implementation...
-	async findProfileById(userId: string): Promise<User> {
-		const user = await this.userRepository.findOne({
-			where: { id: userId },
-		});
-		if (!user) {
-			throw new Error('User not found');
-		}
-		return user;
 	}
 }
