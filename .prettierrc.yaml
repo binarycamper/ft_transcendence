@@ -7,4 +7,5 @@ useTabs: true
 # Visual Studio Code [settings.json]
 # "editor.defaultFormatter": "esbenp.prettier-vscode",
 # "editor.formatOnSave": true,
+# "files.autoSave": "onFocusChange"
 # "prettier.requireConfig": true, // optional
