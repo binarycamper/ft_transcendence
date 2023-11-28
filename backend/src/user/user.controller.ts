@@ -24,14 +24,16 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
 import { createWriteStream } from 'fs';
-import { join } from 'path';
+import path, { join } from 'path';
 import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
+import * as fs from 'fs';
+
+const uploadPath = '/usr/src/app/uploads/';
 
 @Controller('user')
 export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
-
 	//Verify pw input and creates hash, it checks if user is allowed to do so Jwt + intern logic
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
@@ -97,7 +99,7 @@ export class UserController {
 		const userProfile = await this.userService.findProfileById(userId);
 
 		// Exclude password and other sensitive fields from the result
-		const { password, id, ...result } = userProfile;
+		const { password, ...result } = userProfile;
 
 		return result;
 	}
@@ -128,6 +130,10 @@ export class UserController {
 			// Return a success response
 			res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
 
+			const imagePath = uploadPath + userId + '.png';
+			if (fs.existsSync(imagePath)) {
+				await unlink(imagePath);
+			}
 			// Optional: Perform any cleanup tasks, such as logging out the user
 			// This might involve clearing any session or token information on the client side
 		} catch (error) {
@@ -156,12 +162,21 @@ export class UserController {
 		// Retrieve the existing user to check for an old image
 		const user = await this.userService.findProfileById(req.user.id);
 
-		if (user && user.imageUrl) {
-			// Extract the filename from the URL
-			const oldFilename = user.image.split('/').pop();
-			const oldFilePath = join(__dirname, '../../uploads', oldFilename);
+		//console.log('image: ', user.image);
+		//console.log('imageUrl: ', user.imageUrl);
+		//console.log('file: ', file);
+		file.filename = user.id;
+		file.filename = file.filename.concat('.png');
+		//console.log('filename!: ', file.filename);
 
-			// Delete the old image file
+		user.image = 'http://localhost:8080/user/uplaods?filename=';
+		user.image = user.image.concat(file.filename);
+
+		console.log('new image name: ', user.image);
+
+		if (user && user.imageUrl) {
+			const oldFilePath = join(__dirname, '../../uploads', file.filename);
+			console.log('string: ', oldFilePath);
 			try {
 				await unlink(oldFilePath);
 				console.log(`Deleted old image: ${oldFilePath}`);
@@ -170,27 +185,34 @@ export class UserController {
 				console.error('Error deleting old image file:', error);
 			}
 		}
-
-		// Generate a unique filename, could be based on user's id or a new uuid
-		const filename = `${req.user.id}-${Date.now()}.${file.originalname
-			.split('.')
-			.pop()}`;
-
-		// Determine the path where the file will be saved
-		const savePath = join(__dirname, '../../uploads', filename);
+		const savePath = join(__dirname, '../../uploads', file.filename);
 
 		// Write the new file to the filesystem
 		const writeStream = createWriteStream(savePath);
 		writeStream.write(file.buffer);
-
 		// Once the new file is saved, generate the URL or relative path
-		const image = `http://localhost:8080/uploads/${filename}`;
 
 		// Update the user entity with the new image
-		await this.userService.updateUserImage(req.user.id, image);
+		await this.userService.updateUserImage(req.user.id, user.image);
 
 		// Send response back to the client
-		res.status(HttpStatus.OK).json({ image });
+		res.status(HttpStatus.OK).json({});
+	}
+
+	// The filename in query should be like 'f75faa8f-3158-4c51-a6ca-b446ec67dd2e.png'
+	@UseGuards(JwtAuthGuard)
+	@Get('/uploads')
+	async getImage(@Query('filename') filename: string, @Res() res: Response) {
+		// Construct the full file path
+		const fullPath = uploadPath + filename;
+		console.log('FilePath= ', fullPath);
+
+		// Check if the file exists and send it, otherwise send a 404 response
+		if (fs.existsSync(fullPath)) {
+			return res.status(200).sendFile(fullPath);
+		} else {
+			return res.status(404).send('File not found');
+		}
 	}
 
 	//Todo: rework me old implementation

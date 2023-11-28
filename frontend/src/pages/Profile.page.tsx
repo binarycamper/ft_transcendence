@@ -8,36 +8,66 @@ type UserProfile = {
 	intraId: number;
 	imageUrl: string;
 	image?: string; //image name ist länger deshalb '?'
+	id: string;
 };
 
 export function Profile() {
+	// State for holding the user profile
 	const [profile, setProfile] = useState<UserProfile | null>(null);
+	// State for holding the selected file
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	// State for toggling between new and existing images
 	const [useNewImage, setUseNewImage] = useState(false);
+	// State for holding the image URL
+	const [imageUrl, setImageUrl] = useState('');
 	const navigate = useNavigate();
 
 	const toggleImage = () => {
-		// Prüft, ob profile.image vorhanden ist, bevor der Benutzer umschalten kann
 		if (profile && profile.image) {
 			setUseNewImage(!useNewImage);
 		}
 	};
 
+	const fetchImage = async (id: string) => {
+		try {
+			//console.log('user id: ', id);
+			const response = await fetch(
+				//Todo: dynamcly extensions like jpg png && avoid wrong extensions like iso ...
+				`http://localhost:8080/user/uploads?filename=${id}.png`,
+				{
+					method: 'GET',
+					credentials: 'include', // Necessary for cookies, e.g. when using sessions
+				},
+			);
+			if (!response.ok) {
+				throw new Error(`Image fetch failed: ${response.statusText}`);
+			}
+			const blob = await response.blob();
+			setImageUrl(URL.createObjectURL(blob));
+		} catch (error) {
+			console.error('Error fetching image:', error);
+		}
+	};
+
 	useEffect(() => {
+		// Fetch the user's profile data
 		const fetchProfile = async () => {
 			try {
 				const response = await fetch('http://localhost:8080/user/profile', {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					navigate('/login', { state: { statusText: response.statusText } });
-					return;
+					throw new Error('Profile fetch failed');
 				}
-				const data: UserProfile = await response.json();
-				setProfile(data);
+				const profileData: UserProfile = await response.json();
+				setProfile(profileData);
+				if (profileData.image) {
+					// If there is a new image, fetch it
+					fetchImage(profileData.id);
+				}
 			} catch (error) {
-				const message = (error as Error).message || 'An error occurred';
-				navigate('/error', { state: { message } });
+				console.log('Error fetching profile:', error);
+				navigate('/error'); // Redirect to error page
 			}
 		};
 
@@ -113,28 +143,22 @@ export function Profile() {
 	return (
 		<div>
 			<h1>Profile</h1>
-			{/* Schaltfläche zum Umschalten des Bildes, falls profile.image vorhanden ist */}
 			<img
-				src={useNewImage && profile.image ? profile.image : profile.imageUrl}
+				src={useNewImage && profile.image ? imageUrl : profile.imageUrl}
 				alt={`${profile.name}'s profile`}
 			/>
 			{profile.image && (
 				<button onClick={toggleImage}>
-					{useNewImage ? 'Zeige Originalbild' : 'Zeige Neues Bild'}
+					{useNewImage ? 'Show Original Image' : 'Show New Image'}
 				</button>
 			)}
 			<p>Name: {profile.name}</p>
 			<p>Email: {profile.email}</p>
 			<p>Status: {profile.status}</p>
 			<p>IntraId: {profile.intraId}</p>
-
-			{/* File input for selecting image */}
+			<p>id: {profile.id}</p>
 			<input type="file" onChange={handleFileChange} />
-
-			{/* Button for uploading image */}
 			<button onClick={handleImageUpload}>Upload New Image</button>
-
-			{/* Delete account button */}
 			<button onClick={handleDelete}>Delete My Account</button>
 		</div>
 	);
