@@ -76,9 +76,14 @@ export class AuthController {
 				//console.log('Header = ', res.header);
 				res.cookie('token', token.access_token, {
 					httpOnly: true,
-					secure: true,
+					maxAge: 86400000 * 7, // 7 days expiry
+					sameSite: 'lax',
+					secure: false, // Set to true if using HTTPS
 				});
-				res.redirect('http://localhost:5173/signup'); //redirect always sends 302 (FOUND)
+				res.status(200).json({
+					accessToken: token.access_token,
+					message: 'Logged in successfully',
+				});
 			} catch (error) {
 				throw error;
 			}

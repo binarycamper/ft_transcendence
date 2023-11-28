@@ -24,7 +24,6 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
 import { createWriteStream } from 'fs';
-import path, { join } from 'path';
 import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
 import * as fs from 'fs';
 
@@ -42,12 +41,14 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
+		console.log('!TEST');
 		//console.log('Request headers:', req.headers);
 		//console.log('Request body:', body);
 		// With JwtAuthGuard used, you can now access the user from the request object
 		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
 		//console.log('userid: ', userId);
 		if (!userId) {
+			console.log('!userId');
 			throw new HttpException(
 				{
 					status: HttpStatus.UNAUTHORIZED,
@@ -62,6 +63,7 @@ export class UserController {
 
 		const isProfileComplete = await this.userService.isProfileComplete(userId);
 		if (isProfileComplete) {
+			console.log('isProfileComplete');
 			throw new HttpException(
 				{
 					status: HttpStatus.SEE_OTHER,
@@ -73,6 +75,7 @@ export class UserController {
 		}
 
 		if (!body.password) {
+			console.log('!body.password');
 			throw new HttpException(
 				{
 					status: HttpStatus.BAD_REQUEST,

@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 						if (tokenCookie) {
 							jwt = tokenCookie.split('=')[1];
 							//print token if u need for postman
-							console.log(`Extracted JWT Token: ${jwt}`);
+							//console.log(`Extracted JWT Token: ${jwt}`);
 						}
 					}
 					return jwt;

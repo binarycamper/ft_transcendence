@@ -7,7 +7,7 @@ type UserProfile = {
 	status: string;
 	intraId: number;
 	imageUrl: string;
-	image?: string; //image name ist länger deshalb '?'
+	image?: string;
 	id: string;
 };
 
@@ -62,7 +62,7 @@ export function Profile() {
 				}
 			} catch (error) {
 				console.log('Error fetching profile:', error);
-				navigate('/error'); // Redirect to error page
+				navigate('/login'); // Redirect to error page
 			}
 		};
 
