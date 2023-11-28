@@ -99,7 +99,7 @@ export class UserController {
 		const userProfile = await this.userService.findProfileById(userId);
 
 		// Exclude password and other sensitive fields from the result
-		const { password, ...result } = userProfile;
+		const { password, id, ...result } = userProfile;
 
 		return result;
 	}
@@ -110,6 +110,7 @@ export class UserController {
 	async deleteUser(@Req() req, @Res() res: Response) {
 		// Access the user's ID from the request object, injected by JwtAuthGuard
 		const userId = req.user.id;
+		const image: string = req.user.image;
 
 		// Optional: Check if the user confirmed account deletion
 		// This could be a flag sent from the client in the request body or as a query parameter
@@ -130,9 +131,11 @@ export class UserController {
 			// Return a success response
 			res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
 
-			const imagePath = uploadPath + userId + '.png';
-			if (fs.existsSync(imagePath)) {
-				await unlink(imagePath);
+			if (image) {
+				const imagePath = uploadPath + image.split('?filename=').pop();
+				if (fs.existsSync(imagePath)) {
+					await unlink(imagePath);
+				}
 			}
 			// Optional: Perform any cleanup tasks, such as logging out the user
 			// This might involve clearing any session or token information on the client side
@@ -164,19 +167,21 @@ export class UserController {
 
 		//console.log('image: ', user.image);
 		//console.log('imageUrl: ', user.imageUrl);
-		//console.log('file: ', file);
-		file.filename = user.id;
-		file.filename = file.filename.concat('.png');
+
+		if (!user) return;
+		let oldFilePath = undefined;
+		if (user.image) {
+			oldFilePath = uploadPath + user.image.split('?filename=').pop();
+		}
+		file.filename = user.id + '.';
+		file.filename = file.filename.concat(file.mimetype.split('/').pop());
 		//console.log('filename!: ', file.filename);
 
-		user.image = 'http://localhost:8080/user/uplaods?filename=';
-		user.image = user.image.concat(file.filename);
+		user.image = 'http://localhost:8080/user/uploads?filename=' + file.filename;
 
-		console.log('new image name: ', user.image);
-
+		//console.log('new image name: ', user.image);
 		if (user && user.imageUrl) {
-			const oldFilePath = join(__dirname, '../../uploads', file.filename);
-			console.log('string: ', oldFilePath);
+			//console.log('string: ', oldFilePath);
 			try {
 				await unlink(oldFilePath);
 				console.log(`Deleted old image: ${oldFilePath}`);
@@ -185,7 +190,7 @@ export class UserController {
 				console.error('Error deleting old image file:', error);
 			}
 		}
-		const savePath = join(__dirname, '../../uploads', file.filename);
+		const savePath = uploadPath + file.filename;
 
 		// Write the new file to the filesystem
 		const writeStream = createWriteStream(savePath);
@@ -205,7 +210,7 @@ export class UserController {
 	async getImage(@Query('filename') filename: string, @Res() res: Response) {
 		// Construct the full file path
 		const fullPath = uploadPath + filename;
-		console.log('FilePath= ', fullPath);
+		//console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
 		if (fs.existsSync(fullPath)) {

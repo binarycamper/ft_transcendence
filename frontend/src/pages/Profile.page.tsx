@@ -28,17 +28,12 @@ export function Profile() {
 		}
 	};
 
-	const fetchImage = async (id: string) => {
+	const fetchImage = async (image: string) => {
 		try {
-			//console.log('user id: ', id);
-			const response = await fetch(
-				//Todo: dynamcly extensions like jpg png && avoid wrong extensions like iso ...
-				`http://localhost:8080/user/uploads?filename=${id}.png`,
-				{
-					method: 'GET',
-					credentials: 'include', // Necessary for cookies, e.g. when using sessions
-				},
-			);
+			const response = await fetch(image, {
+				method: 'GET',
+				credentials: 'include', // Necessary for cookies, e.g. when using sessions
+			});
 			if (!response.ok) {
 				throw new Error(`Image fetch failed: ${response.statusText}`);
 			}
@@ -63,7 +58,7 @@ export function Profile() {
 				setProfile(profileData);
 				if (profileData.image) {
 					// If there is a new image, fetch it
-					fetchImage(profileData.id);
+					fetchImage(profileData.image);
 				}
 			} catch (error) {
 				console.log('Error fetching profile:', error);
@@ -156,7 +151,6 @@ export function Profile() {
 			<p>Email: {profile.email}</p>
 			<p>Status: {profile.status}</p>
 			<p>IntraId: {profile.intraId}</p>
-			<p>id: {profile.id}</p>
 			<input type="file" onChange={handleFileChange} />
 			<button onClick={handleImageUpload}>Upload New Image</button>
 			<button onClick={handleDelete}>Delete My Account</button>
