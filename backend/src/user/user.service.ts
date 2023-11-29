@@ -1,6 +1,4 @@
 import {
-	BadRequestException,
-	ConflictException,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
@@ -8,7 +6,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
 import { AuthToken } from 'src/auth/auth.entity';
 
@@ -25,7 +22,6 @@ export class UserService {
 		return this.userRepository.find();
 	}
 
-	//TODOO: Rework me maybe, old implementation...
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
@@ -110,4 +106,14 @@ export class UserService {
 
 	//Changes User.name entry database
 	async updateUserName(userId: string, newName: string): Promise<void> {}
+
+	async isEmailUnique(userId: string, newName: string): Promise<Boolean> {
+		return true;
+	}
+
+	//Changes User.email entry database
+	async updateUserEmail(userId: string, newName: string): Promise<void> {}
+
+	//Changes User.password entry database
+	async updateUserPassword(userId: string, newName: string): Promise<void> {}
 }

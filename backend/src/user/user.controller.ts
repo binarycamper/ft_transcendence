@@ -252,4 +252,62 @@ export class UserController {
 			);
 		}
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('editEmail')
+	async editEmail(
+		@Body() body: { email: string },
+		@Req() req,
+		@Res() res: Response,
+	) {
+		const userId = req.user.id;
+		const newEmail = body.email;
+
+		// Check if the new Email is unique
+		const isEmailTaken = await this.userService.isEmailUnique(userId, newEmail);
+		if (isEmailTaken) {
+			throw new BadRequestException('This name is already taken.');
+		}
+
+		try {
+			// Update the user's Email
+			await this.userService.updateUserEmail(userId, newEmail);
+
+			// Return a success response
+			res.status(HttpStatus.OK).json({ message: 'Email updated successfully' });
+		} catch (error) {
+			console.error('Error updating Email:', error);
+			throw new HttpException(
+				'Failed to update Email',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('editPassword')
+	async editPassword(
+		@Body() body: { password: string },
+		@Req() req,
+		@Res() res: Response,
+	) {
+		const userId = req.user.id;
+		const newPw = body.password;
+
+		try {
+			// Update the user's password
+			await this.userService.updateUserPassword(userId, newPw);
+
+			// Return a success response
+			res
+				.status(HttpStatus.OK)
+				.json({ message: 'password updated successfully' });
+		} catch (error) {
+			console.error('Error updating password:', error);
+			throw new HttpException(
+				'Failed to update password',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+	}
 }
