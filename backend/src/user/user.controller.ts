@@ -310,4 +310,15 @@ export class UserController {
 			);
 		}
 	}
+
+	@Get('/isProfileComplete')
+    async isProfileComplete(@Req() req: any, @Res() res: any) {
+        try {
+            const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
+            const isComplete = await this.userService.isProfileComplete(userId);
+            res.json({ isComplete });
+        } catch (error) {
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
 }
