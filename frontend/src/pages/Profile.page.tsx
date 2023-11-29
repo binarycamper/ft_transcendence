@@ -131,6 +131,19 @@ export function Profile() {
 		}
 	};
 
+	/*
+	 * Todoo: navigate to an edit page or implement it here.
+	 * requests:
+	 * Post /user/editMmail { email: new@email.de }
+	 *
+	 * Post /user/editPassword {passwort: 123}
+	 *
+	 * Post /user/editName {name: Lorem}
+	 */
+	const handleEdit = () => {
+		navigate('/edit');
+	};
+
 	if (!profile) {
 		return <div>Loading profile...</div>;
 	}
@@ -154,6 +167,7 @@ export function Profile() {
 			<input type="file" onChange={handleFileChange} />
 			<button onClick={handleImageUpload}>Upload New Image</button>
 			<button onClick={handleDelete}>Delete My Account</button>
+			<button onClick={handleEdit}>Edit My Profile</button>
 		</div>
 	);
 }
