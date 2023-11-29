@@ -80,10 +80,7 @@ export class AuthController {
 					sameSite: 'lax',
 					secure: false, // Set to true if using HTTPS
 				});
-				res.status(200).json({
-					accessToken: token.access_token,
-					message: 'Logged in successfully',
-				});
+				res.redirect('http://localhost:5173/signup');
 			} catch (error) {
 				throw error;
 			}
