@@ -41,7 +41,6 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
-		console.log('!TEST');
 		//console.log('Request headers:', req.headers);
 		//console.log('Request body:', body);
 		// With JwtAuthGuard used, you can now access the user from the request object
