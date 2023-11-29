@@ -183,7 +183,7 @@ export class UserController {
 		user.image = 'http://localhost:8080/user/uploads?filename=' + file.filename;
 
 		//console.log('new image name: ', user.image);
-		if (user && user.imageUrl) {
+		if (user && oldFilePath) {
 			//console.log('string: ', oldFilePath);
 			try {
 				await unlink(oldFilePath);
@@ -217,9 +217,9 @@ export class UserController {
 
 		// Check if the file exists and send it, otherwise send a 404 response
 		if (fs.existsSync(fullPath)) {
-			return res.status(200).sendFile(fullPath);
+			return res.status(HttpStatus.OK).sendFile(fullPath);
 		} else {
-			return res.status(404).send('File not found');
+			return res.status(HttpStatus.NOT_FOUND).send('File not found');
 		}
 	}
 
