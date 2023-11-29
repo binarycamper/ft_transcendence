@@ -198,7 +198,6 @@ export class UserController {
 		// Write the new file to the filesystem
 		const writeStream = createWriteStream(savePath);
 		writeStream.write(file.buffer);
-		// Once the new file is saved, generate the URL or relative path
 
 		// Update the user entity with the new image
 		await this.userService.updateUserImage(req.user.id, user.image);
@@ -207,7 +206,6 @@ export class UserController {
 		res.status(HttpStatus.OK).json({});
 	}
 
-	// The filename in query should be like 'f75faa8f-3158-4c51-a6ca-b446ec67dd2e.png'
 	@UseGuards(JwtAuthGuard)
 	@Get('/uploads')
 	async getImage(@Query('filename') filename: string, @Res() res: Response) {
@@ -221,14 +219,5 @@ export class UserController {
 		} else {
 			return res.status(HttpStatus.NOT_FOUND).send('File not found');
 		}
-	}
-
-	//Todo: rework me old implementation
-	@Post('/update')
-	async editUser(
-		@Body() updateUserDto: CreateUserDto,
-		@Query('userId') userId: string,
-	): Promise<User> {
-		return this.userService.update(userId, updateUserDto);
 	}
 }
