@@ -101,4 +101,13 @@ export class UserService {
 		// Save the user entity
 		await this.userRepository.save(user);
 	}
+
+	//Todo: write logic here:
+	//checks if given 'newName' is unique
+	async isNameUnique(userId: string, newName: string): Promise<Boolean> {
+		return true;
+	}
+
+	//Changes User.name entry database
+	async updateUserName(userId: string, newName: string): Promise<void> {}
 }

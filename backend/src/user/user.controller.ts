@@ -15,6 +15,7 @@ import {
 	UploadedFile,
 	UseInterceptors,
 	NotFoundException,
+	BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -34,6 +35,13 @@ export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 	//Verify pw input and creates hash, it checks if user is allowed to do so Jwt + intern logic
+
+	//returns all users
+	@Get('users')
+	async getAll(): Promise<User[]> {
+		return this.userService.findAll();
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
 	async completeProfile(
@@ -150,13 +158,7 @@ export class UserController {
 		}
 	}
 
-	//returns all users
-	@Get('/users')
-	async getAll(): Promise<User[]> {
-		return this.userService.findAll();
-	}
-
-	@Post('/image')
+	@Post('image')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
 	async uploadImage(
@@ -206,7 +208,7 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('/uploads')
+	@Get('uploads')
 	async getImage(@Query('filename') filename: string, @Res() res: Response) {
 		// Construct the full file path
 		const fullPath = uploadPath + filename;
@@ -217,6 +219,37 @@ export class UserController {
 			return res.status(HttpStatus.OK).sendFile(fullPath);
 		} else {
 			return res.status(HttpStatus.NOT_FOUND).send('File not found');
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('editName')
+	async editName(
+		@Body() body: { name: string },
+		@Req() req,
+		@Res() res: Response,
+	) {
+		const userId = req.user.id;
+		const newName = body.name;
+
+		// Check if the new name is unique
+		const isNameTaken = await this.userService.isNameUnique(userId, newName);
+		if (isNameTaken) {
+			throw new BadRequestException('This name is already taken.');
+		}
+
+		try {
+			// Update the user's name
+			await this.userService.updateUserName(userId, newName);
+
+			// Return a success response
+			res.status(HttpStatus.OK).json({ message: 'Name updated successfully' });
+		} catch (error) {
+			console.error('Error updating name:', error);
+			throw new HttpException(
+				'Failed to update name',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		}
 	}
 }

@@ -132,16 +132,22 @@ export function Profile() {
 	};
 
 	/*
-	 * Todoo: navigate to an edit page or implement it here.
-	 * requests:
+	 * Todoo: navigate to a new edit page or the settings page,
+	 * or implement it here.
+	 *
+	 * Request always with credentials!:
 	 * Post /user/editMmail { email: new@email.de }
 	 *
 	 * Post /user/editPassword {passwort: 123}
 	 *
 	 * Post /user/editName {name: Lorem}
+	 *
+	 * If response == OK then redirect to profile or whatever
+	 * else explain error, like name already taken, pw to weak etc
 	 */
 	const handleEdit = () => {
-		navigate('/edit');
+		//user params
+		navigate('/settings'); // /edit /?
 	};
 
 	if (!profile) {
