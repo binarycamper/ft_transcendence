@@ -169,6 +169,23 @@ export class UserController {
 		}
 	}
 
+	/*
+	 *	Check the File Type:
+	 *	Validate the MIME type of the file to ensure it's an image.
+	 *	This can be done by inspecting the file.mimetype attribute and comparing it to allowed MIME types (e.g., image/jpeg, image/png).
+	 *
+	 *	Check the File Size:
+	 *	Enforce a maximum file size limit to prevent overly large files from being uploaded.
+	 *	You can check file.size against a predefined maximum size.
+	 *
+	 *	Check the File Content:
+	 *	Optionally, you could use a library to further inspect the file to ensure it's a valid image file and not just a file with an image extension.
+	 *
+	 *	File Name Sanitization:
+	 *	Ensure that the filename is sanitized to prevent directory traversal or other injection attacks.
+	 *	Don't trust the original filename; instead, generate a new one, perhaps based on the user ID.
+	 */
+
 	@Post('uploadImage')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
