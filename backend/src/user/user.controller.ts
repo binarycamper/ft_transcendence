@@ -42,6 +42,17 @@ export class UserController {
 		return this.userService.findAll();
 	}
 
+	@Get('isProfileComplete')
+	async isProfileComplete(@Req() req: any, @Res() res: any) {
+		try {
+			const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
+			const isComplete = await this.userService.isProfileComplete(userId);
+			res.json({ isComplete });
+		} catch (error) {
+			res.status(500).json({ error: 'Internal Server Error' });
+		}
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
 	async completeProfile(
@@ -235,32 +246,26 @@ export class UserController {
 		// Check if the new name is unique
 		const isNameTaken = await this.userService.isNameUnique(userId, newName);
 		if (isNameTaken) {
-			throw new BadRequestException('This name is already taken.');
+			throw new BadRequestException('This name is already taken!!!!.');
 		}
-
 		try {
-			// Update the user's name
-			await this.userService.updateUserName(userId, newName);
-
+			const status = await this.userService.updateUserName(userId, newName);
 			// Return a success response
-			res.status(HttpStatus.OK).json({ message: 'Name updated successfully' });
+			if (status)
+				res
+					.status(HttpStatus.OK)
+					.json({ message: 'Name updated successfully' });
+			else {
+				res
+					.status(HttpStatus.OK)
+					.json({ message: 'Name was not changed, choose another one' });
+			}
 		} catch (error) {
 			console.error('Error updating name:', error);
 			throw new HttpException(
 				'Failed to update name',
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
-		}
-	}
-
-	@Get('/isProfileComplete')
-	async isProfileComplete(@Req() req: any, @Res() res: any) {
-		try {
-			const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
-			const isComplete = await this.userService.isProfileComplete(userId);
-			res.json({ isComplete });
-		} catch (error) {
-			res.status(500).json({ error: 'Internal Server Error' });
 		}
 	}
 }

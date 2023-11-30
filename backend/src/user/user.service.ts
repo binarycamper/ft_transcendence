@@ -102,11 +102,12 @@ export class UserService {
 				id: Not(userId), // Exclude the current user from the check
 			},
 		});
-		return !existingUser; // Return true if no other user has the same name, false otherwise
+		if (existingUser === null) return false;
+		return true; // Return true if no other user has the same name, false otherwise
 	}
 
 	//Changes User.name entry database
-	async updateUserName(userId: string, newName: string): Promise<void> {
+	async updateUserName(userId: string, newName: string): Promise<boolean> {
 		const userToUpdate = await this.userRepository.findOne({
 			where: {
 				id: userId,
@@ -115,8 +116,9 @@ export class UserService {
 		if (!userToUpdate) {
 			throw new NotFoundException('User not found.');
 		}
-		if (userToUpdate.name === newName) return;
+		if (userToUpdate.name === newName) return false;
 		userToUpdate.name = newName;
 		await this.userRepository.save(userToUpdate);
+		return true;
 	}
 }
