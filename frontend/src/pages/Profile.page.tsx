@@ -92,23 +92,24 @@ export function Profile() {
 				body: formData,
 			});
 
+			let responseData;
 			if (response.status === HttpStatusCode.BadRequest) {
-				response.json().then((data) => {
-					const errorMessage =
-						data.message || 'There was an error processing your request.';
-					console.log(errorMessage);
-					const userGuidance =
-						'Please ensure the file is an image with one of the following types: .jpg, .jpeg, .png, .gif.';
-					console.log(userGuidance);
-				});
-			}
-
-			if (!response.ok) {
+				responseData = await response.json(); // Read and store the response body
+				const errorMessage =
+					responseData.message || 'There was an error processing your request.';
+				console.log(errorMessage);
+				const userGuidance =
+					'Please ensure the file is an image with one of the following types: .jpg, .jpeg, .png';
+				console.log(userGuidance);
+			} else if (!response.ok) {
 				throw new Error('Failed to upload image.');
+			} else {
+				responseData = await response.json(); // Read and store the response body for a successful response
+				setProfile({
+					...profile,
+					imageUrl: responseData.imageUrl,
+				} as UserProfile); // Update the profile image
 			}
-
-			const result = await response.json();
-			setProfile({ ...profile, imageUrl: result.imageUrl } as UserProfile); // Update the profile image
 		} catch (error) {
 			console.error('Error uploading image:', error);
 		}

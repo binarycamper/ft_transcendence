@@ -167,10 +167,6 @@ export class UserController {
 	}
 
 	/*
-	 *	Check the File Size:
-	 *	Enforce a maximum file size limit to prevent overly large files from being uploaded.
-	 *	You can check file.size against a predefined maximum size.
-	 *
 	 *	Check the File Content:
 	 *	Optionally, you could use a library to further inspect the file to ensure it's a valid image file and not just a file with an image extension.
 	 *
@@ -187,7 +183,18 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
-		const allowedMimeTypes = new Set(['image/jpeg', 'image/png']);
+		const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+
+		// Check the file's size
+		if (file.size > MAX_FILE_SIZE) {
+			// If the file size exceeds the maximum, return an error response
+			res.status(HttpStatus.BAD_REQUEST).json({
+				message: 'File size exceeds the maximum limit of 2MB.',
+			});
+			return;
+		}
+
+		const allowedMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png']);
 		if (!allowedMimeTypes.has(file.mimetype)) {
 			res
 				.status(HttpStatus.BAD_REQUEST)
