@@ -4,7 +4,7 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
 import { AuthToken } from 'src/auth/auth.entity';
@@ -100,13 +100,28 @@ export class UserService {
 
 	//Todo: write logic here: Check subject!!
 	//checks if given 'newName' is unique
-	async isNameUnique(userId: string, newName: string): Promise<Boolean> {
-		return true;
+	async isNameUnique(userId: string, newName: string): Promise<boolean> {
+		// Logic to check if the name is unique
+		const existingUser = await this.userRepository.findOne({
+			where: {
+				name: newName,
+				id: Not(userId), // Exclude the current user from the check
+			},
+		});
+		return !existingUser; // Return true if no other user has the same name, false otherwise
 	}
 
 	//Changes User.name entry database
-	async updateUserName(userId: string, newName: string): Promise<void> {}
-
-	//Changes User.password entry database
-	async updateUserPassword(userId: string, newName: string): Promise<void> {}
+	async updateUserName(userId: string, newName: string): Promise<void> {
+		const userToUpdate = await this.userRepository.findOne({
+			where: {
+				id: userId,
+			},
+		});
+		if (!userToUpdate) {
+			throw new NotFoundException('User not found.');
+		}
+		userToUpdate.name = newName;
+		await this.userRepository.save(userToUpdate);
+	}
 }
