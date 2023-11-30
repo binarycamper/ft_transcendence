@@ -4,17 +4,20 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
-- edit unique nickname (frontend button)
-
 ```
-matchmaking system
+(frontend 'change Nickname' button)
+- edit unique nickname
+
+(frontend 'upload Image' button)
+- image-upload extension check, only images allowed and Mb size limit and format maybe
+
+- matchmaking system
 ```
 
 ## jjesberg
 
 ```
 backend: NestJS
-image-upload extension check, only images allowed
 add friends and see their current status
 stats have to be displayed on the user profile
 match history
