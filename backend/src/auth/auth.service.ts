@@ -59,7 +59,7 @@ export class AuthService {
 			const userPayload = {
 				name: userData.login,
 				email: userData.email,
-				password: 'hashed-password', // Replace with actual hashed password
+				password: 'hashed-password', // Todo:Replace with actual hashed password
 				intraId: userData.id,
 				imageUrl: userData.image?.versions?.medium, // Use optional chaining
 			};
