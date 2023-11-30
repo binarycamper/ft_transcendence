@@ -136,10 +136,6 @@ export function Profile() {
 	 * or implement it here.
 	 *
 	 * Request always with credentials!:
-	 * Post /user/editMmail { email: new@email.de }
-	 *
-	 * Post /user/editPassword {passwort: 123}
-	 *
 	 * Post /user/editName {name: Lorem}
 	 *
 	 * If response == OK then redirect to profile or whatever
