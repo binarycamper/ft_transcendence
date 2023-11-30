@@ -115,6 +115,7 @@ export class UserService {
 		if (!userToUpdate) {
 			throw new NotFoundException('User not found.');
 		}
+		if (userToUpdate.name === newName) return;
 		userToUpdate.name = newName;
 		await this.userRepository.save(userToUpdate);
 	}
