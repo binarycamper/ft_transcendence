@@ -1,3 +1,4 @@
+import { HttpStatusCode } from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -90,6 +91,17 @@ export function Profile() {
 				credentials: 'include',
 				body: formData,
 			});
+
+			if (response.status === HttpStatusCode.BadRequest) {
+				response.json().then((data) => {
+					const errorMessage =
+						data.message || 'There was an error processing your request.';
+					console.log(errorMessage);
+					const userGuidance =
+						'Please ensure the file is an image with one of the following types: .jpg, .jpeg, .png, .gif.';
+					console.log(userGuidance);
+				});
+			}
 
 			if (!response.ok) {
 				throw new Error('Failed to upload image.');

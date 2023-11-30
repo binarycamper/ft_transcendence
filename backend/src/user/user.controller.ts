@@ -133,9 +133,6 @@ export class UserController {
 		const userId = req.user.id;
 		const image: string = req.user.image;
 
-		// Optional: Check if the user confirmed account deletion
-		// This could be a flag sent from the client in the request body or as a query parameter
-		// For example, let's assume it's sent as a query parameter
 		const confirmDeletion = req.query.confirm === 'true';
 
 		if (!confirmDeletion) {
@@ -170,10 +167,6 @@ export class UserController {
 	}
 
 	/*
-	 *	Check the File Type:
-	 *	Validate the MIME type of the file to ensure it's an image.
-	 *	This can be done by inspecting the file.mimetype attribute and comparing it to allowed MIME types (e.g., image/jpeg, image/png).
-	 *
 	 *	Check the File Size:
 	 *	Enforce a maximum file size limit to prevent overly large files from being uploaded.
 	 *	You can check file.size against a predefined maximum size.
@@ -194,12 +187,17 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
+		const allowedMimeTypes = new Set(['image/jpeg', 'image/png']);
+		if (!allowedMimeTypes.has(file.mimetype)) {
+			res
+				.status(HttpStatus.BAD_REQUEST)
+				.json({ message: 'Invalid file type. Only image files are allowed.' });
+			return;
+		}
 		// Retrieve the existing user to check for an old image
 		const user = await this.userService.findProfileById(req.user.id);
-
 		//console.log('image: ', user.image);
 		//console.log('imageUrl: ', user.imageUrl);
-
 		if (!user) return;
 		let oldFilePath = undefined;
 		if (user.image) {
@@ -223,15 +221,9 @@ export class UserController {
 			}
 		}
 		const savePath = uploadPath + file.filename;
-
-		// Write the new file to the filesystem
 		const writeStream = createWriteStream(savePath);
 		writeStream.write(file.buffer);
-
-		// Update the user entity with the new image
 		await this.userService.updateUserImage(req.user.id, user.image);
-
-		// Send response back to the client
 		res.status(HttpStatus.OK).json({});
 	}
 
