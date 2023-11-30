@@ -169,7 +169,7 @@ export class UserController {
 		}
 	}
 
-	@Post('image')
+	@Post('uploadImage')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
 	async uploadImage(

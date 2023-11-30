@@ -85,7 +85,7 @@ export function Profile() {
 		const formData = new FormData();
 		formData.append('image', selectedFile);
 		try {
-			const response = await fetch('http://localhost:8080/user/image', {
+			const response = await fetch('http://localhost:8080/user/uploadImage', {
 				method: 'POST',
 				credentials: 'include',
 				body: formData,
