@@ -83,22 +83,16 @@ export class UserService {
 		}
 	}
 
-	// In your UserService
+	//Updates UserImage string
 	async updateUserImage(userId: string, image: string): Promise<void> {
-		// Fetch the user by id
 		const user = await this.userRepository.findOneBy({ id: userId });
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-
-		// Update the image field
 		user.image = image;
-
-		// Save the user entity
 		await this.userRepository.save(user);
 	}
 
-	//Todo: write logic here: Check subject!!
 	//checks if given 'newName' is unique
 	async isNameUnique(userId: string, newName: string): Promise<boolean> {
 		// Logic to check if the name is unique
