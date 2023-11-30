@@ -17,6 +17,9 @@ export class User {
 	@Column({ unique: true, length: 100 })
 	name: string;
 
+	@Column({ nullable: true, unique: true, length: 100 })
+	nickname: string;
+
 	@Column({ unique: true, nullable: true, length: 100 })
 	email: string;
 

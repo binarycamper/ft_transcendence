@@ -98,7 +98,7 @@ export class UserService {
 		// Logic to check if the name is unique
 		const existingUser = await this.userRepository.findOne({
 			where: {
-				name: newName,
+				nickname: newName,
 				id: Not(userId), // Exclude the current user from the check
 			},
 		});
@@ -116,8 +116,11 @@ export class UserService {
 		if (!userToUpdate) {
 			throw new NotFoundException('User not found.');
 		}
-		if (userToUpdate.name === newName) return false;
-		userToUpdate.name = newName;
+		console.log('usernickname: ', userToUpdate.nickname);
+		console.log('newname: ', newName);
+
+		if (userToUpdate.nickname == newName) return false;
+		userToUpdate.nickname = newName;
 		await this.userRepository.save(userToUpdate);
 		return true;
 	}

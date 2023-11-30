@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 type UserProfile = {
 	name: string;
+	nickname: string;
 	email: string;
 	status: string;
 	intraId: number;
@@ -132,19 +133,15 @@ export function Profile() {
 	};
 
 	/*
-	 * Todoo: navigate to a new edit page or the settings page,
-	 * or implement it here.
+	 * Todoo:
 	 *
 	 * Request always with credentials!:
-	 * Post /user/editName {name: Lorem}
+	 * Post /user/editName {Nickname: Lorem}
 	 *
-	 * If response == OK then redirect to profile or whatever
-	 * else explain error, like name already taken, pw to weak etc
+	 * If response == OK then redirect to profile, stay & refresh or whatever
+	 * else explain error, like name already taken
 	 */
-	const handleEdit = () => {
-		//user params
-		navigate('/settings'); // /edit /?
-	};
+	const changeNickname = () => {};
 
 	if (!profile) {
 		return <div>Loading profile...</div>;
@@ -163,13 +160,14 @@ export function Profile() {
 				</button>
 			)}
 			<p>Name: {profile.name}</p>
+			<p>Nickname: {profile.nickname}</p>
 			<p>Email: {profile.email}</p>
 			<p>Status: {profile.status}</p>
 			<p>IntraId: {profile.intraId}</p>
 			<input type="file" onChange={handleFileChange} />
 			<button onClick={handleImageUpload}>Upload New Image</button>
 			<button onClick={handleDelete}>Delete My Account</button>
-			<button onClick={handleEdit}>Edit My Profile</button>
+			<button onClick={changeNickname}>Change Nickname</button>
 		</div>
 	);
 }

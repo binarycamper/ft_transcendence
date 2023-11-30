@@ -235,35 +235,41 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('editName')
-	async editName(
-		@Body() body: { name: string },
+	async editNickName(
+		@Body() body: { nickname: string },
 		@Req() req,
 		@Res() res: Response,
 	) {
 		const userId = req.user.id;
-		const newName = body.name;
+		const newName = body.nickname;
+		if (newName == undefined) {
+			//Todo: choose correct httpstatus!
+			res
+				.status(HttpStatus.NOT_IMPLEMENTED)
+				.json({ message: 'Nickname body was wrong' });
+		}
 
 		// Check if the new name is unique
 		const isNameTaken = await this.userService.isNameUnique(userId, newName);
 		if (isNameTaken) {
-			throw new BadRequestException('This name is already taken!!!!.');
+			throw new BadRequestException('This Nickname is already taken!!!!.');
 		}
 		try {
 			const status = await this.userService.updateUserName(userId, newName);
-			// Return a success response
-			if (status)
+			console.log('statuts = ', status);
+			if (status) {
 				res
 					.status(HttpStatus.OK)
-					.json({ message: 'Name updated successfully' });
-			else {
+					.json({ message: 'Nickname updated successfully' });
+			} else {
 				res
 					.status(HttpStatus.OK)
-					.json({ message: 'Name was not changed, choose another one' });
+					.json({ message: 'Nickname was not changed, choose another one' });
 			}
 		} catch (error) {
-			console.error('Error updating name:', error);
+			console.error('Error updating Nickname:', error);
 			throw new HttpException(
-				'Failed to update name',
+				'Failed to update Nickname',
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
