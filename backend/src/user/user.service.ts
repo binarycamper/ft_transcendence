@@ -98,7 +98,7 @@ export class UserService {
 		await this.userRepository.save(user);
 	}
 
-	//Todo: write logic here:
+	//Todo: write logic here: Check subject!!
 	//checks if given 'newName' is unique
 	async isNameUnique(userId: string, newName: string): Promise<Boolean> {
 		return true;
@@ -106,13 +106,6 @@ export class UserService {
 
 	//Changes User.name entry database
 	async updateUserName(userId: string, newName: string): Promise<void> {}
-
-	async isEmailUnique(userId: string, newName: string): Promise<Boolean> {
-		return true;
-	}
-
-	//Changes User.email entry database
-	async updateUserEmail(userId: string, newName: string): Promise<void> {}
 
 	//Changes User.password entry database
 	async updateUserPassword(userId: string, newName: string): Promise<void> {}

@@ -254,37 +254,6 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Post('editEmail')
-	async editEmail(
-		@Body() body: { email: string },
-		@Req() req,
-		@Res() res: Response,
-	) {
-		const userId = req.user.id;
-		const newEmail = body.email;
-
-		// Check if the new Email is unique
-		const isEmailTaken = await this.userService.isEmailUnique(userId, newEmail);
-		if (isEmailTaken) {
-			throw new BadRequestException('This name is already taken.');
-		}
-
-		try {
-			// Update the user's Email
-			await this.userService.updateUserEmail(userId, newEmail);
-
-			// Return a success response
-			res.status(HttpStatus.OK).json({ message: 'Email updated successfully' });
-		} catch (error) {
-			console.error('Error updating Email:', error);
-			throw new HttpException(
-				'Failed to update Email',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
-		}
-	}
-
-	@UseGuards(JwtAuthGuard)
 	@Post('editPassword')
 	async editPassword(
 		@Body() body: { password: string },
@@ -312,13 +281,13 @@ export class UserController {
 	}
 
 	@Get('/isProfileComplete')
-    async isProfileComplete(@Req() req: any, @Res() res: any) {
-        try {
-            const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
-            const isComplete = await this.userService.isProfileComplete(userId);
-            res.json({ isComplete });
-        } catch (error) {
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    }
+	async isProfileComplete(@Req() req: any, @Res() res: any) {
+		try {
+			const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
+			const isComplete = await this.userService.isProfileComplete(userId);
+			res.json({ isComplete });
+		} catch (error) {
+			res.status(500).json({ error: 'Internal Server Error' });
+		}
+	}
 }
