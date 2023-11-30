@@ -4,6 +4,8 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
+- edit unique nickname (frontend button)
+
 ```
 matchmaking system
 ```
@@ -12,7 +14,6 @@ matchmaking system
 
 ```
 backend: NestJS
-choose unique name: done; but if a users intraname is the same like another users nickname, should be hanlded
 image-upload extension check, only images allowed
 add friends and see their current status
 stats have to be displayed on the user profile
