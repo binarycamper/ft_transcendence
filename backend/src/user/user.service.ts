@@ -48,7 +48,7 @@ export class UserService {
 	}
 
 	//returns true when profile is created completely
-	async isProfileComplete(userId: string): Promise<boolean> {
+	async isProfilecreated(userId: string): Promise<boolean> {
 		const user = await this.userRepository.findOne({ where: { id: userId } });
 
 		if (!user) {

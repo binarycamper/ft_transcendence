@@ -44,7 +44,7 @@ export class UserController {
 	async isProfileComplete(@Req() req: any, @Res() res: any) {
 		try {
 			const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
-			const isComplete = await this.userService.isProfileComplete(userId);
+			const isComplete = await this.userService.isProfilecreated(userId);
 			res.json({ isComplete });
 		} catch (error) {
 			res.status(500).json({ error: 'Internal Server Error' });
@@ -77,7 +77,7 @@ export class UserController {
 			);
 		}
 
-		const isProfileComplete = await this.userService.isProfileComplete(userId);
+		const isProfileComplete = await this.userService.isProfilecreated(userId);
 		if (isProfileComplete) {
 			console.log('isProfileComplete');
 			throw new HttpException(
