@@ -144,7 +144,6 @@ export class UserController {
 			await this.userService.deleteUserById(userId);
 
 			// Return a success response
-			res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
 
 			if (image) {
 				const imagePath = uploadPath + image.split('?filename=').pop();
@@ -153,6 +152,12 @@ export class UserController {
 				}
 			}
 			// Optional: Perform any cleanup tasks, such as logging out the user
+			res.clearCookie('token', {
+				sameSite: 'none',
+				secure: true,
+			});
+
+			res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
 			// This might involve clearing any session or token information on the client side
 		} catch (error) {
 			console.error('Error deleting user:', error);
