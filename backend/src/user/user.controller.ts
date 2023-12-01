@@ -24,6 +24,7 @@ import { StatusGuard } from 'src/auth/guards/status.guard';
 import { createWriteStream } from 'fs';
 import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
 import * as fs from 'fs';
+import * as sharp from 'sharp';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -176,6 +177,13 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
+		// Image validation
+		if (!(await this.isValidImage(file.buffer))) {
+			res.status(HttpStatus.BAD_REQUEST).json({
+				message: 'Invalid image file.',
+			});
+			return;
+		}
 		const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
 
 		// Check the file's size
@@ -225,6 +233,16 @@ export class UserController {
 		writeStream.write(file.buffer);
 		await this.userService.updateUserImage(req.user.id, user.image);
 		res.status(HttpStatus.OK).json({});
+	}
+
+	private async isValidImage(fileBuffer: Buffer): Promise<boolean> {
+		try {
+			await sharp(fileBuffer).metadata();
+			return true;
+		} catch (error) {
+			console.error('Invalid image file:', error);
+			return false;
+		}
 	}
 
 	@UseGuards(JwtAuthGuard)
