@@ -5,12 +5,15 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 # Unassigned:
 
 ```
+(frontend)
+-handle errors correctly when receiving response..., backend response error gets sended but frontend dont care, see inspect network
+
 (frontend 'change Nickname' button)
 - edit unique nickname
 
 (frontend 'upload Image' button)
-- image-upload extension check, only images allowed and Mb size limit and format. provides immediate feedback to the user and reduced Server Load
-- Use CAPTCHA !! will prevent DoS attacks
+- optinal: image-upload extension check, only images allowed and Mb size limit and format. provides immediate feedback to the user and reduced Server Load
+- optinal: Use CAPTCHA, will prevent DoS attacks. But is also limited already in backend
 
 - matchmaking system
 ```
@@ -19,8 +22,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 ```
 backend: NestJS
-image-upload extension check and check restictions of the files also in backend
-Check the File Content
+try fix error when get authtoken from 42api
 add friends and see their current status
 stats have to be displayed on the user profile
 match history
