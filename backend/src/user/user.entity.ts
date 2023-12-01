@@ -1,12 +1,9 @@
-import { ServerStreamFileResponseOptions } from 'http2';
-import { AuthToken } from 'src/auth/auth.entity';
 import {
 	Entity,
 	PrimaryGeneratedColumn,
 	Column,
 	ManyToMany,
 	JoinTable,
-	OneToMany,
 } from 'typeorm';
 
 @Entity()
