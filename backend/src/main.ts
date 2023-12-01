@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
 	const logger = new Logger('Bootstrap');
@@ -33,6 +34,15 @@ async function bootstrap() {
 			},
 		}),
 	);
+
+	// Apply rate limiting
+	app.use(
+		rateLimit({
+			windowMs: 10 * 60 * 1000, // 10 minutes
+			max: 100, // limit each IP to 100 requests per windowMs && Todo: maybe exclude the game requests?
+		}),
+	);
+
 	await app.listen(3000);
 }
 bootstrap();

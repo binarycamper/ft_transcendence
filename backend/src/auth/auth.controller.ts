@@ -18,7 +18,6 @@ import { AuthCallbackDto } from './auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Adjust the path based on your directory structure
-import { UserController } from 'src/user/user.controller';
 
 @Controller('auth')
 export class AuthController {
@@ -53,15 +52,6 @@ export class AuthController {
 		}
 	}
 
-	/*@Get('callback')
-	async getcall(@Body() authCallbackDto: AuthCallbackDto, @Res() res: Response): Promise<void> {
-		console.log("TEST");
-		const { accessToken, refreshToken } = await this.authService.authenticate(authCallbackDto.code);
-		res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: 86400000 * 7, sameSite: 'lax', secure: false }); // 7 days expiry
-
-		res.status(200).send({ accessToken: accessToken, message: 'Logged in successfully' });
-	}*/
-
 	@Get('callback')
 	async handleCallback(
 		@Query('code') code: string,
@@ -77,64 +67,21 @@ export class AuthController {
 				res.cookie('token', token.access_token, {
 					httpOnly: true,
 					maxAge: 86400000 * 7, // 7 days expiry
-					sameSite: 'lax',
-					secure: false, // Set to true if using HTTPS
+					sameSite: 'none',
+					secure: true, // Set to true if using HTTPS
 				});
 				res.redirect('http://localhost:5173/signup');
 			} catch (error) {
 				throw error;
 			}
-
-		/* Old Code
-			// Exchange the code for an access token and refresh token
-			const { accessToken, refreshToken } = await this.authService.authenticate(
-				code,
-			);
-
-			// Set the refresh token in an HTTP-only cookie
-			res.cookie('RefreshToken', refreshToken, {
-				httpOnly: true,
-				maxAge: 86400000 * 7, // 7 days expiry
-				sameSite: 'lax',
-				secure: false, // Set to true if using HTTPS
-			});
-
-			// Respond with the access token and a success message
-			res
-				.status(200)
-				.json({ accessToken: accessToken, message: 'Logged in successfully' });
-		} catch (error) {
-			// Log and handle errors appropriately
-			console.error('Error in handleCallback:', error);
-			res
-				.status(500)
-				.json({ message: 'Authentication failed', error: error.message });
-		}*/
 	}
-
-	/*@Post('callback')
-	async authenticate(@Body() authCallbackDto: AuthCallbackDto, @Res() res: Response): Promise<void> {
-		const { accessToken, refreshToken } = await this.authService.authenticate(authCallbackDto.code);
-
-		res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: 86400000 * 7, sameSite: 'lax', secure: false }); // 7 days expiry
-
-		res.status(200).send({ accessToken: accessToken, message: 'Logged in successfully' });
-	}*/
-
-	/*@Get('check-auth')
-	async checkAuth(@Req() req, @Res() res) {
-		const isAuthenticated = await this.authService.checkAuthentication(req);
-		if (isAuthenticated) {
-		return res.status(200).send({ isAuthenticated: true });
-		} else {
-			console.log('Not authenticated');
-		return res.status(401).send({ isAuthenticated: false });
-		}
-	}*/
 
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
-		res.clearCookie('token');
-		return res.status(200).send({ message: 'Logged out succefully' });
+		res.clearCookie('token', {
+			sameSite: 'none',
+			secure: true, // Set to true if using HTTPS
+		});
+		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 }

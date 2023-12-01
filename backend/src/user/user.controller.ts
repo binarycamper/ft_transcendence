@@ -1,7 +1,6 @@
 import {
 	Controller,
 	Get,
-	Param,
 	Post,
 	Body,
 	Delete,
@@ -14,12 +13,10 @@ import {
 	HttpStatus,
 	UploadedFile,
 	UseInterceptors,
-	NotFoundException,
 	BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
@@ -166,18 +163,9 @@ export class UserController {
 		}
 	}
 
-	/*
-	 *	Check the File Content:
-	 *	Optionally, you could use a library to further inspect the file to ensure it's a valid image file and not just a file with an image extension.
-	 *
-	 *	File Name Sanitization:
-	 *	Ensure that the filename is sanitized to prevent directory traversal or other injection attacks.
-	 *	Don't trust the original filename; instead, generate a new one, perhaps based on the user ID.
-	 */
-
-	@Post('uploadImage')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
+	@Post('uploadImage')
 	async uploadImage(
 		@UploadedFile() file: Express.Multer.File,
 		@Req() req,
