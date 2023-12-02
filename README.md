@@ -21,6 +21,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 ## jjesberg
 
 ```
+start chat
 backend: NestJS
 try fix error when get authtoken from 42api
 add friends and see their current status

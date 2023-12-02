@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { AppService } from './app.service';
 		}),
 		AuthModule,
 		UserModule,
+		ChatModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
