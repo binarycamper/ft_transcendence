@@ -107,9 +107,10 @@ export class AuthService {
 				);
 			}
 		}
+	}
 
-		//Old way:
-		/*const accessToken = tokenResponse.data.access_token;
+	//Old way:
+	/*const accessToken = tokenResponse.data.access_token;
 
 		// Fetch user data from 42 API
 		const userResponse = await this.httpService
@@ -149,7 +150,6 @@ export class AuthService {
 
 		// Return the JWTs
 		return { accessToken: newAccessToken, refreshToken: newRefreshToken };*/
-	}
 
 	async generateNewAccessToken(refreshToken: string): Promise<string | null> {
 		try {
