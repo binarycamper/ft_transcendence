@@ -25,6 +25,8 @@ import { createWriteStream } from 'fs';
 import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
 import * as fs from 'fs';
 import * as sharp from 'sharp';
+import { getRepository } from 'typeorm';
+import { AuthToken } from 'src/auth/auth.entity';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -308,5 +310,32 @@ export class UserController {
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
+	}
+
+	//Debug:
+	//This is a hypothetical service method that you would call to create a debug user.
+	@Post('createDebugUser')
+	async createDebugUser(@Res() res: Response) {
+		// ...other code...
+
+		// Create a new User entity
+		const debugUser = await this.userService.createDebugUser({
+			name: 'DebugUser',
+			nickname: 'Debugger',
+			email: 'debug@example.com',
+			password: '1', // Make sure this is hashed as per your auth strategy
+			intraId: 'someDebugIntraId',
+			imageUrl: 'someDebugImageUrl',
+			image: 'someDebugImage',
+		});
+
+		const debugToken = await this.userService.createDebugToken(debugUser);
+
+		// Respond with the newly created debug user's ID and the fake token
+		res.status(HttpStatus.CREATED).json({
+			message: 'Debug user created',
+			userId: debugUser.id,
+			debugToken: debugToken, // Include the token in the response
+		});
 	}
 }

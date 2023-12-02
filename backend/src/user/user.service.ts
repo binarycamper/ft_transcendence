@@ -124,4 +124,34 @@ export class UserService {
 		await this.userRepository.save(userToUpdate);
 		return true;
 	}
+
+	//debug:
+	async createDebugUser(userData: Partial<User>): Promise<User> {
+		// Create a new User entity with the provided data
+		const newUser = this.userRepository.create(userData);
+
+		// Hash the password before saving
+		newUser.password = await bcrypt.hash(newUser.password, 10);
+
+		// Save the new user to the database
+		return this.userRepository.save(newUser);
+	}
+
+	async createDebugToken(user: User): Promise<string> {
+		// Generate the token payload and create the token
+		// Use your JWT service or another token library to generate the token
+		const payload = { username: user.nickname, sub: user.id };
+		const token = 'generated-token-for-debug-user'; // Replace with actual token generation logic
+
+		// Create a new AuthToken entity
+		const authToken = new AuthToken();
+		authToken.user = user;
+		authToken.token = token;
+
+		// Save the AuthToken to the database
+		await this.authTokenRepository.save(authToken);
+
+		// Return the generated token
+		return token;
+	}
 }
