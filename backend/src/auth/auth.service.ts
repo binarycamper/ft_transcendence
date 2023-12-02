@@ -109,48 +109,6 @@ export class AuthService {
 		}
 	}
 
-	//Old way:
-	/*const accessToken = tokenResponse.data.access_token;
-
-		// Fetch user data from 42 API
-		const userResponse = await this.httpService
-			.get('https://api.intra.42.fr/v2/me', {
-				headers: { Authorization: `Bearer ${accessToken}` },
-			})
-			.toPromise();
-
-		const userData = userResponse.data;
-
-		// Check if user exists in your database, if not, create them
-		let user = await this.userRepository.findOne({
-			where: { intraId: userData.id },
-		});
-		if (!user) {
-			const hashedPassword = await bcrypt.hash('default', 10);
-			user = this.userRepository.create({
-				intraId: userData.id,
-				name: userData.login,
-				email: userData.email,
-				password: hashedPassword,
-			});
-			await this.userRepository.save(user);
-		}
-
-		// Save the token in the database associated with the user
-		const authToken = new AuthToken();
-		authToken.token = accessToken; // the access token from the OAuth provider
-		authToken.user = user; // associate the token with the user
-		authToken.password = await bcrypt.hash('default', 10);
-		await this.authTokenRepository.save(authToken);
-
-		// Create JWTs
-		const payload = { username: user.name, sub: user.id };
-		const newAccessToken = this.jwtService.sign(payload);
-		const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' }); // 7 days expiry
-
-		// Return the JWTs
-		return { accessToken: newAccessToken, refreshToken: newRefreshToken };*/
-
 	async generateNewAccessToken(refreshToken: string): Promise<string | null> {
 		try {
 			// Verify the refresh token

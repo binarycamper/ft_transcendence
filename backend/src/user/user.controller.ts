@@ -177,6 +177,14 @@ export class UserController {
 		@Req() req,
 		@Res() res: Response,
 	) {
+		//file is empty?
+		if (!file || file.size === 0) {
+			res.status(HttpStatus.BAD_REQUEST).json({
+				message: 'No file uploaded or file is empty.',
+			});
+			return;
+		}
+
 		// Image validation
 		if (!(await this.isValidImage(file.buffer))) {
 			res.status(HttpStatus.BAD_REQUEST).json({
