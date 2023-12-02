@@ -316,8 +316,6 @@ export class UserController {
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('createDebugUser')
 	async createDebugUser(@Res() res: Response) {
-		// ...other code...
-
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
 			name: 'DebugUser',
@@ -327,6 +325,7 @@ export class UserController {
 			intraId: 'someDebugIntraId',
 			imageUrl: 'someDebugImageUrl',
 			image: 'someDebugImage',
+			status: 'created',
 		});
 
 		const debugToken = await this.userService.createDebugToken(debugUser);

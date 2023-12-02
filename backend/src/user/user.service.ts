@@ -8,6 +8,7 @@ import { Not, Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
 import { AuthToken } from 'src/auth/auth.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
@@ -16,6 +17,7 @@ export class UserService {
 		private userRepository: Repository<User>,
 		@InjectRepository(AuthToken)
 		private readonly authTokenRepository: Repository<AuthToken>,
+		private jwtService: JwtService,
 	) {}
 
 	findAll(): Promise<User[]> {
@@ -138,20 +140,7 @@ export class UserService {
 	}
 
 	async createDebugToken(user: User): Promise<string> {
-		// Generate the token payload and create the token
-		// Use your JWT service or another token library to generate the token
 		const payload = { username: user.nickname, sub: user.id };
-		const token = 'generated-token-for-debug-user'; // Replace with actual token generation logic
-
-		// Create a new AuthToken entity
-		const authToken = new AuthToken();
-		authToken.user = user;
-		authToken.token = token;
-
-		// Save the AuthToken to the database
-		await this.authTokenRepository.save(authToken);
-
-		// Return the generated token
-		return token;
+		return this.jwtService.sign(payload);
 	}
 }
