@@ -184,13 +184,13 @@ export class UserController {
 			});
 			return;
 		}
-		const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 
 		// Check the file's size
 		if (file.size > MAX_FILE_SIZE) {
 			// If the file size exceeds the maximum, return an error response
 			res.status(HttpStatus.BAD_REQUEST).json({
-				message: 'File size exceeds the maximum limit of 2MB.',
+				message: 'File size exceeds the maximum limit of 1MB.',
 			});
 			return;
 		}
