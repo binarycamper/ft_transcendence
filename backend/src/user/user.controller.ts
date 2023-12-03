@@ -26,7 +26,6 @@ import { unlink } from 'fs/promises'; // make sure to import unlink for file del
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { getRepository } from 'typeorm';
-import { AuthToken } from 'src/auth/auth.entity';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -309,6 +308,67 @@ export class UserController {
 				'Failed to update Nickname',
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
+		}
+	}
+
+	//Get List of friends of that user
+	@UseGuards(JwtAuthGuard)
+	@Get('friends')
+	async getFriends(@Req() req, @Res() res: Response) {
+		const userId = req.user.id;
+		try {
+			const user = await this.userService.findProfileById(userId);
+			if (!user) {
+				return res
+					.status(HttpStatus.NOT_FOUND)
+					.json({ message: 'User not found' });
+			}
+
+			if (!user.friends) {
+				return res.status(HttpStatus.OK).json([]); // Send an empty array if no friends are found
+			}
+
+			const friends = user.friends.map((friend) => {
+				const { password, ...friendDetails } = friend; // Exclude sensitive information
+				return friendDetails;
+			});
+
+			res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
+		} catch (error) {
+			console.error('Error retrieving friends:', error);
+			res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error retrieving friends' });
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('addFriend')
+	async addFriend(
+		@Req() req,
+		@Body('friendName') friendName: string, // Assuming you send the friend's ID in the request body
+		@Res() res: Response,
+	) {
+		const userId = req.user.id; // Retrieve the user's ID from the request
+
+		try {
+			// Await the service method to add the friend
+			const updatedUser = await this.userService.addFriend(userId, friendName);
+
+			// Check if the update was successful
+			if (!updatedUser) {
+				return res
+					.status(HttpStatus.NOT_FOUND)
+					.json({ message: 'User not found' });
+			}
+
+			// You can choose to return the updated user or just a success message
+			res.status(HttpStatus.OK).json({ message: 'Friend added successfully' });
+		} catch (error) {
+			console.error('Error adding friend:', error);
+			res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error adding friend' });
 		}
 	}
 

@@ -8,6 +8,7 @@ import { Play } from './pages/Play.page';
 import { Profile } from './pages/Profile.page';
 import { Settings } from './pages/Settings.page';
 import { Signup } from './pages/Signup.page';
+import { FriendList } from './pages/FriendList.page';
 
 const router = createBrowserRouter([
 	{
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
 			{
 				path: 'settings',
 				element: <Settings />,
+			},
+			{
+				path: 'friendlist',
+				element: <FriendList />,
 			},
 		],
 	},

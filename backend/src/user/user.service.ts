@@ -27,6 +27,17 @@ export class UserService {
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
+			relations: ['friends'],
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		return user;
+	}
+
+	async findProfileByName(friendName: string): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { name: friendName },
 		});
 		if (!user) {
 			throw new Error('User not found');
@@ -125,6 +136,39 @@ export class UserService {
 		userToUpdate.nickname = newName;
 		await this.userRepository.save(userToUpdate);
 		return true;
+	}
+
+	async addFriend(userId: string, friendName: string): Promise<User | null> {
+		// Suppose we are using an ORM like TypeORM to handle the database operation
+		// Assuming `userId` and `friendId` are strings and match the primary key type of your User entity
+		const user = await this.userRepository.findOne({ where: { id: userId } });
+		const friend = await this.userRepository.findOne({
+			where: { name: friendName },
+		});
+
+		if (!user || !friend) {
+			return null; // Return null if either user is not found
+		}
+
+		// Initialize friends as an empty array if it's not iterable
+		if (!Array.isArray(user.friends)) {
+			user.friends = [];
+		}
+
+		// Check if the friend is already in the user's friends list
+		if (
+			user.friends.some((existingFriend) => existingFriend.id === friend.id)
+		) {
+			return user; // Or handle this case as you see fit (e.g., throw an error)
+		}
+
+		// Add the friend to the user's friends array
+		user.friends.push(friend);
+
+		// Save the updated user
+		await this.userRepository.save(user);
+
+		return user; // Return the updated user
 	}
 
 	//debug:
