@@ -5,6 +5,8 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 # Unassigned:
 
 ```
+- implement navigation to user/friendlist
+
 (frontend)
 -handle errors correctly when receiving response..., backend response error gets sended but frontend dont care, see inspect network
 
@@ -24,7 +26,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 start chat
 backend: NestJS
 try fix error when get authtoken from 42api
-add friends and see their current status
+see friends current status
 stats have to be displayed on the user profile
 match history
 ```
@@ -79,6 +81,7 @@ access profiles via chat interface
 #### 3. User Account
 
 - upload avatar else default one must be set (intra pic)
+- add friends
 
 #### 4. Chat
 

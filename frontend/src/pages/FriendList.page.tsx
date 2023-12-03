@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import FriendProfile from '../components/Header/ProfileComponent';
 
 type Friend = {
 	id: string;
@@ -11,6 +12,7 @@ export function FriendList() {
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [newFriendName, setNewFriendName] = useState<string>('');
+	const [friendProfile, setFriendProfile] = useState(null);
 
 	useEffect(() => {
 		fetchFriends();
@@ -53,8 +55,6 @@ export function FriendList() {
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
-					// Add authorization header if needed, e.g.:
-					// 'Authorization': `Bearer ${yourAuthToken}`
 				},
 				body: JSON.stringify({ friendName: newFriendName }), // Send the friend's name in the request body
 			});
@@ -69,6 +69,32 @@ export function FriendList() {
 		} catch (error) {
 			setError('Failed to add friend');
 			console.error('There was an error adding the friend:', error);
+		}
+	};
+
+	const handleFriendClick = async (friendName: string) => {
+		try {
+			const response = await fetch(
+				`http://localhost:8080/user/publicprofile?friendname=${friendName}`,
+				{
+					method: 'GET',
+					credentials: 'include',
+					headers: {
+						'Content-Type': 'application/json',
+						// Include authorization headers if needed
+					},
+				},
+			);
+
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+
+			const friendProfileData = await response.json();
+			setFriendProfile(friendProfileData);
+		} catch (error) {
+			console.error('There was an error fetching the friend profile:', error);
+			// Handle errors here
 		}
 	};
 
@@ -87,11 +113,21 @@ export function FriendList() {
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
-				<ul>
-					{friends.map((friend) => (
-						<li key={friend.id}>{friend.name}</li>
-					))}
-				</ul>
+				<>
+					<ul>
+						{friends.map((friend) => (
+							<li
+								key={friend.id}
+								onClick={() => handleFriendClick(friend.name)}
+								style={{ cursor: 'pointer' }}
+							>
+								{friend.name}
+							</li>
+						))}
+					</ul>
+					{/* Render the FriendProfile component with the friendProfile data */}
+					{friendProfile && <FriendProfile profile={friendProfile} />}
+				</>
 			)}
 		</div>
 	);

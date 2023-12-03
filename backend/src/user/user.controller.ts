@@ -372,6 +372,19 @@ export class UserController {
 		}
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('publicprofile')
+	async getPublicProfile(@Query('friendname') friendname: string, @Req() req) {
+		// Access the user's ID from the request object
+
+		const friendProfile = await this.userService.findProfileByName(friendname);
+
+		// Exclude password and other sensitive fields from the result
+		const { password, id, intraId, ...result } = friendProfile;
+
+		return result;
+	}
+
 	//Debug:
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('createDebugUser')
