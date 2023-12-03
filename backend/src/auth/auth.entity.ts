@@ -27,4 +27,7 @@ export class AuthToken {
 
 	@Column()
 	token: string;
+
+	@Column({ nullable: true })
+    twoFactorAuthenticationSecret?: string;
 }

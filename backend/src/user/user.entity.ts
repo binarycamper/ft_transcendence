@@ -38,4 +38,13 @@ export class User {
 
 	@Column({ nullable: true, type: 'varchar' })
 	image: string;
+
+	@Column({ default: false })
+	isTwoFactorAuthenticationEnabled: boolean;
+
+	@Column({ nullable: true })
+	twoFactorAuthenticationSecret?: string;
+
+	@Column({ nullable: true })
+	unconfirmedTwoFactorSecret?: string;
 }

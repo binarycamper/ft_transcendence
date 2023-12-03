@@ -4,26 +4,30 @@ import { useNavigate } from 'react-router-dom';
 export function Signup() {
 	const [password, setPassword] = useState('');
 	const [isProfileComplete, setIsProfileComplete] = useState(false);
+	const [setup2FA, setSetup2FA] = useState(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
-        const checkProfileStatus = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/user/isProfileComplete', {
-                    credentials: 'include',
-                });
-                const data = await response.json();
-                setIsProfileComplete(data.isComplete);
-                if (data.isComplete) {
-                    navigate('/profile'); // Weiterleitung zur Profilseite
-                }
-            } catch (error) {
-                console.error('Error checking profile status:', error);
-            }
-        };
+		const checkProfileStatus = async () => {
+			try {
+				const response = await fetch(
+					'http://localhost:8080/user/isProfileComplete',
+					{
+						credentials: 'include',
+					},
+				);
+				const data = await response.json();
+				setIsProfileComplete(data.isComplete);
+				if (data.isComplete) {
+					navigate('/profile'); // Weiterleitung zur Profilseite
+				}
+			} catch (error) {
+				console.error('Error checking profile status:', error);
+			}
+		};
 
-        checkProfileStatus();
-    }, [navigate]);
+		checkProfileStatus();
+	}, [navigate]);
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -43,7 +47,11 @@ export function Signup() {
 				response.status === 401 ||
 				response.status === 303
 			) {
-				navigate('/profile');
+				if (setup2FA) {
+					navigate('/twofactorsetup'); // Weiterleitung zur 2FA-Setup-Seite
+				} else {
+					navigate('/profile'); // Weiterleitung zur Profilseite
+				}
 			} else {
 				const data = await response.json();
 				console.log('Profile update successful:', data);
@@ -56,26 +64,35 @@ export function Signup() {
 
 	return (
 		<div>
-		{isProfileComplete ? (
-			<p>Redirecting to your profile...</p>
-		) : (
-			<div>
-				<h1>Complete Your Profile</h1>
-				<form onSubmit={handleSubmit}>
-					<div>
-						<label htmlFor="password">Password:</label>
-						<input
-							id="password"
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-						/>
-					</div>
-					<button type="submit">Submit</button>
-				</form>
-			</div>
-		)}
-	</div>
+			{isProfileComplete ? (
+				<p>Redirecting to your profile...</p>
+			) : (
+				<div>
+					<h1>Complete Your Profile</h1>
+					<form onSubmit={handleSubmit}>
+						<div>
+							<label htmlFor="password">Password:</label>
+							<input
+								id="password"
+								type="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								required
+							/>
+						</div>
+						<div>
+							<input
+								type="checkbox"
+								id="setup2fa"
+								checked={setup2FA}
+								onChange={(e) => setSetup2FA(e.target.checked)}
+							/>
+							<label htmlFor="setup2fa">Set up Two-Factor Authentication</label>
+						</div>
+						<button type="submit">Submit</button>
+					</form>
+				</div>
+			)}
+		</div>
 	);
 }

@@ -10,6 +10,8 @@ import * as bcrypt from 'bcryptjs';
 import axios from 'axios';
 import { use } from 'passport';
 import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+import * as speakeasy from 'speakeasy';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +25,9 @@ export class AuthService {
 		private readonly jwtService: JwtService,
 	) {}
 
-	async authenticate(code: string): Promise<{ access_token: string }> {
+	async authenticate(
+		code: string,
+	): Promise<{ access_token?: string; require2FA?: boolean; userId?: string }> {
 		try {
 			const clientId = this.configService.get<string>('INTRA_UID');
 			const clientSecret = this.configService.get<string>('INTRA_SECRET');
@@ -91,6 +95,10 @@ export class AuthService {
 
 			await this.authTokenRepository.save(authToken);
 
+			if (user.isTwoFactorAuthenticationEnabled) {
+				// Wenn 2FA aktiviert ist, geben Sie zurück, dass eine 2FA-Überprüfung erforderlich ist
+				return { require2FA: true, userId: user.id }; // Fügen Sie die Benutzer-ID hinzu, um sie später zu verwenden
+			}
 			// Generate JWT for the client
 			const payload = { username: user.name, sub: user.id };
 			const jwtToken = this.jwtService.sign(payload);
@@ -144,5 +152,46 @@ export class AuthService {
 		} else {
 			return { message: 'Invalid refresh token' };
 		}
+	}
+
+	async verifyTwoFactorAuthenticationToken(
+		token: string,
+		user: User,
+	): Promise<boolean> {
+		// if (!user || !user.twoFactorAuthenticationSecret) {
+		// 	throw new Error('User not found or 2FA not setup');
+		// }
+
+		return speakeasy.totp.verify({
+			secret: user.twoFactorAuthenticationSecret,
+			encoding: 'base32',
+			token: token,
+		});
+	}
+
+	// Methode zum Erstellen eines Zugriffstokens (falls noch nicht vorhanden)
+	createAccessToken(userId: string): string {
+		const payload = { sub: userId };
+		return this.jwtService.sign(payload);
+	}
+
+	async setupTwoFactorAuthentication(
+		user: User,
+	): Promise<{ qrCodeUrl: string }> {
+		// if (!user) {
+		// 	throw new Error('User not found');
+		// }
+		const secret = speakeasy.generateSecret();
+		const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+		// Save the secret temporarily or associate it with the user session
+		user.unconfirmedTwoFactorSecret = secret.base32;
+		await this.userRepository.save(user);
+		return { qrCodeUrl };
+	}
+
+	async confirmTwoFactorAuthentication(user: User): Promise<void> {
+		user.twoFactorAuthenticationSecret = user.unconfirmedTwoFactorSecret;
+		user.unconfirmedTwoFactorSecret = null;
+		await this.userRepository.save(user);
 	}
 }
