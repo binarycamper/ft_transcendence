@@ -352,6 +352,7 @@ export class UserController {
 		const userId = req.user.id; // Retrieve the user's ID from the request
 
 		try {
+			//TOdo: Avoid adding own account. atm is used for debugging.
 			// Await the service method to add the friend
 			const updatedUser = await this.userService.addFriend(userId, friendName);
 
@@ -397,7 +398,7 @@ export class UserController {
 			password: '1', // Make sure this is hashed as per your auth strategy
 			intraId: 'someDebugIntraId',
 			imageUrl: 'someDebugImageUrl',
-			image: 'someDebugImage',
+			image: 'http://localhost:8080/user/uploads?filename=DebugUser.png',
 			status: 'created',
 		});
 

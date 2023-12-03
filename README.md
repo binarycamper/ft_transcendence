@@ -25,6 +25,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 ```
 start chat
 backend: NestJS
+fix bug when change nickname
 try fix error when get authtoken from 42api
 see friends current status
 stats have to be displayed on the user profile

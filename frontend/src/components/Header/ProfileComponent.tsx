@@ -12,29 +12,24 @@ function FriendProfile({ profile }: { profile: ProfileData }) {
 
 	// Default image if imageUrl is not provided
 	const imageSrc = profile.image || profile.imageUrl;
-
+	console.log('Imagesrc = ', imageSrc);
 	return (
 		<div
 			style={{ border: '1px solid #ccc', padding: '10px', marginTop: '20px' }}
 		>
-			{profile.imageUrl ? (
-				<img
-					src={profile.imageUrl}
-					alt={`${profile.name}'s profile`}
-					style={{ width: '100px', height: '100px' }}
-				/>
-			) : (
+			{imageSrc && (
 				<img
 					src={imageSrc}
 					alt={`${profile.name}'s profile`}
-					style={{ width: '100px', height: '100px' }}
+					style={{ width: '150px', height: '150px' }}
 				/>
 			)}
 			<h2>{profile.name}</h2>
-			<p>Nickname: {profile.nickname || 'Not provided'}</p>
+			<p>Nickname: {profile.nickname || 'N/A'}</p>
 			<p>Email: {profile.email}</p>
-			{/* Additional profile fields */}
+			{/* Render additional fields as needed */}
 		</div>
 	);
 }
+
 export default FriendProfile;
