@@ -25,7 +25,6 @@ import { createWriteStream } from 'fs';
 import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
 import * as fs from 'fs';
 import * as sharp from 'sharp';
-import { getRepository } from 'typeorm';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -54,11 +53,7 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
-	async completeProfile(
-		@Body() body: { password: string },
-		@Req() req,
-		@Res() res: Response,
-	) {
+	async completeProfile(@Body() body: { password: string }, @Req() req, @Res() res: Response) {
 		//console.log('Request headers:', req.headers);
 		//console.log('Request body:', body);
 		// With JwtAuthGuard used, you can now access the user from the request object
@@ -163,21 +158,14 @@ export class UserController {
 			// This might involve clearing any session or token information on the client side
 		} catch (error) {
 			console.error('Error deleting user:', error);
-			throw new HttpException(
-				'Failed to delete user',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			throw new HttpException('Failed to delete user', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
 	@Post('uploadImage')
-	async uploadImage(
-		@UploadedFile() file: Express.Multer.File,
-		@Req() req,
-		@Res() res: Response,
-	) {
+	async uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req, @Res() res: Response) {
 		//file is empty?
 		if (!file || file.size === 0) {
 			res.status(HttpStatus.BAD_REQUEST).json({
@@ -208,7 +196,7 @@ export class UserController {
 		if (!allowedMimeTypes.has(file.mimetype)) {
 			res
 				.status(HttpStatus.BAD_REQUEST)
-				.json({ message: 'Invalid file type. Only image files are allowed.' });
+				.json({ message: 'Invalid file type. Only jpeg/jpg/png files are allowed.' });
 			return;
 		}
 		// Retrieve the existing user to check for an old image
@@ -271,18 +259,12 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('editName')
-	async editNickName(
-		@Body() body: { nickname: string },
-		@Req() req,
-		@Res() res: Response,
-	) {
+	async editNickName(@Body() body: { nickname: string }, @Req() req, @Res() res: Response) {
 		const userId = req.user.id;
 		const newName = body.nickname;
 		if (newName == undefined) {
 			//Todo: choose correct httpstatus!
-			res
-				.status(HttpStatus.NOT_IMPLEMENTED)
-				.json({ message: 'Nickname body was wrong' });
+			res.status(HttpStatus.NOT_IMPLEMENTED).json({ message: 'Nickname body was wrong' });
 		}
 
 		// Check if the new name is unique
@@ -294,20 +276,13 @@ export class UserController {
 			const status = await this.userService.updateUserName(userId, newName);
 			console.log('statuts = ', status);
 			if (status) {
-				res
-					.status(HttpStatus.OK)
-					.json({ message: 'Nickname updated successfully' });
+				res.status(HttpStatus.OK).json({ message: 'Nickname updated successfully' });
 			} else {
-				res
-					.status(HttpStatus.OK)
-					.json({ message: 'Nickname was not changed, choose another one' });
+				res.status(HttpStatus.OK).json({ message: 'Nickname was not changed, choose another one' });
 			}
 		} catch (error) {
 			console.error('Error updating Nickname:', error);
-			throw new HttpException(
-				'Failed to update Nickname',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			throw new HttpException('Failed to update Nickname', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -319,9 +294,7 @@ export class UserController {
 		try {
 			const user = await this.userService.findProfileById(userId);
 			if (!user) {
-				return res
-					.status(HttpStatus.NOT_FOUND)
-					.json({ message: 'User not found' });
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
 
 			if (!user.friends) {
@@ -336,9 +309,7 @@ export class UserController {
 			res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
 		} catch (error) {
 			console.error('Error retrieving friends:', error);
-			res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'Error retrieving friends' });
+			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
 		}
 	}
 
@@ -358,18 +329,14 @@ export class UserController {
 
 			// Check if the update was successful
 			if (!updatedUser) {
-				return res
-					.status(HttpStatus.NOT_FOUND)
-					.json({ message: 'User not found' });
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
 
 			// You can choose to return the updated user or just a success message
 			res.status(HttpStatus.OK).json({ message: 'Friend added successfully' });
 		} catch (error) {
 			console.error('Error adding friend:', error);
-			res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'Error adding friend' });
+			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error adding friend' });
 		}
 	}
 

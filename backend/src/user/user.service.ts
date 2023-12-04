@@ -1,8 +1,4 @@
-import {
-	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -90,10 +86,12 @@ export class UserService {
 				await entityManager.remove(user);
 			});
 		} catch (error) {
-			throw new InternalServerErrorException(
-				'Error deleting user and auth token',
-			);
+			throw new InternalServerErrorException('Error deleting user and auth token');
 		}
+	}
+
+	async updateUser(user: User): Promise<User> {
+		return this.userRepository.save(user);
 	}
 
 	//Updates UserImage string
@@ -153,9 +151,7 @@ export class UserService {
 		}
 
 		// Check if the friend is already in the user's friends list
-		const alreadyFriends = user.friends.some(
-			(friend) => friend.id === friendToAdd.id,
-		);
+		const alreadyFriends = user.friends.some((friend) => friend.id === friendToAdd.id);
 		if (alreadyFriends) {
 			// The friend is already added, handle this as you see fit
 			return user;

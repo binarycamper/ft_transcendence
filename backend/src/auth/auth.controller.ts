@@ -59,10 +59,7 @@ export class AuthController {
 	}
 
 	@Get('callback')
-	async handleCallback(
-		@Query('code') code: string,
-		@Res() res: Response,
-	): Promise<void> {
+	async handleCallback(@Query('code') code: string, @Res() res: Response): Promise<void> {
 		if (code === undefined) {
 			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 		} else {
@@ -79,10 +76,7 @@ export class AuthController {
 				// Weiterleitung zum Frontend mit zusätzlichen Informationen
 				const redirectUrl = new URL('http://localhost:5173/signup');
 				redirectUrl.searchParams.append('userId', result.userId);
-				redirectUrl.searchParams.append(
-					'require2FA',
-					result.require2FA ? 'true' : 'false',
-				);
+				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
 
 				res.redirect(redirectUrl.toString());
 			} catch (error) {
@@ -115,12 +109,23 @@ export class AuthController {
 	// 		}
 	// }
 
+	@UseGuards(JwtAuthGuard)
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
+		const userId = req.user.id; // Assuming req.user is populated with the user's information
+		// Find the user by ID
+		const user = await this.userService.findProfileById(userId);
+		if (user) {
+			// Update the user's status to 'offline'
+			user.status = 'offline';
+			await this.userService.updateUser(user);
+		}
+		// Clear the cookie
 		res.clearCookie('token', {
 			sameSite: 'none',
 			secure: true, // Set to true if using HTTPS
 		});
+		// Send the response
 		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 
@@ -159,9 +164,7 @@ export class AuthController {
 		}
 
 		// Generieren des QR-Codes für 2FA
-		const { qrCodeUrl } = await this.authService.setupTwoFactorAuthentication(
-			req.user,
-		);
+		const { qrCodeUrl } = await this.authService.setupTwoFactorAuthentication(req.user);
 		return { qrCodeUrl };
 	}
 

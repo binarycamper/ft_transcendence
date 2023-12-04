@@ -6,10 +6,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthToken } from './auth.entity';
-import { UserModule } from '../user/user.module'; // Import UserModule
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigService as well
+import { UserModule } from '../user/user.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './guards/jwt.strategy'; // Import JwtStrategy
+import { JwtStrategy } from './guards/jwt.strategy';
 import { StatusGuard } from './guards/status.guard';
 
 @Module({
@@ -27,7 +27,7 @@ import { StatusGuard } from './guards/status.guard';
 			inject: [ConfigService],
 		}),
 	],
-	providers: [AuthService, JwtStrategy, StatusGuard], // Add JwtStrategy to providers
+	providers: [AuthService, JwtStrategy, StatusGuard],
 	controllers: [AuthController],
 	exports: [AuthService],
 })

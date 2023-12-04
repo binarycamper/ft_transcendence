@@ -5,13 +5,10 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 # Unassigned:
 
 ```
-- implement navigation to user/friendlist
+- implement Button in Dashboard to navigation to user/friendlist
 
 (frontend)
 -handle errors correctly when receiving response..., backend response error gets sended but frontend dont care, see inspect network
-
-(frontend 'change Nickname' button)
-- edit unique nickname
 
 (frontend 'upload Image' button)
 - optinal: image-upload extension check, only images allowed and Mb size limit and format. provides immediate feedback to the user and reduced Server Load
