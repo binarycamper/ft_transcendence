@@ -22,6 +22,8 @@ export function Profile() {
 	const [useNewImage, setUseNewImage] = useState(false);
 	// State for holding the image URL
 	const [imageUrl, setImageUrl] = useState('');
+	const [newNickname, setNewNickname] = useState(''); // State to hold the new nickname input by the user
+	const [nicknameError, setNicknameError] = useState(''); // State to hold any error message
 	const navigate = useNavigate();
 
 	const toggleImage = () => {
@@ -154,7 +156,51 @@ export function Profile() {
 	 * If response == OK then redirect to profile, stay & refresh or whatever
 	 * else explain error, like name already taken
 	 */
-	const changeNickname = () => {};
+	const changeNickname = async () => {
+		// Trim the newNickname to remove whitespace from both ends and check if it's empty
+		if (!newNickname.trim()) {
+			setNicknameError('Nickname cannot be empty.');
+			return; // Exit the function early if the nickname is empty
+		}
+
+		// Reset error message
+		setNicknameError('');
+
+		try {
+			const response = await fetch('http://localhost:8080/user/editName', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include',
+				body: JSON.stringify({ nickname: newNickname.trim() }), // Send the trimmed nickname
+			});
+
+			if (response.ok) {
+				const updatedProfile = await response.json();
+				if (profile) {
+					setProfile({
+						...profile,
+						nickname: updatedProfile.nickname, // Update the nickname in the state
+					});
+				}
+				window.location.reload(); // Refreshes the current page
+			} else if (response.status === HttpStatusCode.BadRequest) {
+				const errorData = await response.json();
+				setNicknameError(errorData.message);
+			} else {
+				throw new Error('Failed to change nickname.');
+			}
+		} catch (error) {
+			if (error instanceof Error) {
+				console.error('Error changing nickname:', error);
+				setNicknameError(error.message || 'An unexpected error occurred.');
+			} else {
+				console.error('An unexpected error occurred:', error);
+				setNicknameError('An unexpected error occurred.');
+			}
+		}
+	};
 
 	if (!profile) {
 		return <div>Loading profile...</div>;
@@ -181,6 +227,14 @@ export function Profile() {
 			<button onClick={handleImageUpload}>Upload New Image</button>
 			<button onClick={handleDelete}>Delete My Account</button>
 			<button onClick={changeNickname}>Change Nickname</button>
+			<input
+				type="text"
+				value={newNickname}
+				onChange={(e) => setNewNickname(e.target.value)}
+				placeholder="Enter new nickname"
+			/>
+			<button onClick={changeNickname}>Change Nickname</button>
+			{nicknameError && <p style={{ color: 'red' }}>{nicknameError}</p>}
 		</div>
 	);
 }
