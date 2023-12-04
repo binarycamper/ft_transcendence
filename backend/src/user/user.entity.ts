@@ -1,10 +1,4 @@
-import {
-	Entity,
-	PrimaryGeneratedColumn,
-	Column,
-	ManyToMany,
-	JoinTable,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
 
 @Entity()
 export class User {
@@ -23,6 +17,7 @@ export class User {
 	@Column({ select: false }) // Exclude password field by default
 	password: string;
 
+	//possible status states: { fresh, online, offline }
 	@Column({ default: 'fresh' })
 	status: string;
 

@@ -50,7 +50,7 @@ export class UserService {
 
 		// Update the user's password
 		user.password = await bcrypt.hash(password, 10);
-		user.status = 'created';
+		user.status = 'online';
 
 		// Save the updated user
 		return this.userRepository.save(user);
@@ -118,7 +118,7 @@ export class UserService {
 	}
 
 	//Changes User.name entry database
-	async updateUserName(userId: string, newName: string): Promise<boolean> {
+	async updateUserNickName(userId: string, newName: string): Promise<boolean> {
 		const userToUpdate = await this.userRepository.findOne({
 			where: {
 				id: userId,

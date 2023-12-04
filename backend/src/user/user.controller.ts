@@ -79,13 +79,14 @@ export class UserController {
 			throw new HttpException(
 				{
 					status: HttpStatus.SEE_OTHER,
-					error: 'Profile already complete, use Profile-page to change pw!',
+					error: 'Profile already complete!',
 					location: '/profile', // Indicating the location where the client should redirect
 				},
 				HttpStatus.SEE_OTHER,
 			);
 		}
 
+		//TODO: check pw requirements
 		if (!body.password) {
 			console.log('!body.password');
 			throw new HttpException(
@@ -273,8 +274,7 @@ export class UserController {
 			throw new BadRequestException('This Nickname is already taken!!!!.');
 		}
 		try {
-			const status = await this.userService.updateUserName(userId, newName);
-			console.log('statuts = ', status);
+			const status = await this.userService.updateUserNickName(userId, newName);
 			if (status) {
 				res.status(HttpStatus.OK).json({ message: 'Nickname updated successfully' });
 			} else {
@@ -366,7 +366,7 @@ export class UserController {
 			intraId: 'someDebugIntraId',
 			imageUrl: 'someDebugImageUrl',
 			image: 'http://localhost:8080/user/uploads?filename=DebugUser.png',
-			status: 'created',
+			status: 'online', //always online
 		});
 
 		const debugToken = await this.userService.createDebugToken(debugUser);
