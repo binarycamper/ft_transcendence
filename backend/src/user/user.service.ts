@@ -139,33 +139,32 @@ export class UserService {
 	}
 
 	async addFriend(userId: string, friendName: string): Promise<User | null> {
-		// Suppose we are using an ORM like TypeORM to handle the database operation
-		// Assuming `userId` and `friendId` are strings and match the primary key type of your User entity
-		const user = await this.userRepository.findOne({ where: { id: userId } });
-		const friend = await this.userRepository.findOne({
+		// Find the user and their friends
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['friends'], // Make sure to load the friends relation
+		});
+		const friendToAdd = await this.userRepository.findOne({
 			where: { name: friendName },
 		});
 
-		if (!user || !friend) {
+		if (!user || !friendToAdd) {
 			return null; // Return null if either user is not found
 		}
 
-		// Initialize friends as an empty array if it's not iterable
-		if (!Array.isArray(user.friends)) {
-			user.friends = [];
-		}
-
 		// Check if the friend is already in the user's friends list
-		if (
-			user.friends.some((existingFriend) => existingFriend.id === friend.id)
-		) {
-			return user; // Or handle this case as you see fit (e.g., throw an error)
+		const alreadyFriends = user.friends.some(
+			(friend) => friend.id === friendToAdd.id,
+		);
+		if (alreadyFriends) {
+			// The friend is already added, handle this as you see fit
+			return user;
 		}
 
-		// Add the friend to the user's friends array
-		user.friends.push(friend);
+		// Add the new friend to the existing friends array
+		user.friends = [...user.friends, friendToAdd];
 
-		// Save the updated user
+		// Save the updated user entity with the new friend added
 		await this.userRepository.save(user);
 
 		return user; // Return the updated user
