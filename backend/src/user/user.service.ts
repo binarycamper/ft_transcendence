@@ -41,6 +41,24 @@ export class UserService {
 		return user;
 	}
 
+	async setUserOnline(userId: string): Promise<void> {
+		// Logic to set the user's status to 'online' in the database
+		const user = await this.userRepository.findOne({ where: { id: userId } });
+		if (user) {
+			user.status = 'online';
+			await this.userRepository.save(user);
+		}
+	}
+
+	async setUserOffline(userId: string): Promise<void> {
+		// Logic to set the user's status to 'offline' in the database
+		const user = await this.userRepository.findOne({ where: { id: userId } });
+		if (user) {
+			user.status = 'offline';
+			await this.userRepository.save(user);
+		}
+	}
+
 	//completes the users account, with the last step: create pw.
 	async complete(userId: string, password: string): Promise<User> {
 		const user = await this.userRepository.findOneBy({ id: userId });

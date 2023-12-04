@@ -6,9 +6,11 @@ import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ChatModule } from './chat/chat.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
 	imports: [
+		EventsModule,
 		TypeOrmModule.forRoot({
 			type: 'postgres',
 			host: process.env.POSTGRES_HOST,

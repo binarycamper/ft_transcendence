@@ -22,6 +22,8 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 ```
 start chat
 backend: NestJS
+when receiving apitoken error msg
+when account deleted then refresh dashboard
 try fix error when get authtoken from 42api
 see friends current status
 stats have to be displayed on the user profile

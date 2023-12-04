@@ -22,18 +22,18 @@ async function bootstrap() {
 		credentials: true,
 	});
 
-	// // Set up global validation pipe
-	// app.useGlobalPipes(
-	// 	new ValidationPipe({
-	// 		whitelist: true,
-	// 		forbidNonWhitelisted: true,
-	// 		transform: true,
-	// 		exceptionFactory: (errors) => {
-	// 			console.log(errors);
-	// 			return new BadRequestException(errors);
-	// 		},
-	// 	}),
-	// );
+	// Set up global validation pipe
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+			exceptionFactory: (errors) => {
+				console.log(errors);
+				return new BadRequestException(errors);
+			},
+		}),
+	);
 
 	// Apply rate limiting
 	app.use(
