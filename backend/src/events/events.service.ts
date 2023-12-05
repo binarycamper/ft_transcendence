@@ -8,12 +8,16 @@ export class EventsService {
 
 	// Functions to handle user online/offline status
 	userConnected(userId: string) {
-		console.log('User tracked online ', userId);
-		this.userService.setUserOnline(userId);
+		if (userId) {
+			console.log('User tracked online ', userId);
+			this.userService.setUserOnline(userId);
+		}
 	}
 
 	userDisconnected(userId: string) {
-		console.log('User tracked offline ', userId);
-		this.userService.setUserOffline(userId);
+		if (userId) {
+			console.log('User tracked offline ', userId);
+			this.userService.setUserOffline(userId);
+		}
 	}
 }
