@@ -1,41 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Container, Group, Tabs } from '@mantine/core';
+import io, { Socket } from 'socket.io-client';
 
 export function Header() {
 	const navigate = useNavigate();
 	const pathname = useLocation().pathname;
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	// Define the socket instance in the state
+	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
-		const checkAuthStatus = async () => {
-			try {
-				const response = await fetch('http://localhost:8080/auth/status', {
-					credentials: 'include', // Ensures cookies are sent with the request
-				});
-				if (response.ok) {
-					const data = await response.json();
-					setIsAuthenticated(data.isAuthenticated);
-				} else {
-					setIsAuthenticated(false);
-				}
-			} catch (error) {
-				console.error('Error checking authentication status:', error);
-				setIsAuthenticated(false);
-			}
+		// Initialize the WebSocket connection if the user is authenticated
+		if (isAuthenticated) {
+			const authToken = localStorage.getItem('authToken');
+			const newSocket = io('http://localhost:8080', {
+				query: { auth_token: authToken },
+			});
+			setSocket(newSocket);
+		}
+		return () => {
+			socket?.disconnect();
 		};
+	}, [isAuthenticated]);
 
-		checkAuthStatus();
-	}, []);
+	// ... rest of your component
 
 	const handleLogout = async () => {
 		try {
 			const response = await fetch('http://localhost:8080/auth/logout', {
 				method: 'POST',
-				credentials: 'include', // Include credentials for cookies if used
+				credentials: 'include',
 			});
+
 			if (response.ok) {
-				localStorage.clear();
+				if (socket) {
+					socket.disconnect();
+				}
+				localStorage.removeItem('authToken');
 				setIsAuthenticated(false);
 				navigate('/');
 			} else {

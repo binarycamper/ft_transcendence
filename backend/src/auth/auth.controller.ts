@@ -118,7 +118,7 @@ export class AuthController {
 		const user = await this.userService.findProfileById(userId);
 		if (user) {
 			// Update the user's status to 'offline'
-			//user.status = 'offline';
+			user.status = 'offline';
 			await this.userService.updateUser(user);
 		}
 		// Clear the cookie
