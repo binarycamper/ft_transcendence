@@ -33,12 +33,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const authToken = client.handshake?.query?.auth_token;
 			//console.log('Auth Token: ', client.handshake.query.auth_token);
 			//console.log('Test: ', JSON.stringify(client.handshake.query, null, 2));
-
-			if (!authToken) {
-				console.log('No auth token provided, proceeding without authentication.');
+			if (
+				authToken === 'null' ||
+				authToken === null ||
+				authToken === undefined ||
+				authToken === ''
+			) {
+				//console.log('No auth token provided, proceeding without authentication.');
 				return null;
 			}
-
 			// Verify the token
 			const decoded = this.jwtService.verify(authToken as string);
 

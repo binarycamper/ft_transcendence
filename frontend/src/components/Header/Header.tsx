@@ -35,6 +35,7 @@ export function Header() {
 				credentials: 'include', // Include credentials for cookies if used
 			});
 			if (response.ok) {
+				localStorage.clear();
 				setIsAuthenticated(false);
 				navigate('/');
 			} else {
