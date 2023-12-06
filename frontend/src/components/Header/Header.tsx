@@ -24,7 +24,26 @@ export function Header() {
 		};
 	}, [isAuthenticated]);
 
-	// ... rest of your component
+	useEffect(() => {
+		const checkAuthStatus = async () => {
+			try {
+				const response = await fetch('http://localhost:8080/auth/status', {
+					credentials: 'include', // Ensures cookies are sent with the request
+				});
+				if (response.ok) {
+					const data = await response.json();
+					setIsAuthenticated(data.isAuthenticated);
+				} else {
+					setIsAuthenticated(false);
+				}
+			} catch (error) {
+				console.error('Error checking authentication status:', error);
+				setIsAuthenticated(false);
+			}
+		};
+
+		checkAuthStatus();
+	}, []);
 
 	const handleLogout = async () => {
 		try {
