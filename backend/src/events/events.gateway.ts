@@ -31,6 +31,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private extractUserIdFromSocket(client: Socket): string | null {
 		try {
 			const authToken = client.handshake?.query?.auth_token;
+			//console.log('Auth Token: ', client.handshake.query.auth_token);
+			//console.log('Test: ', JSON.stringify(client.handshake.query, null, 2));
+
 			if (!authToken) {
 				console.log('No auth token provided, proceeding without authentication.');
 				return null;

@@ -9,13 +9,17 @@ export function Signup() {
 
 	useEffect(() => {
 		const checkProfileStatus = async () => {
+			// Using URLSearchParams to parse the query string
+			const queryParams = new URLSearchParams(window.location.search);
+			const token = queryParams.get('token');
+			//console.log('TOKEN= ', token);
+			if (token) {
+				localStorage.setItem('authToken', token);
+			}
 			try {
-				const response = await fetch(
-					'http://localhost:8080/user/isProfileComplete',
-					{
-						credentials: 'include',
-					},
-				);
+				const response = await fetch('http://localhost:8080/user/isProfileComplete', {
+					credentials: 'include',
+				});
 				const data = await response.json();
 				setIsProfileComplete(data.isComplete);
 				if (data.isComplete) {
@@ -42,11 +46,7 @@ export function Signup() {
 				credentials: 'include',
 			});
 
-			if (
-				response.status === 200 ||
-				response.status === 401 ||
-				response.status === 303
-			) {
+			if (response.status === 200 || response.status === 401 || response.status === 303) {
 				if (setup2FA) {
 					navigate('/twofactorsetup'); // Weiterleitung zur 2FA-Setup-Seite
 				} else {

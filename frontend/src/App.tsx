@@ -8,8 +8,10 @@ import io from 'socket.io-client';
 export default function App() {
 	useEffect(() => {
 		// Initialize the WebSocket connection
-		const socket = io('http://localhost:8080/events'); // Your server address
-
+		const authToken = localStorage.getItem('authToken');
+		const socket = io('http://localhost:8080/events', {
+			query: { auth_token: authToken },
+		});
 		// Log when connected
 		socket.on('connect', () => {
 			console.log(`Connected to server with socket id: ${socket.id}`);

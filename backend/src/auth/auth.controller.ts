@@ -75,8 +75,9 @@ export class AuthController {
 
 				// Weiterleitung zum Frontend mit zusätzlichen Informationen
 				const redirectUrl = new URL('http://localhost:5173/signup');
-				redirectUrl.searchParams.append('userId', result.userId);
+				redirectUrl.searchParams.append('/?userId', result.userId);
 				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
+				redirectUrl.searchParams.append('token', result.access_token);
 
 				res.redirect(redirectUrl.toString());
 			} catch (error) {
@@ -117,7 +118,7 @@ export class AuthController {
 		const user = await this.userService.findProfileById(userId);
 		if (user) {
 			// Update the user's status to 'offline'
-			user.status = 'offline';
+			//user.status = 'offline';
 			await this.userService.updateUser(user);
 		}
 		// Clear the cookie
