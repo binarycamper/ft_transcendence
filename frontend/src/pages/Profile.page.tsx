@@ -26,6 +26,46 @@ export function Profile() {
 	const [nicknameError, setNicknameError] = useState(''); // State to hold any error message
 	const navigate = useNavigate();
 
+	useEffect(() => {
+		let isSubscribed = true; // This flag will prevent state updates if the component is unmounted
+
+		// Define the function to fetch the user's profile data
+		const fetchProfile = async () => {
+			// Introduce a delay before fetching profile data that database is up to date.
+			const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+			await delay(500); // Wait for 0.5 seconds
+			try {
+				const response = await fetch('http://localhost:8080/user/profile', {
+					credentials: 'include',
+				});
+				if (!response.ok) {
+					throw new Error('Profile fetch failed');
+				}
+				const profileData: UserProfile = await response.json();
+				console.log('User profile data: ', profileData);
+				if (isSubscribed) {
+					setProfile(profileData);
+				}
+			} catch (error) {
+				console.error('Error fetching profile:', error);
+				if (isSubscribed) {
+					navigate('/login'); // Redirect to error page only if the component is still mounted
+				}
+			}
+		};
+
+		// Call fetchProfile when the component mounts
+		fetchProfile();
+
+		// Set up an interval to fetch the profile every 300 seconds
+		const intervalId = setInterval(fetchProfile, 30000); // 300000 ms = 300 seconds
+
+		// Clean up the interval and the isSubscribed flag when the component unmounts
+		return () => {
+			clearInterval(intervalId);
+		};
+	}, [navigate]);
+
 	const toggleImage = () => {
 		if (profile && profile.image) {
 			setUseNewImage(!useNewImage);
@@ -47,31 +87,6 @@ export function Profile() {
 			console.error('Error fetching image:', error);
 		}
 	};
-
-	useEffect(() => {
-		// Fetch the user's profile data
-		const fetchProfile = async () => {
-			try {
-				const response = await fetch('http://localhost:8080/user/profile', {
-					credentials: 'include',
-				});
-				if (!response.ok) {
-					throw new Error('Profile fetch failed');
-				}
-				const profileData: UserProfile = await response.json();
-				setProfile(profileData);
-				if (profileData.image) {
-					// If there is a new image, fetch it
-					fetchImage(profileData.image);
-				}
-			} catch (error) {
-				console.log('Error fetching profile:', error);
-				navigate('/login'); // Redirect to error page
-			}
-		};
-
-		fetchProfile();
-	}, [navigate]);
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files) {
@@ -141,15 +156,6 @@ export function Profile() {
 		}
 	};
 
-	/*
-	 * Todoo:
-	 *
-	 * Request always with credentials!:
-	 * Post /user/editName {Nickname: Lorem}
-	 *
-	 * If response == OK then redirect to profile, stay & refresh or whatever
-	 * else explain error, like name already taken
-	 */
 	const changeNickname = async () => {
 		// Trim the newNickname to remove whitespace from both ends and check if it's empty
 		if (!newNickname.trim()) {
@@ -157,6 +163,10 @@ export function Profile() {
 			return; // Exit the function early if the nickname is empty
 		}
 
+		if (newNickname.length > 100) {
+			setNicknameError('Nickname must be smaller then 100.');
+			return; // Exit the function early if the nickname is empty
+		}
 		// Reset error message
 		setNicknameError('');
 
@@ -179,20 +189,20 @@ export function Profile() {
 					});
 				}
 				window.location.reload(); // Refreshes the current page
-			} else if (response.status === HttpStatusCode.BadRequest) {
-				const errorData = await response.json();
-				setNicknameError(errorData.message);
 			} else {
-				throw new Error('Failed to change nickname.');
+				const errorData = await response.json();
+				if (Array.isArray(errorData.message)) {
+					const messages = (errorData.message as Array<any>).map((errorItem) =>
+						Object.values(errorItem.constraints || {}).join('. '),
+					);
+					setNicknameError(messages.join(' ')); // Join all messages into a single string
+				} else {
+					// If it's not an array, it might be a single message
+					setNicknameError(errorData.message || 'An unexpected error occurred.');
+				}
 			}
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error('Error changing nickname:', error);
-				setNicknameError(error.message || 'An unexpected error occurred.');
-			} else {
-				console.error('An unexpected error occurred:', error);
-				setNicknameError('An unexpected error occurred.');
-			}
+			setNicknameError('Failed to change nickname. Please try again.');
 		}
 	};
 

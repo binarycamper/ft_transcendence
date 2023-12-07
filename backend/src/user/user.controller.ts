@@ -25,6 +25,7 @@ import { createWriteStream } from 'fs';
 import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
 import * as fs from 'fs';
 import * as sharp from 'sharp';
+import { EditNicknameDto } from './dto/userName.dto';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -115,6 +116,7 @@ export class UserController {
 		const userProfile = await this.userService.findProfileById(userId);
 
 		// Exclude password and other sensitive fields from the result
+		console.log('user profile data: ', userProfile.status);
 		const { password, id, ...result } = userProfile;
 
 		return result;
@@ -260,19 +262,16 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('editName')
-	async editNickName(@Body() body: { nickname: string }, @Req() req, @Res() res: Response) {
+	async editNickName(@Body() editNicknameDto: EditNicknameDto, @Req() req, @Res() res: Response) {
 		const userId = req.user.id;
-		const newName = body.nickname;
-		if (newName == undefined) {
-			//Todo: choose correct httpstatus!
-			res.status(HttpStatus.NOT_IMPLEMENTED).json({ message: 'Nickname body was wrong' });
-		}
+		const newName = editNicknameDto.nickname;
 
 		// Check if the new name is unique
 		const isNameTaken = await this.userService.isNameUnique(userId, newName);
 		if (isNameTaken) {
-			throw new BadRequestException('This Nickname is already taken!!!!.');
+			throw new BadRequestException('This Nickname is already taken.');
 		}
+
 		try {
 			const status = await this.userService.updateUserNickName(userId, newName);
 			if (status) {
