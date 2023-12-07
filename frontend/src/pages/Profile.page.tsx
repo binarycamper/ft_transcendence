@@ -42,9 +42,12 @@ export function Profile() {
 					throw new Error('Profile fetch failed');
 				}
 				const profileData: UserProfile = await response.json();
-				console.log('User profile data: ', profileData);
+				//console.log('User profile data: ', profileData);
 				if (isSubscribed) {
 					setProfile(profileData);
+					if (profileData.image) {
+						fetchImage(profileData.image);
+					}
 				}
 			} catch (error) {
 				console.error('Error fetching profile:', error);
