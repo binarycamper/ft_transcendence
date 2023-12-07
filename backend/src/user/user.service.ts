@@ -44,7 +44,7 @@ export class UserService {
 	async setUserOnline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'online' in the database
 		const user = await this.userRepository.findOne({ where: { id: userId } });
-		if (user) {
+		if (user && user.status !== 'fresh') {
 			user.status = 'online';
 			await this.userRepository.save(user);
 		}
@@ -53,7 +53,7 @@ export class UserService {
 	async setUserOffline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'offline' in the database
 		const user = await this.userRepository.findOne({ where: { id: userId } });
-		if (user) {
+		if (user && user.status !== 'fresh') {
 			user.status = 'offline';
 			await this.userRepository.save(user);
 		}

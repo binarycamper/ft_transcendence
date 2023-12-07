@@ -14,6 +14,8 @@ import {
 	UploadedFile,
 	UseInterceptors,
 	BadRequestException,
+	UsePipes,
+	ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -26,6 +28,7 @@ import { unlink } from 'fs/promises'; // make sure to import unlink for file del
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { EditNicknameDto } from './dto/userName.dto';
+import { CompleteProfileDto } from './dto/completeProfile.dto';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -52,14 +55,16 @@ export class UserController {
 		}
 	}
 
+	//complete profile in signup.page.tsx set password of user
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
-	async completeProfile(@Body() body: { password: string }, @Req() req, @Res() res: Response) {
-		//console.log('Request headers:', req.headers);
-		//console.log('Request body:', body);
-		// With JwtAuthGuard used, you can now access the user from the request object
-		const userId = req.user?.id; // The user property is attached to the request by JwtAuthGuard
-		//console.log('userid: ', userId);
+	@UsePipes(new ValidationPipe())
+	async completeProfile(
+		@Body() completeProfileDto: CompleteProfileDto,
+		@Req() req,
+		@Res() res: Response,
+	) {
+		const userId = req.user?.id;
 		if (!userId) {
 			console.log('!userId');
 			throw new HttpException(
@@ -67,7 +72,6 @@ export class UserController {
 					status: HttpStatus.UNAUTHORIZED,
 					error:
 						'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
-					// Optionally, you can include a 'location' key if you want the frontend to redirect
 					location: '/login', // This can be used by the frontend to redirect
 				},
 				HttpStatus.UNAUTHORIZED,
@@ -87,9 +91,7 @@ export class UserController {
 			);
 		}
 
-		//TODO: check pw requirements
-		if (!body.password) {
-			console.log('!body.password');
+		if (!completeProfileDto.password) {
 			throw new HttpException(
 				{
 					status: HttpStatus.BAD_REQUEST,
@@ -99,11 +101,7 @@ export class UserController {
 				HttpStatus.BAD_REQUEST,
 			);
 		}
-
-		// Call the service method to update password
-		const updatedUser = await this.userService.complete(userId, body.password);
-
-		// Return a success response
+		const updatedUser = await this.userService.complete(userId, completeProfileDto.password);
 		res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
 	}
 
