@@ -25,7 +25,7 @@ async function handleSignup() {
 export function Login() {
 	return (
 		<Center my={200}>
-			<Paper className="login" radius={0} p={30}>
+			<Paper className="signup" radius={0} p={30}>
 				<Paper withBorder shadow="md" p={100} mt={30} mb={50} radius="md">
 					<TextInput label="Email address" placeholder="intra@student.42Heilbronn.de" size="md" />
 					<PasswordInput label="Password" placeholder="Your password" mt="md" size="md" />
