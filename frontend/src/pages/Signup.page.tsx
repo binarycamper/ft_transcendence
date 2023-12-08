@@ -40,7 +40,7 @@ export function Signup() {
 			// Using URLSearchParams to parse the query string
 			const queryParams = new URLSearchParams(window.location.search);
 			const token = queryParams.get('token');
-			//console.log('TOKEN= ', token);
+			console.log('TOKEN get saved = ', token);
 			if (token) {
 				localStorage.setItem('authToken', token);
 			}
