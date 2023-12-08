@@ -1,56 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 
-// Define the type for individual message, change it according to your needs
-type Message = string;
+const socket = io('http://localhost:8080'); // Your server URL
 
-export function Chat() {
-	// Explicitly declare the type of messages as an array of Message
-	const [messages, setMessages] = useState<Message[]>([]);
+export function ChatPage() {
+	const [message, setMessage] = useState('');
+	const [messages, setMessages] = useState<string[]>([]);
 
-	// Declare the messageInput as a string
-	const [messageInput, setMessageInput] = useState<string>('');
+	useEffect(() => {
+		// Function to handle the event
+		const handleNewMessage = (msg: string) => {
+			setMessages((prevMessages) => [...prevMessages, msg]);
+		};
 
-	const handleSendClick = () => {
-		if (messageInput.trim()) {
-			setMessages([...messages, messageInput]);
-			setMessageInput('');
-		}
-	};
+		// Set up the event listener
+		socket.on('receiveMessage', handleNewMessage);
 
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setMessageInput(event.target.value);
-	};
+		// Clean up the event listener
+		return () => {
+			socket.off('receiveMessage', handleNewMessage);
+		};
+	}, []);
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === 'Enter') {
-			handleSendClick();
+	const sendMessage = () => {
+		if (message.trim()) {
+			// Prevent sending empty messages
+			socket.emit('sendMessage', message);
+			setMessage('');
 		}
 	};
 
 	return (
 		<div>
-			<h2>Chat</h2>
-			<div
-				id="message-area"
-				style={{
-					height: '300px',
-					overflowY: 'scroll',
-					border: '1px solid black',
-					marginBottom: '10px',
-				}}
-			>
-				{messages.map((message, index) => (
-					<div key={index}>{message}</div>
+			<div className="messages">
+				{messages.map((msg, index) => (
+					<p key={index}>{msg}</p>
 				))}
 			</div>
-			<input
-				type="text"
-				value={messageInput}
-				onChange={handleInputChange}
-				onKeyDown={handleKeyDown}
-				style={{ marginRight: '5px' }}
+			<textarea
+				value={message}
+				onChange={(e) => setMessage(e.target.value)}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter') {
+						e.preventDefault(); // Prevent newline on Enter
+						sendMessage();
+					}
+				}}
 			/>
-			<button onClick={handleSendClick}>Send</button>
+			<button onClick={sendMessage}>Send</button>
 		</div>
 	);
 }
