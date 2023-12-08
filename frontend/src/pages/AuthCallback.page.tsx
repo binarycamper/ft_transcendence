@@ -13,13 +13,10 @@ const AuthCallback = () => {
 			localStorage.setItem('userId', userId);
 			localStorage.setItem('token', token);
 
-			// Weiterleitung zur Hauptseite oder zum Dashboard
-			window.location.href = '/dashboard'; // Beispiel-Weiterleitung
+			window.location.href = '/dashboard';
 		}
 	}, [location]);
 
-	return (
-		<div>Loading...</div> // Oder eine andere Ladeanzeige
-	);
+	return <div>Loading...</div>;
 };
 export default AuthCallback;

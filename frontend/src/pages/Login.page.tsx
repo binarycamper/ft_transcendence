@@ -12,7 +12,6 @@ import {
 
 async function handleSignup() {
 	try {
-		//TODO: change to /auth/signup
 		const response = await axios.get('http://localhost:8080/auth/signup', {
 			withCredentials: true,
 		});

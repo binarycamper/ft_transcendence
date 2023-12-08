@@ -8,11 +8,9 @@ export function TwoFactorSetup() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		// Aufrufen von handle2FASetup bei Komponenten-Mount
 		handle2FASetup();
 	}, []);
 
-	// ... Ihre vorhandenen Funktionen: handle2FASetup, verify2FACode, confirm2FA ...
 	const handle2FASetup = async () => {
 		try {
 			const response = await fetch('http://localhost:8080/auth/2fa/setup', {
@@ -24,13 +22,10 @@ export function TwoFactorSetup() {
 			setShow2FASetup(true);
 		} catch (error) {
 			console.error('Error setting up 2FA:', error);
-			// Handle errors, e.g., show an error message
 		}
 	};
 
 	const verify2FACode = async () => {
-		// const token = localStorage.getItem('token'); // JWT-Token
-		// const userId = localStorage.getItem('userId');
 		try {
 			const response = await fetch('http://localhost:8080/auth/2fa/verify-2fa', {
 				method: 'POST',
@@ -45,10 +40,8 @@ export function TwoFactorSetup() {
 
 			console.log(response);
 			if (response.status === 200) {
-				// Code verification successful
-				await confirm2FA(); // Bestätigen des 2FA-Setups
+				await confirm2FA();
 			} else {
-				// Handle unsuccessful verification
 				console.error('Invalid 2FA code');
 			}
 		} catch (error) {
@@ -64,11 +57,8 @@ export function TwoFactorSetup() {
 			});
 
 			if (response.ok) {
-				// 2FA setup successfully confirmed
-				// Hier können Sie weitere Aktionen durchführen, wie z.B. den Benutzer zur Profilseite weiterleiten
 				navigate('/profile');
 			} else {
-				// Handle error in 2FA confirmation
 				console.error('Error confirming 2FA setup');
 			}
 		} catch (error) {
