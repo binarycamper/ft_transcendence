@@ -2,8 +2,8 @@ import { IsNotEmpty, MinLength } from 'class-validator';
 
 export class CompleteProfileDto {
 	@IsNotEmpty({ message: 'Password is required.' })
-	@MinLength(8, {
-		message: 'Password must be at least 8 characters long.',
+	@MinLength(1, {
+		message: 'Password must be at least 1 characters long.',
 	})
 	password: string;
 }

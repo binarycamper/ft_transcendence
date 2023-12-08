@@ -83,7 +83,7 @@ export function Header() {
 				</Group>
 				<Group>
 					{!isAuthenticated ? (
-						<Button component="a" href="/signup">
+						<Button component="a" href="/login">
 							Sign in
 						</Button>
 					) : (

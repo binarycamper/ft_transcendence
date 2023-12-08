@@ -67,12 +67,12 @@ export function Signup() {
 		// Clear the previous password error
 		setPasswordError('');
 
-		//TOdo: Validate the password better
-		const msg = validatePassword(password);
+		//TOdo: Validate the password
+		/*const msg = validatePassword(password);
 		if (msg !== '') {
 			setPasswordError(msg);
 			return;
-		}
+		}*/
 		const API_URL = 'http://localhost:8080/user/complete';
 		try {
 			const response = await fetch(API_URL, {
@@ -92,7 +92,7 @@ export function Signup() {
 				}
 			} else {
 				const data = await response.json();
-				if (data.message) console.log('Password update failed: ', data.message[0]);
+				if (data.message) console.log('Password update failed: ', data.message);
 			}
 		} catch (error) {
 			console.error('Network error:', error);
