@@ -10,6 +10,7 @@ import { Settings } from './pages/Settings.page';
 import { Signup } from './pages/Signup.page';
 import { FriendList } from './pages/FriendList.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
+import AuthCallback from './pages/AuthCallback.page';
 
 const router = createBrowserRouter([
 	{
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
 	{
 		path: '/twofactorsetup',
 		element: <TwoFactorSetup />,
+	},
+	{
+		path: '/callback',
+		element: <AuthCallback />,
 	},
 ]);
 

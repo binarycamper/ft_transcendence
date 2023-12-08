@@ -29,23 +29,22 @@ export function TwoFactorSetup() {
 	};
 
 	const verify2FACode = async () => {
+		// const token = localStorage.getItem('token'); // JWT-Token
+		// const userId = localStorage.getItem('userId');
 		try {
-			const response = await fetch(
-				'http://localhost:8080/auth/2fa/verify-2fa',
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						userId: localStorage.getItem('userId'),
-						token: twoFACode,
-					}),
-					credentials: 'include',
+			const response = await fetch('http://localhost:8080/auth/2fa/verify-2fa', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
 				},
-			);
+				body: JSON.stringify({
+					token: twoFACode,
+				}),
+				credentials: 'include',
+			});
 
-			if (response.ok) {
+			console.log(response);
+			if (response.status === 200) {
 				// Code verification successful
 				await confirm2FA(); // Bestätigen des 2FA-Setups
 			} else {
