@@ -86,30 +86,6 @@ export class AuthController {
 		}
 	}
 
-	// @Get('callback')
-	// async handleCallback(
-	// 	@Query('code') code: string,
-	// 	@Res() res: Response,
-	// ): Promise<void> {
-	// 	if (code === undefined) {
-	// 		throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-	// 	} else
-	// 		try {
-	// 			//console.log('code: ', code);
-	// 			const token = await this.authService.authenticate(code);
-	// 			//console.log('Header = ', res.header);
-	// 			res.cookie('token', token.access_token, {
-	// 				httpOnly: true,
-	// 				maxAge: 86400000 * 7, // 7 days expiry
-	// 				sameSite: 'none',
-	// 				secure: true, // Set to true if using HTTPS
-	// 			});
-	// 			res.redirect('http://localhost:5173/signup');
-	// 		} catch (error) {
-	// 			throw error;
-	// 		}
-	// }
-
 	@UseGuards(JwtAuthGuard)
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
