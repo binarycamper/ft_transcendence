@@ -130,16 +130,6 @@ export class AuthService {
 		}
 	}
 
-	async refreshToken(req): Promise<{ accessToken?: string; message?: string }> {
-		const refreshToken = req.cookies['RefreshToken'];
-		const newAccessToken = await this.generateNewAccessToken(refreshToken);
-		if (newAccessToken) {
-			return { accessToken: newAccessToken };
-		} else {
-			return { message: 'Invalid refresh token' };
-		}
-	}
-
 	async verifyTwoFactorAuthenticationToken(user: User, token: string): Promise<boolean> {
 		if (!user || !user.unconfirmedTwoFactorSecret) {
 			throw new Error('2FA setup not completed or user not found');
@@ -149,7 +139,6 @@ export class AuthService {
 			secret: user.unconfirmedTwoFactorSecret,
 			encoding: 'base32',
 			token: token,
-			window: 1,
 		});
 
 		if (isValid) {
@@ -177,14 +166,12 @@ export class AuthService {
 		return { qrCodeUrl };
 	}
 
-	async confirmTwoFactorAuthentication(user: User): Promise<void> {
+	async getAccessToken(userId: string) {
+		const user = await this.userRepository.findOne({ where: { id: userId } });
 		if (!user) {
-			throw new Error('No user found');
+			throw new Error('User not found');
 		}
-
-		user.twoFactorAuthenticationSecret = user.unconfirmedTwoFactorSecret;
-		user.unconfirmedTwoFactorSecret = null;
-		user.isTwoFactorAuthenticationEnabled = true;
-		await this.userRepository.save(user);
+		const accessToken = this.authTokenRepository.findOne({ where: { user: user } });
+		return accessToken;
 	}
 }

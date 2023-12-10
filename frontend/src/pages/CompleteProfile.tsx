@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export function Signup() {
+export function CompleteProfile() {
 	const [password, setPassword] = useState('');
 	const [passwordError, setPasswordError] = useState('');
 	const [isProfileComplete, setIsProfileComplete] = useState(false);

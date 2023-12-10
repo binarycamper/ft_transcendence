@@ -8,21 +8,22 @@ import {
 	Res,
 	Req,
 	UseGuards,
-	Injectable,
 	Query,
 	HttpException,
 	HttpStatus,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthCallbackDto } from './auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import * as fs from 'fs';
-import * as sharp from 'sharp';
 import { UserService } from '../user/user.service';
 import { Verify2FADto } from './DTO/verify2FA.Dto';
+import * as bcrypt from 'bcryptjs';
+import { LoginDto } from './DTO/Login.Dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../user/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,8 @@ export class AuthController {
 		private readonly authService: AuthService,
 		private readonly configService: ConfigService,
 		private userService: UserService,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
 	) {}
 
 	@UseGuards(JwtAuthGuard)
@@ -46,15 +49,36 @@ export class AuthController {
 		return res.json({ url });
 	}
 
-	@UseGuards(JwtAuthGuard)
-	@Post('refresh-token')
-	async refreshToken(@Req() req, @Res() res: Response) {
-		const result = await this.authService.refreshToken(req);
-		if (result.accessToken) {
-			return res.status(200).send({ accessToken: result.accessToken });
-		} else {
-			return res.status(401).send({ message: result.message });
+	@Post('login')
+	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+		const { email, password } = loginDto;
+		console.log(loginDto);
+
+		const user = await this.userRepository.findOne({
+			where: { email },
+			select: ['id', 'email', 'password'],
+		});
+		if (!user) {
+			return res.status(401).json({ message: 'Benutzer nicht gefunden.' });
 		}
+
+		console.log('Gefundener Benutzer:', user);
+		if (!user.password) {
+			console.error('Passwortfeld ist undefined');
+			return res.status(500).json({ message: 'Interner Serverfehler' });
+		}
+
+		const isPasswordValid = await bcrypt.compare(password, user.password);
+		if (!isPasswordValid) {
+			return res.status(401).json({ message: 'Ungültiges Passwort.' });
+		}
+
+		// Hier könnten Sie ein JWT-Token generieren, falls Sie dies verwenden
+		const authToken = this.authService.getAccessToken(user.id);
+		// Zum Profil navigieren
+		return res
+			.status(200)
+			.json({ message: 'Login erfolgreich', userId: user.id, authToken: authToken });
 	}
 
 	@Get('callback')
@@ -71,7 +95,7 @@ export class AuthController {
 					secure: true,
 				});
 
-				const redirectUrl = new URL('http://localhost:5173/signup');
+				const redirectUrl = new URL('http://localhost:5173/completeprofile');
 				redirectUrl.searchParams.append('/?userId', result.userId);
 				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
 				redirectUrl.searchParams.append('token', result.access_token);
@@ -89,20 +113,18 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
-		const userId = req.user.id; // Assuming req.user is populated with the user's information
-		// Find the user by ID
+		const userId = req.user.id;
+
 		const user = await this.userService.findProfileById(userId);
 		if (user) {
-			// Update the user's status to 'offline'
-			user.status = 'offline';
+			// user.status = 'offline';
 			await this.userService.updateUser(user);
 		}
-		// Clear the cookie
+
 		res.clearCookie('token', {
 			sameSite: 'none',
 			secure: true,
 		});
-		// Send the response
 		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 
@@ -123,7 +145,6 @@ export class AuthController {
 		if (!isValid) {
 			return response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid 2FA token' });
 		} else {
-			await this.authService.confirmTwoFactorAuthentication(user);
 			const accessToken = this.authService.createAccessToken(user.id);
 			return response.status(HttpStatus.OK).json({ accessToken });
 		}
@@ -133,23 +154,10 @@ export class AuthController {
 	@Get('/2fa/setup')
 	async setupTwoFactorAuthentication(@Req() req) {
 		const request = req;
-		if (!request) {
+		if (!request.user) {
 			throw new Error('User not found');
 		}
-
 		const { qrCodeUrl } = await this.authService.setupTwoFactorAuthentication(request.user);
 		return { qrCodeUrl };
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Post('/2fa/confirm')
-	async confirmTwoFactorAuthentication(@Req() req, @Res() response: Response) {
-		const user = req.user;
-		if (!user) {
-			return response.status(HttpStatus.BAD_REQUEST).json({ message: '2FA cannot be confirmed' });
-		}
-
-		await this.authService.confirmTwoFactorAuthentication(user);
-		return response.status(HttpStatus.OK).json({ message: '2FA confirmed successfully' });
 	}
 }

@@ -40,29 +40,12 @@ export function TwoFactorSetup() {
 
 			console.log(response);
 			if (response.status === 200) {
-				await confirm2FA();
+				navigate('/profile');
 			} else {
 				console.error('Invalid 2FA code');
 			}
 		} catch (error) {
 			console.error('Error verifying 2FA code:', error);
-		}
-	};
-
-	const confirm2FA = async () => {
-		try {
-			const response = await fetch('http://localhost:8080/auth/2fa/confirm', {
-				method: 'POST',
-				credentials: 'include',
-			});
-
-			if (response.ok) {
-				navigate('/profile');
-			} else {
-				console.error('Error confirming 2FA setup');
-			}
-		} catch (error) {
-			console.error('Error confirming 2FA setup:', error);
 		}
 	};
 

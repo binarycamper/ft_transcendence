@@ -7,7 +7,7 @@ import { Login } from './pages/Login.page';
 import { Play } from './pages/Play.page';
 import { Profile } from './pages/Profile.page';
 import { Settings } from './pages/Settings.page';
-import { Signup } from './pages/Signup.page';
+import { CompleteProfile } from './pages/CompleteProfile';
 import { FriendList } from './pages/FriendList.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import AuthCallback from './pages/AuthCallback.page';
@@ -53,8 +53,8 @@ const router = createBrowserRouter([
 		element: <Login />,
 	},
 	{
-		path: '/signup',
-		element: <Signup />,
+		path: '/completeprofile',
+		element: <CompleteProfile />,
 	},
 	{
 		path: '/twofactorsetup',
