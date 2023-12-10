@@ -11,6 +11,8 @@ export class EventsService {
 		if (userId) {
 			console.log('User tracked online ', userId);
 			this.userService.setUserOnline(userId);
+		} else {
+			console.log('User not found: ', userId);
 		}
 	}
 
@@ -18,6 +20,8 @@ export class EventsService {
 		if (userId) {
 			console.log('User tracked offline ', userId);
 			this.userService.setUserOffline(userId);
+		} else {
+			console.log('User not found: ', userId);
 		}
 	}
 }

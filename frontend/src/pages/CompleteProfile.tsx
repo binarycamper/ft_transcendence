@@ -37,14 +37,6 @@ export function CompleteProfile() {
 
 	useEffect(() => {
 		const checkProfileStatus = async () => {
-			// Using URLSearchParams to parse the query string
-			const queryParams = new URLSearchParams(window.location.search);
-			//TODO: use guards only dont save token (socket.io)
-			const token = queryParams.get('token');
-			console.log('TOKEN get saved = ', token);
-			if (token) {
-				localStorage.setItem('authToken', token);
-			}
 			try {
 				const response = await fetch('http://localhost:8080/user/isProfileComplete', {
 					credentials: 'include',
@@ -58,7 +50,6 @@ export function CompleteProfile() {
 				console.error('Error checking profile status:', error);
 			}
 		};
-
 		checkProfileStatus();
 	}, [navigate]);
 

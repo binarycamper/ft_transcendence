@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
-
-const socket = io('http://localhost:8080'); // Your server URL
 
 export function ChatPage() {
 	const [message, setMessage] = useState('');
@@ -12,20 +9,11 @@ export function ChatPage() {
 		const handleNewMessage = (msg: string) => {
 			setMessages((prevMessages) => [...prevMessages, msg]);
 		};
-
-		// Set up the event listener
-		socket.on('receiveMessage', handleNewMessage);
-
-		// Clean up the event listener
-		return () => {
-			socket.off('receiveMessage', handleNewMessage);
-		};
 	}, []);
 
 	const sendMessage = () => {
 		if (message.trim()) {
 			// Prevent sending empty messages
-			socket.emit('sendMessage', message);
 			setMessage('');
 		}
 	};

@@ -1,29 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Container, Group, Tabs } from '@mantine/core';
-import io, { Socket } from 'socket.io-client';
 
 export function Header() {
 	const navigate = useNavigate();
 	const pathname = useLocation().pathname;
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-	// Define the socket instance in the state
-	const [socket, setSocket] = useState<Socket | null>(null);
-
-	useEffect(() => {
-		// Initialize the WebSocket connection if the user is authenticated
-		if (isAuthenticated) {
-			const authToken = localStorage.getItem('authToken');
-			const newSocket = io('http://localhost:8080', {
-				query: { auth_token: authToken },
-			});
-			setSocket(newSocket);
-		}
-		return () => {
-			socket?.disconnect();
-		};
-	}, [isAuthenticated]);
 
 	useEffect(() => {
 		const checkAuthStatus = async () => {

@@ -36,26 +36,6 @@ async function bootstrap() {
 			},
 		}),
 	);
-	const httpServer = http.createServer(app.getHttpServer());
-	const io = new Server(httpServer, {
-		cors: {
-			origin: 'http://localhost:5173',
-		},
-	});
-
-	// A map to keep track of online users
-	const onlineUsers = new Map();
-
-	io.on('connection', (socket) => {
-		const authToken = socket.handshake.query.authToken;
-		onlineUsers.set(authToken, socket.id);
-		console.log(`User (token: ${authToken}) connected with socket id ${socket.id}`);
-
-		socket.on('disconnect', () => {
-			onlineUsers.delete(authToken);
-			console.log(`User ${authToken} disconnected`);
-		});
-	});
 
 	// Apply rate limiting
 	app.use(

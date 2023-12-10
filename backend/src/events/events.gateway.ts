@@ -1,60 +1,63 @@
-// events.gateway.ts
-import {
-	WebSocketGateway,
-	SubscribeMessage,
-	WebSocketServer,
-	OnGatewayConnection,
-	OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Socket, Server } from 'socket.io';
-import { EventsService } from './events.service';
+import { WebSocketGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import * as cookie from 'cookie';
+import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { EventsService } from './events.service';
 
-@WebSocketGateway({ namespace: '/events', cors: true })
-export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-	@WebSocketServer() server: Server;
+@WebSocketGateway({
+	cors: {
+		origin: 'http://localhost:5173', // Replace with your frontend's origin
+		methods: ['GET', 'POST'], // You can specify the allowed methods
+		credentials: true, // Important if you're using credentials like cookies or auth headers
+	},
+})
+export class EventsGateway {
+	@WebSocketServer()
+	server: Server;
 
-	constructor(private eventsService: EventsService, private jwtService: JwtService) {}
+	constructor(private jwtService: JwtService, private eventsService: EventsService) {}
 
-	async handleConnection(client: any) {
-		// Extract user ID from the client, e.g., from the token
-		const userId = this.extractUserIdFromSocket(client);
-		await this.eventsService.userConnected(userId);
-	}
-
-	async handleDisconnect(client: any) {
-		const userId = this.extractUserIdFromSocket(client);
-		await this.eventsService.userDisconnected(userId);
-	}
-
-	// Utility function to extract the user ID from the socket connection
-	private extractUserIdFromSocket(client: Socket): string | null {
+	async handleConnection(client: Socket, ...args: any[]) {
 		try {
-			const authToken = client.handshake?.query?.auth_token;
-			console.log('Auth Token: ', client.handshake.query.auth_token);
-			console.log('Test: ', JSON.stringify(client.handshake.query, null, 2));
-			if (
-				authToken === 'null' ||
-				authToken === null ||
-				authToken === undefined ||
-				authToken === ''
-			) {
-				console.log('No auth token provided, proceeding without authentication.');
-				return null;
-			}
-			// Verify the token
-			const decoded = this.jwtService.verify(authToken as string);
+			const cookies = cookie.parse(client.handshake.headers.cookie || '');
+			const token = cookies['token'];
 
-			// Return the user ID from the token's payload
-			return decoded.sub;
+			if (!cookies) {
+				//console.log('No cookies provided');
+				return;
+			}
+			//console.log('cookies: ', cookies);
+			//console.log('token type: ', typeof cookies);
+
+			if (!token) {
+				//console.log('No token provided');
+				return;
+			}
+
+			//console.log('token: ', token);
+			//console.log('token type: ', typeof token);
+
+			try {
+				const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
+				client.data.user = decoded;
+				//console.log('decoded client data: ', decoded);
+				if (decoded && decoded.sub) {
+					this.eventsService.userConnected(decoded.sub);
+				}
+			} catch (innerError) {
+				console.log('JWT decode error:', innerError.message);
+			}
 		} catch (error) {
-			console.error('Error extracting user from socket', error);
-			return null; // Or handle the error as appropriate for your application
+			console.log('Error in handleConnection:', error.message);
 		}
 	}
 
-	@SubscribeMessage('events')
-	handleEvent(client: any, data: string): string {
-		return data;
+	handleDisconnect(client: any) {
+		//console.log('start handle disconnect: ', client.data.user);
+		if (client.data.user && client.data.user.sub) {
+			this.eventsService.userDisconnected(client.data.user.sub);
+		} else {
+			console.log('error: changing user state to offline');
+		}
 	}
 }

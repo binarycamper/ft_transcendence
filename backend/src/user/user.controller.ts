@@ -113,7 +113,7 @@ export class UserController {
 		const userProfile = await this.userService.findProfileById(userId);
 
 		// Exclude password and other sensitive fields from the result
-		console.log('user profile data: ', userProfile.status);
+		//console.log('user profile data: ', userProfile.status);
 		const { password, id, ...result } = userProfile;
 
 		return result;

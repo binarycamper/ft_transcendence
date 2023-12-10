@@ -1,8 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JwtService } from '@nestjs/jwt';
-import { User } from '../../user/user.entity'; // Adjust the path if needed
+import { User } from '../../user/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -21,13 +20,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 					let jwt = null;
 					if (request && request.headers && request.headers.cookie) {
 						const cookies = request.headers.cookie.split(';');
-						const tokenCookie = cookies.find((cookie) =>
-							cookie.trim().startsWith('token='),
-						);
+						const tokenCookie = cookies.find((cookie) => cookie.trim().startsWith('token='));
 						if (tokenCookie) {
 							jwt = tokenCookie.split('=')[1];
 							//print token if u need for postman
-							console.log(`Extracted JWT Token: ${jwt}`);
+							//console.log(`Extracted JWT Token: ${jwt}`);
 						}
 					}
 					return jwt;
