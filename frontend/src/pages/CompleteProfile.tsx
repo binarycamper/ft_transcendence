@@ -39,6 +39,7 @@ export function CompleteProfile() {
 		const checkProfileStatus = async () => {
 			// Using URLSearchParams to parse the query string
 			const queryParams = new URLSearchParams(window.location.search);
+			//TODO: use guards only dont save token (socket.io)
 			const token = queryParams.get('token');
 			console.log('TOKEN get saved = ', token);
 			if (token) {
@@ -64,15 +65,15 @@ export function CompleteProfile() {
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		// Clear the previous password error
-		setPasswordError('');
-
 		//TOdo: Validate the password
 		/*const msg = validatePassword(password);
 		if (msg !== '') {
 			setPasswordError(msg);
 			return;
 		}*/
+		// Clear the previous password error
+		setPasswordError('');
+
 		const API_URL = 'http://localhost:8080/user/complete';
 		try {
 			const response = await fetch(API_URL, {
@@ -96,7 +97,6 @@ export function CompleteProfile() {
 			}
 		} catch (error) {
 			console.error('Network error:', error);
-			// Handle network errors, e.g., show an error message
 		}
 	};
 

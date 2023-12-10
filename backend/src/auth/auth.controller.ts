@@ -61,7 +61,7 @@ export class AuthController {
 			select: ['id', 'email', 'password'],
 		});
 		if (!user) {
-			return res.status(401).json({ message: 'Benutzer nicht gefunden.' });
+			return res.status(401).json({ message: 'User not found.' });
 		}
 
 		//console.log('Gefundener Benutzer:', user);
@@ -81,18 +81,18 @@ export class AuthController {
 			email: user.email,
 			password: user.password,
 			intraId: user.intraId,
-			//imageUrl: user.image?.versions?.medium, TOdoo:
+			//imageUrl: user.image?.versions?.medium, TOdoo: add image stuff here if necessary
 		};
 		const jwtToken = this.jwtService.sign(userPayload);
 		// Set the cookie with the JWT token
 		res.cookie('token', jwtToken, {
 			httpOnly: true,
+			maxAge: 86400000 * 7,
 			secure: process.env.NODE_ENV !== 'development',
 			sameSite: 'strict',
 		});
-
-		// Zum Profil navigieren
-		return res.status(200).json({ message: 'Login erfolgreich', userId: user.id });
+		// Send back a successful response
+		return res.status(200).json({ message: 'Login succesfully', userId: user.id });
 	}
 
 	@Get('callback')

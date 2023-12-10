@@ -36,7 +36,6 @@ const uploadPath = '/usr/src/app/uploads/';
 export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
-	//Verify pw input and creates hash, it checks if user is allowed to do so Jwt + intern logic
 
 	//returns all users
 	@Get('users')
@@ -350,7 +349,7 @@ export class UserController {
 		return result;
 	}
 
-	//Debug:
+	//Debug: TODO: Delete for eval && create correct token! jwt.sign(payload)
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('createDebugUser')
 	async createDebugUser(@Res() res: Response) {
