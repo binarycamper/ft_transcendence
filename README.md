@@ -37,12 +37,12 @@ database: PostgreSQL
 ## rkedida
 
 ```
-database: PostgreSQL
-passwords in database must be hashed
-protect against SQL injections
-server-side validation for forms and any user input
-login using OAuth system of 42 intranet
-two-factor authentication
+        =    database: PostgreSQL
+    x    =    passwords in database must be hashed
+        =    protect against SQL injections
+        =    server-side validation for forms and any user input
+    x    =    login using OAuth system of 42 intranet
+    x    =    two-factor authentication
 ```
 
 ## rmeuth
