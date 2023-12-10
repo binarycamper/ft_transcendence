@@ -75,6 +75,7 @@ export class AuthController {
 			return res.status(401).json({ message: 'Wrong password.' });
 		}
 
+		// Hier könnten Sie ein JWT-Token generieren, falls Sie dies verwenden
 		const userPayload = {
 			name: user.name,
 			email: user.email,
@@ -90,7 +91,7 @@ export class AuthController {
 			sameSite: 'strict',
 		});
 
-		// Send back a successful response
+		// Zum Profil navigieren
 		return res.status(200).json({ message: 'Login erfolgreich', userId: user.id });
 	}
 

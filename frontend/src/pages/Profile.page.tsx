@@ -53,9 +53,9 @@ export function Profile() {
 				}
 			} catch (error) {
 				console.error('Error fetching profile:', error);
-				if (isSubscribed) {
-					navigate('/login'); // Redirect to error page only if the component is still mounted
-				}
+				// if (isSubscribed) {
+				// 	navigate('/login'); // Redirect to error page only if the component is still mounted
+				// }
 			}
 		};
 

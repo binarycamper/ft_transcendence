@@ -140,8 +140,8 @@ export function Login() {
 			if (response.ok) {
 				const { userId, authToken } = await response.json();
 				localStorage.setItem('userId', userId); // Store userId in local storage
-				localStorage.setItem('token', JSON.stringify(authToken)); // Store authToken in local storage
-				navigate('/profile'); // Navigate to profile with the data
+				localStorage.setItem('token', JSON.stringify(authToken));
+				navigate('/profile'); // Verwenden Sie navigate innerhalb der Komponente
 			} else {
 				console.error('Login fehlgeschlagen');
 			}
@@ -189,7 +189,7 @@ export function Login() {
 						Login
 					</Button>
 					<Text ta="center" mt="md">
-						Don’t have an account? Register now
+						Don’t have an account?{' '}
 						<Anchor<'a'> fw={700} onClick={handleSignup}>
 							Register
 						</Anchor>

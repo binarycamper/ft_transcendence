@@ -165,14 +165,4 @@ export class AuthService {
 
 		return { qrCodeUrl };
 	}
-
-	async getAccessToken(userId: string) {
-		//console.log('userID:', userId);
-		const accessToken = await this.authTokenRepository.findOne({ where: { userId: userId } });
-		if (!accessToken) {
-			console.log('accessToken not found');
-			throw new Error('accessToken not found');
-		}
-		return accessToken;
-	}
 }
