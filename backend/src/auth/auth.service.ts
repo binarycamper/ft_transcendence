@@ -167,11 +167,12 @@ export class AuthService {
 	}
 
 	async getAccessToken(userId: string) {
-		const user = await this.userRepository.findOne({ where: { id: userId } });
-		if (!user) {
-			throw new Error('User not found');
+		//console.log('userID:', userId);
+		const accessToken = await this.authTokenRepository.findOne({ where: { userId: userId } });
+		if (!accessToken) {
+			console.log('accessToken not found');
+			throw new Error('accessToken not found');
 		}
-		const accessToken = this.authTokenRepository.findOne({ where: { user: user } });
 		return accessToken;
 	}
 }

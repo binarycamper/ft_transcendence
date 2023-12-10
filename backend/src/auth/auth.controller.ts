@@ -24,6 +24,7 @@ import { LoginDto } from './DTO/Login.Dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +32,7 @@ export class AuthController {
 		private readonly authService: AuthService,
 		private readonly configService: ConfigService,
 		private userService: UserService,
+		private jwtService: JwtService,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 	) {}
@@ -62,23 +64,34 @@ export class AuthController {
 			return res.status(401).json({ message: 'Benutzer nicht gefunden.' });
 		}
 
-		console.log('Gefundener Benutzer:', user);
+		//console.log('Gefundener Benutzer:', user);
 		if (!user.password) {
-			console.error('Passwortfeld ist undefined');
-			return res.status(500).json({ message: 'Interner Serverfehler' });
+			console.error('Passwordfield is undefined');
+			return res.status(500).json({ message: 'Internal Servererror' });
 		}
 
 		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
-			return res.status(401).json({ message: 'Ungültiges Passwort.' });
+			return res.status(401).json({ message: 'Wrong password.' });
 		}
 
-		// Hier könnten Sie ein JWT-Token generieren, falls Sie dies verwenden
-		const authToken = this.authService.getAccessToken(user.id);
-		// Zum Profil navigieren
-		return res
-			.status(200)
-			.json({ message: 'Login erfolgreich', userId: user.id, authToken: authToken });
+		const userPayload = {
+			name: user.name,
+			email: user.email,
+			password: user.password,
+			intraId: user.intraId,
+			//imageUrl: user.image?.versions?.medium, TOdoo:
+		};
+		const jwtToken = this.jwtService.sign(userPayload);
+		// Set the cookie with the JWT token
+		res.cookie('token', jwtToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV !== 'development',
+			sameSite: 'strict',
+		});
+
+		// Send back a successful response
+		return res.status(200).json({ message: 'Login erfolgreich', userId: user.id });
 	}
 
 	@Get('callback')

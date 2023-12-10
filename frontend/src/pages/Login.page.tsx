@@ -138,8 +138,10 @@ export function Login() {
 			});
 
 			if (response.ok) {
-				const data = await response.json();
-				navigate('/profile'); // Verwenden Sie navigate innerhalb der Komponente
+				const { userId, authToken } = await response.json();
+				localStorage.setItem('userId', userId); // Store userId in local storage
+				localStorage.setItem('token', JSON.stringify(authToken)); // Store authToken in local storage
+				navigate('/profile'); // Navigate to profile with the data
 			} else {
 				console.error('Login fehlgeschlagen');
 			}

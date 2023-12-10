@@ -35,6 +35,8 @@ export function Profile() {
 			const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 			await delay(500); // Wait for 0.5 seconds
 			try {
+				//const authToken = JSON.parse(localStorage.getItem('token'));
+				//console.log('authTOKEN: ', authToken);
 				const response = await fetch('http://localhost:8080/user/profile', {
 					credentials: 'include',
 				});
@@ -42,7 +44,7 @@ export function Profile() {
 					throw new Error('Profile fetch failed');
 				}
 				const profileData: UserProfile = await response.json();
-				//console.log('User profile data: ', profileData);
+				console.log('User profile data: ', profileData);
 				if (isSubscribed) {
 					setProfile(profileData);
 					if (profileData.image) {
