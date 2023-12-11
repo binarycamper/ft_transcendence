@@ -4,6 +4,7 @@ import FriendProfile from '../components/Header/ProfileComponent';
 type Friend = {
 	id: string;
 	name: string;
+	status: string;
 	// Add any other properties that your Friend entity might have
 };
 
@@ -49,6 +50,12 @@ export function FriendList() {
 			setError('Please enter the name of the friend you want to add.');
 			return;
 		}
+		if (new Blob([newFriendName]).size > 8 * 8) {
+			// Example: 50MB limit
+			setNewFriendName(''); // Reset input field
+			setError('The entered name is too large to process.');
+			return;
+		}
 		try {
 			const response = await fetch('http://localhost:8080/user/addFriend', {
 				method: 'POST',
@@ -56,16 +63,20 @@ export function FriendList() {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ friendName: newFriendName }), // Send the friend's name in the request body
+				body: JSON.stringify({ friendName: newFriendName }),
 			});
 
-			if (!response.ok) {
-				throw new Error('Network response was not ok');
+			if (response.status === 404) {
+				setError(`The user ${newFriendName} does not exist.`);
+				setNewFriendName(''); // Reset input field
+			} else if (!response.ok) {
+				throw new Error(`Network response was not ok. Status: ${response.status}`);
+			} else {
+				// After adding a friend, you may want to update the friend list
+				await fetchFriends();
+				setNewFriendName(''); // Reset input field after successful addition
+				setError(null); // Clear any existing errors
 			}
-
-			// After adding a friend, you may want to update the friend list
-			await fetchFriends();
-			setNewFriendName(''); // Reset input field after successful addition
 		} catch (error) {
 			setError('Failed to add friend');
 			console.error('There was an error adding the friend:', error);
@@ -81,7 +92,6 @@ export function FriendList() {
 					credentials: 'include',
 					headers: {
 						'Content-Type': 'application/json',
-						// Include authorization headers if needed
 					},
 				},
 			);
@@ -94,7 +104,6 @@ export function FriendList() {
 			setFriendProfile(friendProfileData);
 		} catch (error) {
 			console.error('There was an error fetching the friend profile:', error);
-			// Handle errors here
 		}
 	};
 
@@ -121,7 +130,7 @@ export function FriendList() {
 								onClick={() => handleFriendClick(friend.name)}
 								style={{ cursor: 'pointer' }}
 							>
-								{friend.name}
+								{friend.name} - {friend.status}
 							</li>
 						))}
 					</ul>

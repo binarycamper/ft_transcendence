@@ -227,7 +227,7 @@ export class UserController {
 		@Res() res: Response,
 	) {
 		const userId = req.user.id; // Retrieve the user's ID from the request
-
+		console.log('USER ID= ', userId);
 		try {
 			//TOdo: Avoid adding own account. atm is used for debugging.
 			// Await the service method to add the friend
@@ -272,7 +272,7 @@ export class UserController {
 			intraId: 'someDebugIntraId',
 			imageUrl: 'someDebugImageUrl',
 			image: 'http://localhost:8080/user/uploads?filename=DebugUser.png',
-			status: 'online', //always online
+			status: 'offline',
 		});
 
 		const debugToken = await this.userService.createDebugToken(debugUser);
