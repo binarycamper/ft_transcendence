@@ -91,6 +91,10 @@ export class AuthController {
 			secure: process.env.NODE_ENV !== 'development',
 			sameSite: 'strict',
 		});
+
+		user.status = 'online';
+		await this.userService.updateUser(user);
+
 		// Send back a successful response
 		return res.status(200).json({ message: 'Login succesfully', userId: user.id });
 	}
@@ -131,7 +135,7 @@ export class AuthController {
 
 		const user = await this.userService.findProfileById(userId);
 		if (user) {
-			// user.status = 'offline';
+			user.status = 'offline';
 			await this.userService.updateUser(user);
 		}
 

@@ -23,7 +23,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 start chat
 backend: NestJS
 try fix error when get authtoken from 42api
-see friends current status
+Update all users' states frequently. Atm its a bit static
 stats have to be displayed on the user profile
 match history
 ```
