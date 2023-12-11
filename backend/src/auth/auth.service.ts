@@ -57,20 +57,24 @@ export class AuthService {
     This method creates a new user or updates it if it already exists.
     */
 	private async createUserOrUpdate(userData: any): Promise<User> {
-		console.log('AuthToken= ', userData.login);
+		console.log('userData= ', userData);
 		let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
 		let UserId;
+		let state = 'fresh';
+		let pw = 'hashed-pw';
 		if (!user) {
 			const UserId = uuidv4();
 		} else {
+			state = user.status;
 			UserId = user.id;
+			pw = user.password;
 		}
 		const userPayload = {
 			id: UserId,
 			name: userData.login,
 			email: userData.email,
-			password: 'hashed-password',
-			status: 'fresh',
+			password: pw,
+			status: state,
 			intraId: userData.id,
 			imageUrl: userData.image?.versions?.medium,
 			isTwoFactorAuthenticationEnabled: false,
@@ -81,7 +85,6 @@ export class AuthService {
 		} else {
 			this.userRepository.merge(user, userPayload);
 		}
-		//TODO: ROB Update the AuthToken when changing the User Table. AuthToken has references
 		await this.userRepository.save(user);
 		return user;
 	}
@@ -92,9 +95,9 @@ export class AuthService {
 		try {
 			//Retrieve OAuth token and query user data
 			const accessToken = await this.getOAuthToken(code);
-			const authToken = await this.getOAuthUserData(accessToken);
+			const intraUserData = await this.getOAuthUserData(accessToken);
 			// Create or update users in the database
-			const user = await this.createUserOrUpdate(authToken);
+			const user = await this.createUserOrUpdate(intraUserData);
 
 			// Generate and return JWT token
 			const jwtToken = await this.createAccessToken(user.id);
