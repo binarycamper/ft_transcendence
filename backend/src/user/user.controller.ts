@@ -265,14 +265,14 @@ export class UserController {
 		const debugUserId = uuidv4();
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
-			name: 'DebugUser',
-			nickname: 'Debugger',
-			email: 'debug@example.com',
+			name: 'DebugUser_' + debugUserId,
+			nickname: 'Debugger_' + debugUserId,
+			email: debugUserId + '@debuguser.com',
 			password: '1',
-			intraId: 'someDebugIntraId',
+			intraId: debugUserId,
 			id: debugUserId,
 			imageUrl: 'someDebugImageUrl',
-			image: 'http://localhost:8080/user/uploads?filename=DebugUser.png',
+			image: 'http://localhost:8080/user/uploads?filename=' + debugUserId + '.png', //change a picture to that name and put in Folder uploads if u need pic
 			status: 'offline',
 		});
 
@@ -280,8 +280,8 @@ export class UserController {
 
 		// Respond with the newly created debug user's ID and the fake token
 		res.status(HttpStatus.CREATED).json({
-			message: 'Debug user created',
-			userId: debugUser.id,
+			message: debugUser.name + ' created',
+			id: debugUser.id,
 			token: debugToken, // Include the token in the response
 		});
 	}

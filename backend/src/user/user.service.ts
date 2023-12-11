@@ -202,8 +202,8 @@ export class UserService {
 		if (!userToUpdate) {
 			throw new NotFoundException('User not found.');
 		}
-		console.log('usernickname: ', userToUpdate.nickname);
-		console.log('newname: ', newName);
+		//console.log('usernickname: ', userToUpdate.nickname);
+		//console.log('newname: ', newName);
 
 		if (userToUpdate.nickname == newName) return false;
 		userToUpdate.nickname = newName;
@@ -259,7 +259,7 @@ export class UserService {
 			email: user.email,
 			id: user.id,
 			password: user.password,
-			intraId: 'Debugggger_ID',
+			intraId: user.id,
 		};
 		return this.jwtService.sign(payload);
 	}
