@@ -20,15 +20,14 @@ export class EventsGateway {
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {
 			const cookies = cookie.parse(client.handshake.headers.cookie || '');
-			const token = cookies['token'];
-
 			if (!cookies.token) {
-				console.log('No cookies provided');
+				//console.log('No cookies provided');
 				return;
 			}
+
 			//console.log('cookies: ', cookies);
 			//console.log('token type: ', typeof cookies);
-
+			const token = cookies['token'];
 			if (!token) {
 				//console.log('No token provided');
 				return;
@@ -40,7 +39,7 @@ export class EventsGateway {
 			try {
 				const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
 				client.data.user = decoded;
-				console.log('decoded client data: ', decoded);
+				//console.log('decoded client data: ', decoded);
 				if (decoded) {
 					this.eventsService.userConnected(decoded.email);
 				}

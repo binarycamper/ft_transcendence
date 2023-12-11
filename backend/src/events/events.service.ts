@@ -11,8 +11,11 @@ export class EventsService {
 		try {
 			const userId = await this.userService.findUserIdByMail(email);
 			if (userId) {
-				console.log('User tracked online ', userId);
-				await this.userService.setUserOnline(userId);
+				const user = await this.userService.findProfileById(userId);
+				if (user && user.status !== 'online') {
+					console.log('User tracked online ', userId);
+					await this.userService.setUserOnline(userId);
+				}
 			} else {
 				console.log('User not found for email: ', email);
 			}
