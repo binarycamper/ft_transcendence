@@ -52,7 +52,6 @@ export class EventsGateway {
 		}
 	}
 
-	//TODO: Bug here when disconnect and reconnect user often (client.data.user.sub === undefined sometimes??!?!)
 	handleDisconnect(client: any) {
 		//console.log('start handle disconnect');
 		if (client.data.user) {
