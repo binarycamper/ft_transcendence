@@ -59,15 +59,12 @@ export class AuthService {
 	private async createUserOrUpdate(userData: any): Promise<User> {
 		console.log('AuthToken= ', userData.login);
 		let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
-		/*
-				name: userData.login,
-				email: userData.email,
-				password: 'hashed-password',
-				intraId: userData.id,
-				imageUrl: userData.image?.versions?.medium,
-		*/
-		const UserId = uuidv4();
-
+		let UserId;
+		if (!user) {
+			const UserId = uuidv4();
+		} else {
+			UserId = user.id;
+		}
 		const userPayload = {
 			id: UserId,
 			name: userData.login,
