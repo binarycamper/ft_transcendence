@@ -29,6 +29,7 @@ export function Login() {
 			});
 
 			if (response.ok) {
+				console.log('HEaders of Login: ', response.headers);
 				navigate('/profile'); // Navigate to profile with the data
 			} else {
 				console.error('Login fehlgeschlagen');

@@ -24,8 +24,7 @@ import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
-import { createWriteStream } from 'fs';
-import { unlink } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { EditNicknameDto } from './dto/userName.dto';
@@ -263,13 +262,15 @@ export class UserController {
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('createDebugUser')
 	async createDebugUser(@Res() res: Response) {
+		const debugUserId = uuidv4();
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
 			name: 'DebugUser',
 			nickname: 'Debugger',
 			email: 'debug@example.com',
-			password: '1', // Make sure this is hashed as per your auth strategy
+			password: '1',
 			intraId: 'someDebugIntraId',
+			id: debugUserId,
 			imageUrl: 'someDebugImageUrl',
 			image: 'http://localhost:8080/user/uploads?filename=DebugUser.png',
 			status: 'offline',
@@ -281,7 +282,7 @@ export class UserController {
 		res.status(HttpStatus.CREATED).json({
 			message: 'Debug user created',
 			userId: debugUser.id,
-			debugToken: debugToken, // Include the token in the response
+			token: debugToken, // Include the token in the response
 		});
 	}
 }

@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
+import { UserService } from 'src/user/user.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +18,7 @@ export class AuthService {
 		private readonly userRepository: Repository<User>,
 		private readonly httpService: HttpService,
 		private readonly configService: ConfigService,
+		private userService: UserService,
 		private readonly jwtService: JwtService,
 	) {}
 
@@ -54,14 +57,26 @@ export class AuthService {
     This method creates a new user or updates it if it already exists.
     */
 	private async createUserOrUpdate(userData: any): Promise<User> {
+		console.log('AuthToken= ', userData.login);
 		let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
+		/*
+				name: userData.login,
+				email: userData.email,
+				password: 'hashed-password',
+				intraId: userData.id,
+				imageUrl: userData.image?.versions?.medium,
+		*/
+		const UserId = uuidv4();
 
 		const userPayload = {
+			id: UserId,
 			name: userData.login,
 			email: userData.email,
-			password: 'hashed-password', // TODO: Implement proper password handling
+			password: 'hashed-password',
+			status: 'fresh',
 			intraId: userData.id,
 			imageUrl: userData.image?.versions?.medium,
+			isTwoFactorAuthenticationEnabled: false,
 		};
 
 		if (!user) {
@@ -69,7 +84,7 @@ export class AuthService {
 		} else {
 			this.userRepository.merge(user, userPayload);
 		}
-
+		//TODO: ROB Update the AuthToken when changing the User Table. AuthToken has references
 		await this.userRepository.save(user);
 		return user;
 	}
@@ -80,13 +95,13 @@ export class AuthService {
 		try {
 			//Retrieve OAuth token and query user data
 			const accessToken = await this.getOAuthToken(code);
-			const userData = await this.getOAuthUserData(accessToken);
+			const authToken = await this.getOAuthUserData(accessToken);
 			// Create or update users in the database
-			const user = await this.createUserOrUpdate(userData);
+			const user = await this.createUserOrUpdate(authToken);
 
 			// Generate and return JWT token
-			const jwtToken = this.createAccessToken(user.id);
-			return { access_token: jwtToken, userId: user.id };
+			const jwtToken = await this.createAccessToken(user.id);
+			return { access_token: jwtToken, userId: user.id }; //TODO: why userID?? it was id everywhere or?
 		} catch (error) {
 			console.error(error);
 			if (error.response && error.response.status === 401) {
@@ -105,7 +120,7 @@ export class AuthService {
 	private async validateRefreshToken(refreshToken: string): Promise<User> {
 		try {
 			const decoded = this.jwtService.verify(refreshToken);
-			const user = await this.userRepository.findOne({ where: { id: decoded.sub } });
+			const user = await this.userRepository.findOne({ where: { id: decoded.id } });
 
 			if (!user) {
 				throw new Error('User not found for the provided refresh token.');
@@ -121,7 +136,12 @@ export class AuthService {
 	async generateNewAccessToken(refreshToken: string): Promise<string | null> {
 		try {
 			const user = await this.validateRefreshToken(refreshToken);
-			const payload = { username: user.name, sub: user.id };
+			const payload = {
+				username: user.name,
+				id: user.id,
+				email: user.email,
+				password: user.password,
+			};
 			const newAccessToken = this.jwtService.sign(payload);
 
 			return newAccessToken;
@@ -165,8 +185,14 @@ export class AuthService {
 		return isValid;
 	}
 
-	createAccessToken(userId: string): string {
-		const payload = { sub: userId };
+	async createAccessToken(userId: string): Promise<string> {
+		const user = await this.userService.findProfileById(userId);
+		const payload = {
+			name: user.name,
+			id: user.id,
+			email: user.email,
+			password: user.password,
+		};
 		return this.jwtService.sign(payload);
 	}
 

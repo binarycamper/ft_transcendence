@@ -52,51 +52,41 @@ export class AuthController {
 	}
 
 	@Post('login')
-	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+	async login(@Body() loginDto: LoginDto, @Req() req: Request, @Res() res: Response) {
 		const { email, password } = loginDto;
-		console.log(loginDto);
 
-		const user = await this.userRepository.findOne({
-			where: { email },
-			select: ['id', 'email', 'password'],
-		});
+		const userId = await this.userService.findUserIdByMail(email);
+		const user = await this.userService.findProfileById(userId);
 		if (!user) {
-			return res.status(401).json({ message: 'User not found.' });
+			return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
 		}
 
-		//console.log('Gefundener Benutzer:', user);
-		if (!user.password) {
-			console.error('Passwordfield is undefined');
-			return res.status(500).json({ message: 'Internal Servererror' });
-		}
-
-		const isPasswordValid = await bcrypt.compare(password, user.password);
-		if (!isPasswordValid) {
+		if (!user.password || !(await bcrypt.compare(password, user.password))) {
 			return res.status(401).json({ message: 'Wrong password.' });
 		}
 
-		// Hier könnten Sie ein JWT-Token generieren, falls Sie dies verwenden
 		const userPayload = {
 			name: user.name,
 			email: user.email,
-			password: user.password,
+			id: user.id,
 			intraId: user.intraId,
-			//imageUrl: user.image?.versions?.medium, TOdoo: add image stuff here if necessary
+			password: user.password,
 		};
 		const jwtToken = this.jwtService.sign(userPayload);
-		// Set the cookie with the JWT token
+
+		// Clear old cookie and set new one
+		res.clearCookie('token');
 		res.cookie('token', jwtToken, {
 			httpOnly: true,
 			maxAge: 86400000 * 7,
 			secure: process.env.NODE_ENV !== 'development',
-			sameSite: 'strict',
+			sameSite: 'lax',
 		});
 
 		user.status = 'online';
 		await this.userService.updateUser(user);
 
-		// Send back a successful response
-		return res.status(200).json({ message: 'Login succesfully', userId: user.id });
+		return res.status(200).json({ message: 'Login successfully', userId: user.id });
 	}
 
 	@Get('callback')

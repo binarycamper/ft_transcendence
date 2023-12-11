@@ -27,7 +27,21 @@ export class UserService {
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
-			relations: ['friends'],
+			select: [
+				'id',
+				'email',
+				'password',
+				'name',
+				'nickname',
+				'status',
+				'intraId',
+				'imageUrl',
+				'image',
+				'isTwoFactorAuthenticationEnabled',
+				'twoFactorAuthenticationSecret',
+				'unconfirmedTwoFactorSecret',
+				'friends',
+			],
 		});
 		if (!user) {
 			throw new Error('User not found');
@@ -50,7 +64,7 @@ export class UserService {
 			where: { email: email },
 		});
 		if (!user) {
-			return '1';
+			return undefined;
 		}
 		return user.id;
 	}
@@ -240,7 +254,13 @@ export class UserService {
 	}
 
 	async createDebugToken(user: User): Promise<string> {
-		const payload = { username: user.nickname, sub: user.id };
+		const payload = {
+			name: user.name,
+			email: user.email,
+			id: user.id,
+			password: user.password,
+			intraId: 'Debugggger_ID',
+		};
 		return this.jwtService.sign(payload);
 	}
 }

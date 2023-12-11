@@ -17,6 +17,25 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 - matchmaking system
 ```
 
+```
+ERROR Notes, need to be debuged:
+
+---------------------------------------------------------------------------------------------------------
+[1. Error]: (solutions could be: all controller functions which use UserService.findProfileById should check before or UserService.findProfileById should check that)
+backend   | [Nest] 101  - 12/11/2023, 5:24:46 PM   ERROR [ExceptionsHandler] User not found
+backend   | Error: User not found
+backend   |     at UserService.findProfileById (/usr/src/app/src/user/user.service.ts:47:10)
+backend   |     at processTicksAndRejections (node:internal/process/task_queues:95:5)
+backend   |     at AuthController.login (/usr/src/app/src/auth/auth.controller.ts:59:16)
+backend   |     at /usr/src/app/node_modules/@nestjs/core/router/router-execution-context.js:46:28
+backend   |     at /usr/src/app/node_modules/@nestjs/core/router/router-proxy.js:9:17
+---------------------------------------------------------------------------------------------------------
+[2. Error]:
+Insert error logs here
+---------------------------------------------------------------------------------------------------------
+
+```
+
 ## jjesberg
 
 ```

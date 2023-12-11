@@ -1,4 +1,4 @@
-import { WebSocketGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import * as cookie from 'cookie';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
