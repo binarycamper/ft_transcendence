@@ -45,6 +45,16 @@ export class UserService {
 		return user;
 	}
 
+	async findUserIdByMail(email: string): Promise<string> {
+		const user = await this.userRepository.findOne({
+			where: { email: email },
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		return user.id;
+	}
+
 	//used from socket.io it event.gateway.ts
 	async setUserOnline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'online' in the database

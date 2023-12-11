@@ -7,21 +7,28 @@ export class EventsService {
 	constructor(private userService: UserService) {}
 
 	// Functions to handle user online/offline status
-	userConnected(userId: string) {
-		if (userId) {
-			console.log('User tracked online ', userId);
-			this.userService.setUserOnline(userId);
-		} else {
-			console.log('User not found: ', userId);
+	async userConnected(email: string) {
+		try {
+			const userId = await this.userService.findUserIdByMail(email);
+			if (userId) {
+				console.log('User tracked online ', userId);
+				await this.userService.setUserOnline(userId);
+			} else {
+				console.log('User not found for email: ', email);
+			}
+		} catch (error) {
+			console.error(error.message);
 		}
 	}
 
-	userDisconnected(userId: string) {
+	async userDisconnected(email: string) {
+		const userId = await this.userService.findUserIdByMail(email);
+
 		if (userId) {
 			console.log('User tracked offline ', userId);
-			this.userService.setUserOffline(userId);
+			await this.userService.setUserOffline(userId);
 		} else {
-			console.log('User not found: ', userId);
+			console.log('User not found: ', email);
 		}
 	}
 }

@@ -22,8 +22,8 @@ export class EventsGateway {
 			const cookies = cookie.parse(client.handshake.headers.cookie || '');
 			const token = cookies['token'];
 
-			if (!cookies) {
-				//console.log('No cookies provided');
+			if (!cookies.token) {
+				console.log('No cookies provided');
 				return;
 			}
 			//console.log('cookies: ', cookies);
@@ -40,9 +40,9 @@ export class EventsGateway {
 			try {
 				const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
 				client.data.user = decoded;
-				//console.log('decoded client data: ', decoded);
-				if (decoded && decoded.sub) {
-					this.eventsService.userConnected(decoded.sub);
+				console.log('decoded client data: ', decoded);
+				if (decoded) {
+					this.eventsService.userConnected(decoded.email);
 				}
 			} catch (innerError) {
 				console.log('JWT decode error:', innerError.message);
@@ -52,12 +52,13 @@ export class EventsGateway {
 		}
 	}
 
+	//TODO: Bug here when disconnect and reconnect user often (client.data.user.sub === undefined sometimes??!?!)
 	handleDisconnect(client: any) {
-		//console.log('start handle disconnect: ', client.data.user);
-		if (client.data.user && client.data.user.sub) {
-			this.eventsService.userDisconnected(client.data.user.sub);
+		//console.log('start handle disconnect');
+		if (client.data.user) {
+			this.eventsService.userDisconnected(client.data.user.email);
 		} else {
-			console.log('error: changing user state to offline');
+			console.log('User without account detected');
 		}
 	}
 }
