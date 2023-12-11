@@ -82,10 +82,6 @@ export class AuthController {
 			secure: process.env.NODE_ENV !== 'development',
 			sameSite: 'lax',
 		});
-
-		user.status = 'online';
-		await this.userService.updateUser(user);
-
 		return res.status(200).json({ message: 'Login successfully', userId: user.id });
 	}
 
@@ -99,7 +95,7 @@ export class AuthController {
 				res.cookie('token', result.access_token, {
 					httpOnly: true,
 					maxAge: 86400000 * 7,
-					sameSite: 'none',
+					sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
 					secure: true,
 				});
 
@@ -120,17 +116,9 @@ export class AuthController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('logout')
-	async logout(@Req() req, @Res() res: Response) {
-		const userId = req.user.id;
-
-		const user = await this.userService.findProfileById(userId);
-		if (user) {
-			user.status = 'offline';
-			await this.userService.updateUser(user);
-		}
-
+	async logout(@Res() res: Response) {
 		res.clearCookie('token', {
-			sameSite: 'none',
+			sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
 			secure: true,
 		});
 		return res.status(200).send({ message: 'Logged out successfully' });

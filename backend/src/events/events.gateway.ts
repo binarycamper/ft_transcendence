@@ -52,7 +52,6 @@ export class EventsGateway {
 	}
 
 	handleDisconnect(client: any) {
-		//console.log('start handle disconnect');
 		if (client.data.user) {
 			this.eventsService.userDisconnected(client.data.user.email);
 		} else {

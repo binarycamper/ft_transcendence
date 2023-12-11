@@ -37,6 +37,7 @@ export function Header() {
 			if (response.ok) {
 				setIsAuthenticated(false);
 				navigate('/');
+				window.location.reload(); //refresh page, then socket set user status, if anybody is requesting anything socket will track anything and sleeps so we refresh
 			} else {
 				console.error('Logout failed');
 			}
