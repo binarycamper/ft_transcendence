@@ -5,6 +5,10 @@ import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
 import { AuthToken } from 'src/auth/auth.entity';
 import { JwtService } from '@nestjs/jwt';
+import * as fs from 'fs';
+import { unlink } from 'fs/promises';
+
+const uploadPath = '/usr/src/app/uploads/';
 
 @Injectable()
 export class UserService {
@@ -41,6 +45,7 @@ export class UserService {
 		return user;
 	}
 
+	//used from socket.io it event.gateway.ts
 	async setUserOnline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'online' in the database
 		const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -49,7 +54,7 @@ export class UserService {
 			await this.userRepository.save(user);
 		}
 	}
-
+	//used from socket.io it event.gateway.ts
 	async setUserOffline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'offline' in the database
 		const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -85,11 +90,20 @@ export class UserService {
 		return status;
 	}
 
-	//deletes a user by id, if u use in controller use jwt guard.
-	async deleteUserById(userId: string): Promise<void> {
+	async deleteUserById(userId: string, userImage: string): Promise<void> {
 		const user = await this.userRepository.findOneBy({ id: userId });
 		if (!user) {
 			throw new NotFoundException('User not found');
+		}
+		if (userImage) {
+			const imagePath = uploadPath + userImage.split('?filename=').pop();
+			try {
+				if (fs.existsSync(imagePath)) {
+					await unlink(imagePath);
+				}
+			} catch (error) {
+				console.error('Failed to delete user image:', error);
+			}
 		}
 
 		const authToken = await this.authTokenRepository.findOne({
@@ -112,13 +126,32 @@ export class UserService {
 		return this.userRepository.save(user);
 	}
 
-	//Updates UserImage string
-	async updateUserImage(userId: string, image: string): Promise<void> {
-		const user = await this.userRepository.findOneBy({ id: userId });
+	async saveUserImage(userId: string, file: Express.Multer.File): Promise<void> {
+		const user = await this.findProfileById(userId);
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		user.image = image;
+
+		// Generate new filename
+		const fileExtension = file.mimetype.split('/').pop();
+		const newFilename = `${userId}.${fileExtension}`;
+		const newFilePath = uploadPath + newFilename;
+
+		// Delete old image if it exists
+		if (user.image) {
+			const oldFilename = user.image.split('?filename=').pop();
+			const oldFilePath = uploadPath + oldFilename;
+			if (fs.existsSync(oldFilePath)) {
+				await unlink(oldFilePath);
+			}
+		}
+
+		// Save the new image
+		const writeStream = fs.createWriteStream(newFilePath);
+		writeStream.write(file.buffer);
+
+		// Update user with new image URL which is also the request for itself
+		user.image = `http://localhost:8080/user/uploads?filename=${newFilename}`;
 		await this.userRepository.save(user);
 	}
 

@@ -16,6 +16,7 @@ import {
 	BadRequestException,
 	UsePipes,
 	ValidationPipe,
+	UnauthorizedException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -24,7 +25,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
 import { createWriteStream } from 'fs';
-import { unlink } from 'fs/promises'; // make sure to import unlink for file deletion
+import { unlink } from 'fs/promises';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { EditNicknameDto } from './dto/userName.dto';
@@ -44,17 +45,14 @@ export class UserController {
 	}
 
 	@Get('isProfileComplete')
-	async isProfileComplete(@Req() req: any, @Res() res: any) {
-		try {
-			const userId = req.user?.id; // Annahme, dass die Benutzer-ID aus der Anfrage verfügbar ist
-			const isComplete = await this.userService.isProfilecreated(userId);
-			res.json({ isComplete });
-		} catch (error) {
-			res.status(500).json({ error: 'Internal Server Error' });
-		}
+	@UseGuards(JwtAuthGuard)
+	async isProfileComplete(@Req() req): Promise<{ isComplete: boolean }> {
+		const userId = req.user?.id;
+		const isComplete = await this.userService.isProfilecreated(userId);
+		return { isComplete };
 	}
 
-	//complete profile in signup.page.tsx set password of user
+	//complete Profile and set your first Password
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
 	@UsePipes(new ValidationPipe())
@@ -65,50 +63,29 @@ export class UserController {
 	) {
 		const userId = req.user?.id;
 		if (!userId) {
-			console.log('!userId');
-			throw new HttpException(
-				{
-					status: HttpStatus.UNAUTHORIZED,
-					error:
-						'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
-					location: '/login', // This can be used by the frontend to redirect
-				},
-				HttpStatus.UNAUTHORIZED,
-			);
+			throw new UnauthorizedException({
+				status: HttpStatus.UNAUTHORIZED,
+				error:
+					'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
+				location: '/login',
+			});
 		}
-
 		const isProfileComplete = await this.userService.isProfilecreated(userId);
 		if (isProfileComplete) {
-			console.log('isProfileComplete');
-			throw new HttpException(
-				{
-					status: HttpStatus.SEE_OTHER,
-					error: 'Profile already complete!',
-					location: '/profile', // Indicating the location where the client should redirect
-				},
-				HttpStatus.SEE_OTHER,
-			);
+			throw new HttpException('Profile already complete!', HttpStatus.SEE_OTHER);
+		}
+		if (!completeProfileDto.password) {
+			throw new BadRequestException('Invalid password');
 		}
 
-		if (!completeProfileDto.password) {
-			throw new HttpException(
-				{
-					status: HttpStatus.BAD_REQUEST,
-					error: 'Invalid password',
-					location: '/signup',
-				},
-				HttpStatus.BAD_REQUEST,
-			);
-		}
-		const updatedUser = await this.userService.complete(userId, completeProfileDto.password);
-		res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
+		await this.userService.complete(userId, completeProfileDto.password);
+		return res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
 	}
 
-	//Get the profile, must be complete user, gets own profile, or redirect to auth pages if unauthenticated user
+	//Get the profile, must be complete user, render own profile, or redirect to signup if client has no account
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Get('profile')
 	async getProfile(@Req() req) {
-		// Access the user's ID from the request object
 		const userId = req.user.id;
 		const userProfile = await this.userService.findProfileById(userId);
 
@@ -119,117 +96,49 @@ export class UserController {
 		return result;
 	}
 
-	//Deletes own user account  //Todo: check edgecases!
 	@UseGuards(JwtAuthGuard)
 	@Delete('delete')
-	async deleteUser(@Req() req, @Res() res: Response) {
-		// Access the user's ID from the request object, injected by JwtAuthGuard
-		const userId = req.user.id;
-		const image: string = req.user.image;
-
-		const confirmDeletion = req.query.confirm === 'true';
-
+	async deleteUser(
+		@Req() req,
+		@Query('confirm') confirmDeletion: boolean,
+	): Promise<{ message: string }> {
 		if (!confirmDeletion) {
-			// If the user did not confirm deletion, send a bad request response
-			return res.status(HttpStatus.BAD_REQUEST).json({
-				message: 'Confirmation required to delete account',
-			});
+			throw new BadRequestException('Confirmation required to delete account');
 		}
 
-		try {
-			// Call the service method to delete the user
-			await this.userService.deleteUserById(userId);
-
-			// Return a success response
-
-			if (image) {
-				const imagePath = uploadPath + image.split('?filename=').pop();
-				if (fs.existsSync(imagePath)) {
-					await unlink(imagePath);
-				}
-			}
-			// Optional: Perform any cleanup tasks, such as logging out the user
-			res.clearCookie('token', {
-				sameSite: 'none',
-				secure: true,
-			});
-
-			res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
-			// This might involve clearing any session or token information on the client side
-		} catch (error) {
-			console.error('Error deleting user:', error);
-			throw new HttpException('Failed to delete user', HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		await this.userService.deleteUserById(req.user.id, req.user.image);
+		req.res.clearCookie('token', { sameSite: 'none', secure: true });
+		return { message: 'User deleted successfully' };
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
 	@Post('uploadImage')
-	async uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req, @Res() res: Response) {
-		//file is empty?
+	async uploadImage(
+		@UploadedFile() file: Express.Multer.File,
+		@Req() req,
+	): Promise<{ message: string }> {
 		if (!file || file.size === 0) {
-			res.status(HttpStatus.BAD_REQUEST).json({
-				message: 'No file uploaded or file is empty.',
-			});
-			return;
+			throw new BadRequestException('No file uploaded or file is empty.');
 		}
 
-		// Image validation
 		if (!(await this.isValidImage(file.buffer))) {
-			res.status(HttpStatus.BAD_REQUEST).json({
-				message: 'Invalid image file.',
-			});
-			return;
+			throw new BadRequestException('Invalid image file.');
 		}
-		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 
-		// Check the file's size
+		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 		if (file.size > MAX_FILE_SIZE) {
-			// If the file size exceeds the maximum, return an error response
-			res.status(HttpStatus.BAD_REQUEST).json({
-				message: 'File size exceeds the maximum limit of 1MB.',
-			});
-			return;
+			throw new BadRequestException('File size exceeds the maximum limit of 1MB.');
 		}
 
 		const allowedMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png']);
 		if (!allowedMimeTypes.has(file.mimetype)) {
-			res
-				.status(HttpStatus.BAD_REQUEST)
-				.json({ message: 'Invalid file type. Only jpeg/jpg/png files are allowed.' });
-			return;
+			throw new BadRequestException('Invalid file type. Only jpeg/jpg/png files are allowed.');
 		}
-		// Retrieve the existing user to check for an old image
-		const user = await this.userService.findProfileById(req.user.id);
-		//console.log('image: ', user.image);
-		//console.log('imageUrl: ', user.imageUrl);
-		if (!user) return;
-		let oldFilePath = undefined;
-		if (user.image) {
-			oldFilePath = uploadPath + user.image.split('?filename=').pop();
-		}
-		file.filename = user.id + '.';
-		file.filename = file.filename.concat(file.mimetype.split('/').pop());
-		//console.log('filename!: ', file.filename);
 
-		user.image = 'http://localhost:8080/user/uploads?filename=' + file.filename;
+		await this.userService.saveUserImage(req.user.id, file);
 
-		//console.log('new image name: ', user.image);
-		if (user && oldFilePath) {
-			//console.log('string: ', oldFilePath);
-			try {
-				await unlink(oldFilePath);
-				console.log(`Deleted old image: ${oldFilePath}`);
-			} catch (error) {
-				// Handle error (file might not exist, which is fine)
-				console.error('Error deleting old image file:', error);
-			}
-		}
-		const savePath = uploadPath + file.filename;
-		const writeStream = createWriteStream(savePath);
-		writeStream.write(file.buffer);
-		await this.userService.updateUserImage(req.user.id, user.image);
-		res.status(HttpStatus.OK).json({});
+		return { message: 'Image uploaded successfully' };
 	}
 
 	private async isValidImage(fileBuffer: Buffer): Promise<boolean> {
@@ -242,6 +151,7 @@ export class UserController {
 		}
 	}
 
+	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
 	async getImage(@Query('filename') filename: string, @Res() res: Response) {

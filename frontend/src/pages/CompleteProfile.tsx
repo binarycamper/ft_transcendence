@@ -76,8 +76,8 @@ export function CompleteProfile() {
 				credentials: 'include',
 			});
 
-			if (response.status === 200) {
-				if (setup2FA) {
+			if (response.status === 200 || response.status === 303) {
+				if (setup2FA && response.status === 200) {
 					navigate('/twofactorsetup'); // Weiterleitung zur 2FA-Setup-Seite
 				} else {
 					navigate('/profile'); // Weiterleitung zur Profilseite
