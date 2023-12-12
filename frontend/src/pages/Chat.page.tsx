@@ -26,6 +26,7 @@ export function Chat() {
 			});
 			if (!response.ok) throw new Error('Failed to fetch messages');
 			const data = await response.json();
+			console.log('TEST: ', data);
 			setMessages(data);
 		} catch (error) {
 			console.error('Error fetching messages:', error);

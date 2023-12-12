@@ -52,12 +52,18 @@ export class ChatService {
 	}
 
 	async findAll(userId: string): Promise<Chat[]> {
+		console.log('USerid: ', userId);
 		return this.chatRepository.find({
-			where: [{ senderId: userId }, { recipientId: userId }], //?? need recipientId as arg
+			where: [{ recipientId: userId }],
 		});
 	}
 
 	async findOne(id: string): Promise<Chat> {
 		return this.chatRepository.findOneBy({ id });
+	}
+
+	//debug
+	async getAllRequests(): Promise<Chat[]> {
+		return this.chatRepository.find({});
 	}
 }

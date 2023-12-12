@@ -16,11 +16,11 @@ export class ChatController {
 		return this.chatService.create(createChatDto, req.user);
 	}
 
-	// Endpoint to get all chat messages for the logged-in user
+	// Endpoint to get all pending requests for the logged-in user
 	@UseGuards(JwtAuthGuard)
-	@Get()
+	@Get('requests')
 	async findAll(@Req() req) {
-		//return this.chatService.findAll(req.user.id);
+		return this.chatService.findAll(req.user.id);
 	}
 
 	// Endpoint to get a specific chat message
@@ -28,5 +28,11 @@ export class ChatController {
 	@Get(':id')
 	async findOne(@Param('id') id: string) {
 		//return this.chatService.findOne(id);
+	}
+
+	//Debug:
+	@Post('all')
+	async getAll() {
+		return this.chatService.getAllRequests();
 	}
 }
