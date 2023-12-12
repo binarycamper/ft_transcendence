@@ -201,7 +201,6 @@ export class UserController {
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
-
 			if (!user.friends) {
 				return res.status(HttpStatus.OK).json([]); // Send an empty array if no friends are found
 			}
@@ -220,19 +219,10 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('addFriend')
-	async addFriend(
-		@Req() req,
-		@Body('friendName') friendName: string, // Assuming you send the friend's ID in the request body
-		@Res() res: Response,
-	) {
-		const userId = req.user.id; // Retrieve the user's ID from the request
-		console.log('USER ID= ', userId);
+	async addFriend(@Req() req, @Body('friendName') friendName: string, @Res() res: Response) {
+		const user = req.user;
 		try {
-			//TOdo: Avoid adding own account. atm is used for debugging.
-			// Await the service method to add the friend
-			const updatedUser = await this.userService.addFriend(userId, friendName);
-
-			// Check if the update was successful
+			const updatedUser = await this.userService.addFriend(user, friendName);
 			if (!updatedUser) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
@@ -258,7 +248,7 @@ export class UserController {
 		return result;
 	}
 
-	//Debug: TODO: Delete for eval && create correct token! jwt.sign(payload)
+	//Debug: TODO: Delete for eval
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('createDebugUser')
 	async createDebugUser(@Res() res: Response) {
@@ -272,7 +262,7 @@ export class UserController {
 			intraId: debugUserId,
 			id: debugUserId,
 			imageUrl: 'someDebugImageUrl',
-			image: 'http://localhost:8080/user/uploads?filename=' + debugUserId + '.png', //change a picture to that name and put in Folder uploads if u need pic
+			image: 'http://localhost:8080/user/uploads?filename=' + debugUserId + '.png',
 			status: 'offline',
 		});
 

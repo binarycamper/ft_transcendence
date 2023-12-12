@@ -27,21 +27,7 @@ export class UserService {
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
-			select: [
-				'id',
-				'email',
-				'password',
-				'name',
-				'nickname',
-				'status',
-				'intraId',
-				'imageUrl',
-				'image',
-				'isTwoFactorAuthenticationEnabled',
-				'twoFactorAuthenticationSecret',
-				'unconfirmedTwoFactorSecret',
-				'friends',
-			],
+			relations: ['friends'],
 		});
 		if (!user) {
 			throw new Error('User not found');
@@ -211,25 +197,23 @@ export class UserService {
 		return true;
 	}
 
-	async addFriend(userId: string, friendName: string): Promise<User | null> {
+	async addFriend(user: User, friendName: string): Promise<User | null> {
 		// Find the user and their friends
-		const user = await this.userRepository.findOne({
-			where: { id: userId },
-			relations: ['friends'], // Make sure to load the friends relation
-		});
+
 		const friendToAdd = await this.userRepository.findOne({
 			where: { name: friendName },
 		});
 
-		if (!user || !friendToAdd) {
+		if (!user || !friendToAdd || user === friendToAdd) {
 			return null; // Return null if either user is not found
 		}
 
+		if (!user.friends) user.friends = [];
 		// Check if the friend is already in the user's friends list
 		const alreadyFriends = user.friends.some((friend) => friend.id === friendToAdd.id);
 		if (alreadyFriends) {
 			// The friend is already added, handle this as you see fit
-			return user;
+			return null;
 		}
 
 		// Add the new friend to the existing friends array
