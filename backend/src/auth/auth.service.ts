@@ -57,7 +57,7 @@ export class AuthService {
     This method creates a new user or updates it if it already exists.
     */
 	private async createUserOrUpdate(userData: any): Promise<User> {
-		console.log('userData= ', userData);
+		//console.log('userData= ', userData);
 		let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
 		let UserId;
 		let state = 'fresh';

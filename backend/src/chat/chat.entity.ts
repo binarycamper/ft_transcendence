@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity()
-export class ChatMessage {
+export class chat {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
@@ -11,12 +11,12 @@ export class ChatMessage {
 	@Column()
 	receiverId: string;
 
-	@Column('text')
-	messageContent: string;
+	@Column({ type: 'enum', enum: ['friend_request', 'system_message'] })
+	messageType: string;
 
-	@CreateDateColumn()
-	timestamp: Date;
+	@Column()
+	content: string;
 
-	@Column({ nullable: true })
-	chatRoomId?: number;
+	@Column({ type: 'enum', enum: ['pending', 'accepted', 'declined'] })
+	status: string;
 }

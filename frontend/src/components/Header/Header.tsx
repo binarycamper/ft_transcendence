@@ -60,6 +60,7 @@ export function Header() {
 							<Tabs.Tab value="/play">Play</Tabs.Tab>
 							<Tabs.Tab value="/chat">Chat</Tabs.Tab>
 							<Tabs.Tab value="/profile">Profile</Tabs.Tab>
+							<Tabs.Tab value="/friends">FriendList</Tabs.Tab>
 							<Tabs.Tab value="/settings">Settings</Tabs.Tab>
 						</Tabs.List>
 					</Tabs>

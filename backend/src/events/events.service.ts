@@ -13,7 +13,7 @@ export class EventsService {
 			const userId = await this.userService.findUserIdByMail(email);
 			if (userId) {
 				const user = await this.userService.findProfileById(userId);
-				if (user && user.status !== 'online') {
+				if (user && user.status !== 'online' && user.status !== 'ingame') {
 					console.log('User tracked online ', userId);
 					await this.userService.setUserOnline(userId);
 				}
@@ -34,7 +34,6 @@ export class EventsService {
 	async userDisconnected(email: string) {
 		const userId = await this.userService.findUserIdByMail(email);
 		if (userId) {
-			// Setzen Sie ein Timeout, bevor der Benutzer als offline markiert wird
 			const timeout = setTimeout(async () => {
 				console.log('User tracked offline ', userId);
 				await this.userService.setUserOffline(userId);

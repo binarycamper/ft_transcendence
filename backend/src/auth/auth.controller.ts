@@ -47,7 +47,7 @@ export class AuthController {
 	async signup(@Res() res: Response) {
 		const clientId = this.configService.get<string>('INTRA_UID');
 		const url = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=http://localhost:8080/auth/callback&response_type=code`;
-		console.log(url);
+		//console.log(url);
 		return res.json({ url });
 	}
 
@@ -56,9 +56,9 @@ export class AuthController {
 		const { email, password } = loginDto;
 
 		const userId = await this.userService.findUserIdByMail(email);
-		console.log('userId = ', userId);
+		//console.log('userId = ', userId);
 		const user = await this.userService.findProfileById(userId);
-		console.log('user = ', user);
+		//console.log('user = ', user);
 		if (!user) {
 			return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
 		}

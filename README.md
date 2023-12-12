@@ -40,9 +40,9 @@ Insert error logs here
 
 ```
 start chat
+add friends
 backend: NestJS
 try fix error when get authtoken from 42api
-stats have to be displayed on the user profile
 match history
 ```
 
@@ -96,7 +96,7 @@ access profiles via chat interface
 #### 3. User Account
 
 - upload avatar else default one must be set (intra pic)
-- add friends
+- stats have to be displayed on the user profile
 
 #### 4. Chat
 

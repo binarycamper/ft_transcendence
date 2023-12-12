@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { ChatPage } from './pages/Chat.page';
 import { ErrorPage } from './pages/Error.page';
 import { Header } from './components/Header/Header';
 import { HomePage } from './pages/Home.page';
@@ -11,6 +10,7 @@ import { CompleteProfile } from './pages/CompleteProfile';
 import { FriendList } from './pages/FriendList.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import AuthCallback from './pages/AuthCallback.page';
+import { Chat } from './pages/Chat.page';
 
 const router = createBrowserRouter([
 	{
@@ -24,7 +24,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'chat',
-				element: <ChatPage />,
+				element: <Chat />,
 			},
 			{
 				path: 'play',
@@ -39,7 +39,7 @@ const router = createBrowserRouter([
 				element: <Settings />,
 			},
 			{
-				path: 'friendlist',
+				path: 'friends',
 				element: <FriendList />,
 			},
 		],
