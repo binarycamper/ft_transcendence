@@ -26,7 +26,7 @@ export function Chat() {
 			});
 			if (!response.ok) throw new Error('Failed to fetch messages');
 			const data = await response.json();
-			console.log('TEST: ', data);
+			//console.log('TEST: ', data);
 			setMessages(data);
 		} catch (error) {
 			console.error('Error fetching messages:', error);
@@ -36,7 +36,7 @@ export function Chat() {
 
 	const handleAction = async (messageId: string, action: string) => {
 		try {
-			const response = await fetch(`http://localhost:8080/chat/${messageId}/${action}`, {
+			const response = await fetch(`http://localhost:8080/chat/${action}/?messageid=${messageId}`, {
 				method: 'POST',
 				credentials: 'include',
 			});

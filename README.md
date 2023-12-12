@@ -23,7 +23,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 ERROR Notes, need to be debuged:
 
 ---------------------------------------------------------------------------------------------------------
-[1. Error]: (solutions could be: all controller functions which use UserService.findProfileById should check before or UserService.findProfileById should check that)
+[1. Error]: (solutions could be: all controller functions which use UserService.findProfileById should check before or UserService.findProfileById should check that) Or just Try{} catch (error)
 backend   | [Nest] 101  - 12/11/2023, 5:24:46 PM   ERROR [ExceptionsHandler] User not found
 backend   | Error: User not found
 backend   |     at UserService.findProfileById (/usr/src/app/src/user/user.service.ts:47:10)
@@ -42,7 +42,8 @@ Insert error logs here
 
 ```
 start chat
-add friends
+show stats on publicprofile
+add friends per request
 backend: NestJS
 try fix error when get authtoken from 42api
 match history

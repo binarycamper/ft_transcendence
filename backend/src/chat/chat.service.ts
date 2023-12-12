@@ -5,6 +5,7 @@ import { Chat } from './chat.entity'; // Adjust the path to your actual Chat ent
 import { Server } from 'socket.io';
 import { CreateChatDto } from './create.chat.dto';
 import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class ChatService {
@@ -49,6 +50,30 @@ export class ChatService {
 		});
 		await this.chatRepository.save(chat);
 		return chat;
+	}
+
+	async acceptRequest(messageId: string, user: User) {
+		console.log('accept request started!');
+		const request = await this.chatRepository.findOne({ where: { id: messageId } });
+		console.log('REQUEST: ', request);
+		if (!request) {
+			throw new Error('Request not found');
+		}
+		request.status = 'accepted';
+		await this.chatRepository.save(request);
+
+		// Return some confirmation or the updated request
+		return { success: true, message: 'Chat request accepted.' };
+	}
+
+	// Method to decline a chat request
+	async declineRequest(messageId: string, user: User) {
+		console.log('Decline request started!');
+		const request = await this.chatRepository.findOne({ where: { id: messageId } });
+		if (!request) {
+			throw new Error('Request not found');
+		}
+		await this.chatRepository.remove(request);
 	}
 
 	async findAll(userId: string): Promise<Chat[]> {
