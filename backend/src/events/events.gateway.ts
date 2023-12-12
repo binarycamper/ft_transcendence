@@ -24,12 +24,11 @@ export class EventsGateway {
 
 	constructor(
 		private jwtService: JwtService,
-		private eventsService: EventsService,
-		private chatService: ChatService, // Inject your ChatService here
+		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 	) {}
 
 	// A method to handle sending a friend request
-	@SubscribeMessage('send-friendrequest')
+	/*@SubscribeMessage('send-friendrequest')
 	async handleSendFriendRequest(
 		@MessageBody() data: { senderId: string; receiverId: string; content: string },
 		@ConnectedSocket() client: Socket,
@@ -37,11 +36,11 @@ export class EventsGateway {
 		// You can now use the chatService here
 		const friendRequest = await this.chatService.sendFriendRequest(
 			data.senderId,
-			data.receiverId,
+			data.receiverId, //Wrong name here etc...
 			data.content,
 		);
 		client.emit('friendrequest-sent', friendRequest);
-	}
+	}*/
 
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {

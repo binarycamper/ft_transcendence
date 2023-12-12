@@ -10,9 +10,10 @@ export class ChatController {
 
 	// Endpoint to send a chat message or friend request
 	@UseGuards(JwtAuthGuard)
-	@Post()
+	@Post('friendrequest')
 	async create(@Body() createChatDto: CreateChatDto, @Req() req) {
-		//return this.chatService.create(createChatDto, req.user);
+		console.log('friendrequest arrived');
+		return this.chatService.create(createChatDto, req.user);
 	}
 
 	// Endpoint to get all chat messages for the logged-in user

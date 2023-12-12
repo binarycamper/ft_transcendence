@@ -1,7 +1,15 @@
-// src/chat/dto/create.chat.dto.ts
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export class CreateChatDto {
-	readonly senderId: string;
-	readonly receiverId: string;
+	@IsString()
+	@IsNotEmpty()
+	readonly recipient: string;
+
+	@IsString()
+	@IsNotEmpty()
 	readonly messageType: 'friend_request' | 'system_message';
+
+	@IsString()
+	@IsNotEmpty()
 	readonly content: string;
 }

@@ -9,7 +9,7 @@ export class Chat {
 	senderId: string;
 
 	@Column()
-	receiverId: string;
+	recipientId: string;
 
 	@Column({ type: 'enum', enum: ['friend_request', 'system_message'] })
 	messageType: string;

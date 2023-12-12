@@ -4,9 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatService } from './chat.service';
 import { ChatController } from './chat.controller';
 import { Chat } from './chat.entity'; // Update with the correct import path
+import { UserModule } from 'src/user/user.module';
 
 @Module({
 	imports: [
+		UserModule,
 		TypeOrmModule.forFeature([Chat]), // Register the Chat entity with TypeORM
 	],
 	providers: [ChatService], // Provide the ChatService

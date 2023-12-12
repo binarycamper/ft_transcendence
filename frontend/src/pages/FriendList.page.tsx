@@ -14,6 +14,7 @@ export function FriendList() {
 	const [error, setError] = useState<string | null>(null);
 	const [newFriendName, setNewFriendName] = useState<string>('');
 	const [friendProfile, setFriendProfile] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
 
 	useEffect(() => {
 		fetchFriends();
@@ -50,36 +51,45 @@ export function FriendList() {
 			setError('Please enter the name of the friend you want to add.');
 			return;
 		}
-		if (new Blob([newFriendName]).size > 8 * 8) {
-			// Example: 50MB limit
+
+		// You may need to adjust the size check based on your requirements
+		if (newFriendName.length > 100) {
 			setNewFriendName(''); // Reset input field
-			setError('The entered name is too large to process.');
+			setError('The entered name is too long.');
 			return;
 		}
+
+		// Construct the friend request message
+		const friendRequestMessage = {
+			recipient: newFriendName,
+			content: `Hi ${newFriendName}, I would like to add you as a friend!`,
+			messageType: 'friend_request',
+		};
+
 		try {
-			const response = await fetch('http://localhost:8080/user/addFriend', {
+			// Send the friend request message to the server
+			const response = await fetch('http://localhost:8080/chat/friendrequest', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ friendName: newFriendName }),
+				body: JSON.stringify(friendRequestMessage),
 			});
 
-			if (response.status === 404) {
-				setError(`The user ${newFriendName} does not exist.`);
-				setNewFriendName(''); // Reset input field
-			} else if (!response.ok) {
+			if (!response.ok) {
 				throw new Error(`Network response was not ok. Status: ${response.status}`);
-			} else {
-				// After adding a friend, you may want to update the friend list
-				await fetchFriends();
-				setNewFriendName(''); // Reset input field after successful addition
-				setError(null); // Clear any existing errors
 			}
+
+			// Handle the response here. For example, you might want to show a success message or update the UI
+			const result = await response.json();
+			console.log(result.message); // Assuming the server sends back a success message
+			setNewFriendName(''); // Reset input field after successful request
+			setError(null); // Clear any existing errors
+			setSuccessMessage('Friend request sent successfully!'); // Set success message
 		} catch (error) {
-			setError('Failed to add friend');
-			console.error('There was an error adding the friend:', error);
+			setError('Failed to send friend request');
+			console.error('There was an error sending the friend request:', error);
 		}
 	};
 
@@ -118,6 +128,7 @@ export function FriendList() {
 				onChange={(e) => setNewFriendName(e.target.value)}
 			/>
 			<button onClick={addFriend}>Add New Friend</button>
+			{successMessage && <p className="success">{successMessage}</p>}
 			{error && <p>{error}</p>}
 			{isLoading ? (
 				<p>Loading...</p>

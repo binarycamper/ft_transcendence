@@ -5,6 +5,8 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 # Unassigned:
 
 ```
+- Every User Input should use dto!! Form Validation.
+
 - implement Button in Dashboard to navigation to user/friendlist
 
 (frontend)

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Chat } from './chat.entity'; // Adjust the path to your actual Chat entity
 import { Server } from 'socket.io';
 import { CreateChatDto } from './create.chat.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class ChatService {
@@ -12,16 +13,17 @@ export class ChatService {
 	constructor(
 		@InjectRepository(Chat)
 		private readonly chatRepository: Repository<Chat>,
+		private userService: UserService,
 	) {}
 
 	setServer(server: Server) {
 		this.server = server;
 	}
 
-	async sendFriendRequest(senderId: string, receiverId: string, content: string): Promise<Chat> {
+	async sendFriendRequest(senderId: string, recipientId: string, content: string): Promise<Chat> {
 		const friendRequest = new Chat();
 		friendRequest.senderId = senderId;
-		friendRequest.receiverId = receiverId;
+		friendRequest.recipientId = recipientId;
 		friendRequest.messageType = 'friend_request';
 		friendRequest.content = content;
 		friendRequest.status = 'pending';
@@ -30,32 +32,32 @@ export class ChatService {
 		await this.chatRepository.save(friendRequest);
 
 		// Emit an event to the receiver via WebSocket (if you're using real-time features)
-		this.server.to(receiverId).emit('new-friend-request', friendRequest);
+		this.server.to(recipientId).emit('new-friend-request', friendRequest);
 
 		return friendRequest;
 	}
 
 	async create(createChatDto: CreateChatDto, user): Promise<Chat> {
 		// Create and save a new chat message
+		//console.log('createChatDto Body: ', createChatDto);
+		const recipient_user = await this.userService.findProfileByName(createChatDto.recipient);
 		const chat = this.chatRepository.create({
 			...createChatDto,
-			senderId: user.id, // Set the sender ID to the logged-in user's ID
+			recipientId: recipient_user.id,
+			senderId: user.id,
+			status: 'pending',
 		});
 		await this.chatRepository.save(chat);
 		return chat;
 	}
 
 	async findAll(userId: string): Promise<Chat[]> {
-		// Retrieve all chat messages for the user
 		return this.chatRepository.find({
-			where: [{ senderId: userId }, { receiverId: userId }],
+			where: [{ senderId: userId }, { recipientId: userId }], //?? need recipientId as arg
 		});
 	}
 
 	async findOne(id: string): Promise<Chat> {
-		// Retrieve a specific chat message by ID
 		return this.chatRepository.findOneBy({ id });
 	}
-
-	// ... other chat service methods ...
 }
