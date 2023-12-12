@@ -11,6 +11,10 @@ type UserProfile = {
 	imageUrl: string;
 	image?: string;
 	id: string;
+	wins: number;
+	losses: number;
+	ladderLevel: number;
+	achievements: string[];
 };
 
 export function Profile() {
@@ -230,6 +234,10 @@ export function Profile() {
 			<p>Email: {profile.email}</p>
 			<p>Status: {profile.status}</p>
 			<p>IntraId: {profile.intraId}</p>
+			<p>Wins: {profile.wins}</p>
+			<p>Losses: {profile.losses}</p>
+			<p>Ladder Level: {profile.ladderLevel}</p>
+			<p>Achievements: {profile.achievements.join(', ')}</p>
 			<input type="file" onChange={handleFileChange} />
 			<button onClick={handleImageUpload}>Upload New Image</button>
 			<button onClick={handleDelete}>Delete My Account</button>

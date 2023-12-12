@@ -42,4 +42,17 @@ export class User {
 
 	@Column({ nullable: true })
 	unconfirmedTwoFactorSecret?: string;
+
+	//Game Stats:
+	@Column({ default: 0 })
+	wins: number;
+
+	@Column({ default: 0 })
+	losses: number;
+
+	@Column({ default: 1 }) // Assuming ladder level starts at 1
+	ladderLevel: number;
+
+	@Column('simple-array', { default: '' })
+	achievements: string[] = [];
 }

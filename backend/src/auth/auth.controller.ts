@@ -56,7 +56,9 @@ export class AuthController {
 		const { email, password } = loginDto;
 
 		const userId = await this.userService.findUserIdByMail(email);
+		console.log('userId = ', userId);
 		const user = await this.userService.findProfileById(userId);
+		console.log('user = ', user);
 		if (!user) {
 			return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
 		}

@@ -27,6 +27,21 @@ export class UserService {
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
+			select: [
+				'id',
+				'email',
+				'password',
+				'name',
+				'nickname',
+				'status',
+				'intraId',
+				'imageUrl',
+				'image',
+				'isTwoFactorAuthenticationEnabled',
+				'twoFactorAuthenticationSecret',
+				'unconfirmedTwoFactorSecret',
+				'friends',
+			],
 			relations: ['friends'],
 		});
 		if (!user) {
@@ -117,7 +132,7 @@ export class UserService {
 		}
 
 		const authToken = await this.authTokenRepository.findOne({
-			where: { user: user },
+			where: { userId: user.intraId },
 		});
 
 		try {
