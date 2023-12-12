@@ -1,8 +1,15 @@
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+	ConnectedSocket,
+	MessageBody,
+	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer,
+} from '@nestjs/websockets';
 import * as cookie from 'cookie';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EventsService } from './events.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @WebSocketGateway({
 	cors: {
@@ -15,7 +22,26 @@ export class EventsGateway {
 	@WebSocketServer()
 	server: Server;
 
-	constructor(private jwtService: JwtService, private eventsService: EventsService) {}
+	constructor(
+		private jwtService: JwtService,
+		private eventsService: EventsService,
+		private chatService: ChatService, // Inject your ChatService here
+	) {}
+
+	// A method to handle sending a friend request
+	@SubscribeMessage('send-friendrequest')
+	async handleSendFriendRequest(
+		@MessageBody() data: { senderId: string; receiverId: string; content: string },
+		@ConnectedSocket() client: Socket,
+	) {
+		// You can now use the chatService here
+		const friendRequest = await this.chatService.sendFriendRequest(
+			data.senderId,
+			data.receiverId,
+			data.content,
+		);
+		client.emit('friendrequest-sent', friendRequest);
+	}
 
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {

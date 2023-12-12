@@ -15,13 +15,13 @@ export function Chat() {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		fetchChatMessages();
+		fetchOpenRequests();
 	}, []);
 
-	const fetchChatMessages = async () => {
+	const fetchOpenRequests = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/user/Chat', {
+			const response = await fetch('http://localhost:8080/chat/requests', {
 				credentials: 'include',
 			});
 			if (!response.ok) throw new Error('Failed to fetch messages');
@@ -35,12 +35,12 @@ export function Chat() {
 
 	const handleAction = async (messageId: string, action: string) => {
 		try {
-			const response = await fetch(`http://localhost:8080/user/Chat/${messageId}/${action}`, {
+			const response = await fetch(`http://localhost:8080/chat/${messageId}/${action}`, {
 				method: 'POST',
 				credentials: 'include',
 			});
 			if (!response.ok) throw new Error('Failed to update message status');
-			fetchChatMessages(); // Refresh messages
+			fetchOpenRequests();
 		} catch (error) {
 			console.error('Error updating message:', error);
 		}
