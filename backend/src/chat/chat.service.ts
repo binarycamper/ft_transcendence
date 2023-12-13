@@ -53,22 +53,22 @@ export class ChatService {
 	}
 
 	async acceptRequest(messageId: string, user: User) {
-		console.log('accept request started!');
+		//console.log('accept request started!');
 		const request = await this.chatRepository.findOne({ where: { id: messageId } });
-		console.log('REQUEST: ', request);
+		//console.log('REQUEST: ', request);
 		if (!request) {
 			throw new Error('Request not found');
 		}
-		request.status = 'accepted';
-		await this.chatRepository.save(request);
-
-		// Return some confirmation or the updated request
+		let friend = await this.userService.findProfileById(request.senderId);
+		user = await this.userService.addFriend(user, friend.name);
+		friend = await this.userService.addFriend(friend, user.name);
+		await this.chatRepository.remove(request);
 		return { success: true, message: 'Chat request accepted.' };
 	}
 
 	// Method to decline a chat request
 	async declineRequest(messageId: string, user: User) {
-		console.log('Decline request started!');
+		//console.log('Decline request started!');
 		const request = await this.chatRepository.findOne({ where: { id: messageId } });
 		if (!request) {
 			throw new Error('Request not found');
@@ -77,7 +77,7 @@ export class ChatService {
 	}
 
 	async findAll(userId: string): Promise<Chat[]> {
-		console.log('USerid: ', userId);
+		//console.log('USerid: ', userId);
 		return this.chatRepository.find({
 			where: [{ recipientId: userId }],
 		});

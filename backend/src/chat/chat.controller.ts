@@ -24,7 +24,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
 	async create(@Body() createChatDto: CreateChatDto, @Req() req) {
-		console.log('friendrequest arrived');
+		//console.log('friendrequest arrived');
 		return this.chatService.create(createChatDto, req.user);
 	}
 
@@ -40,7 +40,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('accept')
 	async acceptRequest(@Query('messageid') messageId: string, @Req() req, @Res() res: Response) {
-		console.log(`Accepting request with messageId: ${messageId}`);
+		//console.log(`Accepting request with messageId: ${messageId}`);
 		try {
 			await this.chatService.acceptRequest(messageId, req.user);
 			return res.status(HttpStatus.OK).send('Friend accepted!');
