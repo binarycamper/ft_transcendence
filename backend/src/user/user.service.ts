@@ -24,6 +24,20 @@ export class UserService {
 		return this.userRepository.find();
 	}
 
+	async findAllFriends(user: User): Promise<User[]> {
+		// Assuming 'user' is the user entity of the currently logged-in user
+		// and it has a 'friends' property that is a self-referencing many-to-many relation.
+
+		// You need to load the friends relation, you can do this using the find method with options
+		const friends = await this.userRepository.find({
+			relations: ['friends'],
+			where: { id: user.id },
+		});
+
+		// The 'friends' property of the user entity should now be populated.
+		return friends.map((friend) => friend.friends).flat();
+	}
+
 	async findProfileById(userId: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
@@ -212,32 +226,33 @@ export class UserService {
 		return true;
 	}
 
-	async addFriend(user: User, friendName: string): Promise<User | null> {
-		// Find the user and their friends
-
+	async addFriend(user: User, friendName: string): Promise<User> {
+		// Retrieve the user with their current friends
+		const userWithFriends = await this.userRepository.findOne({
+			where: { id: user.id },
+			relations: ['friends'],
+		});
+		if (!userWithFriends) {
+			throw new Error('User not found');
+		}
 		const friendToAdd = await this.userRepository.findOne({
 			where: { name: friendName },
 		});
-
-		if (!user || !friendToAdd || user === friendToAdd) {
-			return null; // Return null if either user is not found
+		if (!friendToAdd) {
+			throw new Error('Friend not found');
 		}
-
-		if (!user.friends) user.friends = [];
-		// Check if the friend is already in the user's friends list
-		const alreadyFriends = user.friends.some((friend) => friend.id === friendToAdd.id);
+		// Ensure the user is not trying to add themselves as a friend
+		if (userWithFriends.id === friendToAdd.id) {
+			throw new Error('Users cannot add themselves as a friend');
+		}
+		// Check if they are already friends
+		const alreadyFriends = userWithFriends.friends.some((f) => f.id === friendToAdd.id);
 		if (alreadyFriends) {
-			// The friend is already added, handle this as you see fit
-			return null;
+			throw new Error('Already friends');
 		}
-
-		// Add the new friend to the existing friends array
-		user.friends = [...user.friends, friendToAdd];
-
-		// Save the updated user entity with the new friend added
-		await this.userRepository.save(user);
-
-		return user; // Return the updated user
+		// Add new friend
+		userWithFriends.friends.push(friendToAdd);
+		return await this.userRepository.save(userWithFriends);
 	}
 
 	//debug:

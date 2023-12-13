@@ -43,6 +43,12 @@ export class UserController {
 		return this.userService.findAll();
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('userfriends')
+	async getAllFriends(@Req() req): Promise<User[]> {
+		return this.userService.findAllFriends(req.user);
+	}
+
 	@Get('isProfileComplete')
 	@UseGuards(JwtAuthGuard)
 	async isProfileComplete(@Req() req): Promise<{ isComplete: boolean }> {
