@@ -43,8 +43,6 @@ Insert error logs here
 ```
 start chat
 show stats on publicprofile
-check if users are already friends before add eachother.
-show stats on public Profiles
 button + route to remove a friend
 backend: NestJS
 try fix error when get authtoken from 42api

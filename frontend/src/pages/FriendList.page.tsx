@@ -119,6 +119,40 @@ export function FriendList() {
 		}
 	};
 
+	const removeFriend = async (event: React.MouseEvent, friendId: string) => {
+		event.stopPropagation();
+		try {
+			const response = await fetch(`http://localhost:8080/user/friends/?friendid=${friendId}`, {
+				method: 'DELETE',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+
+			if (!response.ok) {
+				throw new Error(`Network response was not ok. Status: ${response.status}`);
+			}
+
+			// If the response status code is 204 No Content, then don't try to parse the response as JSON
+			if (response.status === 204) {
+				console.log('Friend removed successfully.');
+
+				// Update the UI by filtering out the removed friend
+				setFriends((prevFriends) => prevFriends.filter((friend) => friend.id !== friendId));
+				await fetchFriends();
+				setSuccessMessage('Friend removed successfully!'); // Set success message
+			} else {
+				// If you expect a JSON message even on successful delete, parse it here
+				const result = await response.json();
+				console.log(result.message);
+			}
+		} catch (error) {
+			setError('Failed to remove friend'); // Set error message
+			console.error('There was an error removing the friend:', error);
+		}
+	};
+
 	return (
 		<div>
 			<h1>My Friends</h1>
@@ -144,6 +178,8 @@ export function FriendList() {
 								style={{ cursor: 'pointer' }}
 							>
 								{friend.name} - {friend.status}
+								{/* Pass the event object to the removeFriend function */}
+								<button onClick={(e) => removeFriend(e, friend.id)}>Remove</button>
 							</li>
 						))}
 					</ul>

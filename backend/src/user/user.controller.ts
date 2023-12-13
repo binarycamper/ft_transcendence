@@ -17,6 +17,7 @@ import {
 	UsePipes,
 	ValidationPipe,
 	UnauthorizedException,
+	NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -47,6 +48,22 @@ export class UserController {
 	@Get('userfriends')
 	async getAllFriends(@Req() req): Promise<User[]> {
 		return this.userService.findAllFriends(req.user);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Delete('friends')
+	async removeFriend(@Query('friendid') friendId: string, @Req() req, @Res() res) {
+		try {
+			await this.userService.removeFriend(req.user.id, friendId);
+			return res.status(HttpStatus.NO_CONTENT).send();
+		} catch (error) {
+			console.error('Error removing friend:', error.message);
+			const status =
+				error instanceof NotFoundException
+					? HttpStatus.NOT_FOUND
+					: HttpStatus.INTERNAL_SERVER_ERROR;
+			return res.status(status).json({ message: error.message });
+		}
 	}
 
 	@Get('isProfileComplete')
