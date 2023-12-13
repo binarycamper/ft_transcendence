@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type ChatMessage = {
 	id: string;
@@ -13,6 +14,7 @@ type ChatMessage = {
 export function Chat() {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		fetchOpenRequests();
@@ -24,7 +26,9 @@ export function Chat() {
 			const response = await fetch('http://localhost:8080/chat/requests', {
 				credentials: 'include',
 			});
-			if (!response.ok) throw new Error('Failed to fetch messages');
+			if (!response.ok) {
+				navigate('/login');
+			}
 			const data = await response.json();
 			//console.log('TEST: ', data);
 			setMessages(data);

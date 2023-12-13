@@ -43,7 +43,7 @@ export function Profile() {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					throw new Error('Profile fetch failed');
+					navigate('/login');
 				}
 				const profileData: UserProfile = await response.json();
 				console.log('User profile data: ', profileData);
@@ -83,7 +83,7 @@ export function Profile() {
 		try {
 			const response = await fetch(image, {
 				method: 'GET',
-				credentials: 'include', // Necessary for cookies, e.g. when using sessions
+				credentials: 'include',
 			});
 			if (!response.ok) {
 				throw new Error(`Image fetch failed: ${response.statusText}`);
@@ -167,12 +167,12 @@ export function Profile() {
 		// Trim the newNickname to remove whitespace from both ends and check if it's empty
 		if (!newNickname.trim()) {
 			setNicknameError('Nickname cannot be empty.');
-			return; // Exit the function early if the nickname is empty
+			return;
 		}
 
 		if (newNickname.length > 100) {
 			setNicknameError('Nickname must be smaller then 100.');
-			return; // Exit the function early if the nickname is empty
+			return;
 		}
 		// Reset error message
 		setNicknameError('');

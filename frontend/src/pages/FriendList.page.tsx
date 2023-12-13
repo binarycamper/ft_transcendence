@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import FriendProfile from '../components/Header/ProfileComponent';
+import { useNavigate } from 'react-router-dom';
 
 type Friend = {
 	id: string;
@@ -15,6 +16,7 @@ export function FriendList() {
 	const [newFriendName, setNewFriendName] = useState<string>('');
 	const [friendProfile, setFriendProfile] = useState(null);
 	const [successMessage, setSuccessMessage] = useState('');
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		fetchFriends();
@@ -32,7 +34,7 @@ export function FriendList() {
 			});
 
 			if (!response.ok) {
-				throw new Error('Network response was not ok');
+				navigate('/login');
 			}
 
 			const data = await response.json();
