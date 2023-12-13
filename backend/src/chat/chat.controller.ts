@@ -24,7 +24,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
 	async create(@Body() createChatDto: CreateChatDto, @Req() req) {
-		//console.log('friendrequest arrived');
+		//console.log('friendrequest arrived, dto: ', createChatDto);
 		return this.chatService.create(createChatDto, req.user);
 	}
 

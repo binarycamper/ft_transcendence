@@ -43,7 +43,6 @@ Insert error logs here
 ```
 start chat
 show stats on publicprofile
-button + route to remove a friend
 backend: NestJS
 try fix error when get authtoken from 42api
 match history

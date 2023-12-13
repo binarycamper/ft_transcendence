@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 type ChatMessage = {
 	id: string;
+	senderName: string;
 	senderId: string;
 	receiverId: string;
 	messageType: 'friend_request' | 'system_message';
@@ -30,7 +31,7 @@ export function Chat() {
 				navigate('/login');
 			}
 			const data = await response.json();
-			//console.log('TEST: ', data);
+			console.log('TEST: ', data);
 			setMessages(data);
 		} catch (error) {
 			console.error('Error fetching messages:', error);
@@ -60,7 +61,12 @@ export function Chat() {
 				<ul>
 					{messages.map((message) => (
 						<li key={message.id}>
-							<p>{message.content}</p>
+							{/* Check if the message is a friend request and display the sender's name */}
+							{message.messageType === 'friend_request' ? (
+								<p>{message.senderName} sent a friend request.</p>
+							) : (
+								<p>{message.content}</p>
+							)}
 							{message.messageType === 'friend_request' && (
 								<div>
 									<button onClick={() => handleAction(message.id, 'accept')}>Accept</button>

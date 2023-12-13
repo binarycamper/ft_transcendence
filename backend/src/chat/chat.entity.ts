@@ -9,6 +9,9 @@ export class Chat {
 	senderId: string;
 
 	@Column()
+	senderName: string;
+
+	@Column()
 	recipientId: string;
 
 	@Column({ type: 'enum', enum: ['friend_request', 'system_message'] })

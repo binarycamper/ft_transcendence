@@ -44,8 +44,9 @@ export class ChatService {
 		const recipient_user = await this.userService.findProfileByName(createChatDto.recipient);
 		const chat = this.chatRepository.create({
 			...createChatDto,
-			recipientId: recipient_user.id,
 			senderId: user.id,
+			senderName: user.name,
+			recipientId: recipient_user.id,
 			status: 'pending',
 		});
 		await this.chatRepository.save(chat);

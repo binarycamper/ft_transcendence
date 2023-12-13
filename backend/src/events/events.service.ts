@@ -37,7 +37,7 @@ export class EventsService {
 			const timeout = setTimeout(async () => {
 				console.log('User tracked offline ', userId);
 				await this.userService.setUserOffline(userId);
-			}, 5000); // 5 Sekunden Verzögerung
+			}, 2000); // 2 Sekunden Verzögerung
 
 			this.userConnectionMap.set(userId, timeout);
 		} else {
