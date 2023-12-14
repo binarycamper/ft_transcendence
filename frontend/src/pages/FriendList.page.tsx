@@ -84,8 +84,8 @@ export function FriendList() {
 			}
 
 			// Handle the response here. For example, you might want to show a success message or update the UI
-			const result = await response.json();
-			console.log(result.message); // Assuming the server sends back a success message
+			const result: [] = await response.json();
+			console.log(result); // Assuming the server sends back a success message
 			setNewFriendName(''); // Reset input field after successful request
 			setError(null); // Clear any existing errors
 			setSuccessMessage('Friend request sent successfully!'); // Set success message
