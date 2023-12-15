@@ -89,6 +89,7 @@ export class ChatController {
 		//return this.chatService.findOne(id);
 	}
 
+	//TODO: delete before eval
 	//Debug:
 	@Post('all')
 	async getAll() {

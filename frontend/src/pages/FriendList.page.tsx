@@ -5,7 +5,16 @@ import { useNavigate } from 'react-router-dom';
 type Friend = {
 	id: string;
 	name: string;
+	nickname: string;
+	email: string;
 	status: string;
+	imageUrl: string;
+	image: string;
+	ladderLevel: number;
+	losses: number;
+	wins: number;
+	// Include additional properties as needed
+	// ...
 };
 
 type ChatRequest = {
@@ -81,7 +90,7 @@ export function FriendList() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [newFriendName, setNewFriendName] = useState('');
-	const [friendProfile, setFriendProfile] = useState(null);
+	const [friendProfile, setFriendProfile] = useState<Friend | null>(null);
 	const [successMessage, setSuccessMessage] = useState('');
 	const [pendingRequestCount, setPendingRequestCount] = useState(0);
 	const navigate = useNavigate();
@@ -195,7 +204,7 @@ export function FriendList() {
 				throw new Error('Network response was not ok');
 			}
 
-			const friendProfileData = await response.json();
+			const friendProfileData: Friend = await response.json();
 			setFriendProfile(friendProfileData);
 		} catch (error) {
 			console.error('There was an error fetching the friend profile:', error);
@@ -269,12 +278,10 @@ export function FriendList() {
 			) : (
 				<ul style={{ listStyleType: 'none', padding: 0 }}>
 					{friends.map((friend) => (
-						<li
-							key={friend.id}
-							onClick={() => handleFriendClick(friend.name)}
-							style={styles.friendListItem}
-						>
-							{friend.name} - {friend.status}
+						<li key={friend.id} style={styles.friendListItem}>
+							<div onClick={() => handleFriendClick(friend.name)} style={{ cursor: 'pointer' }}>
+								{friend.name} - {friend.status}
+							</div>
 							<button onClick={(e) => removeFriend(e, friend.id)} style={styles.removeButton}>
 								Remove
 							</button>
@@ -282,7 +289,21 @@ export function FriendList() {
 					))}
 				</ul>
 			)}
-			{friendProfile && <FriendProfile profile={friendProfile} />}
+			{friendProfile && (
+				<div>
+					<h3>{friendProfile.nickname || friendProfile.name}'s Profile</h3>
+					<img
+						src={friendProfile.imageUrl || friendProfile.image}
+						alt={`${friendProfile.nickname || friendProfile.name}'s profile`}
+					/>
+					<p>Email: {friendProfile.email}</p>
+					<p>Status: {friendProfile.status}</p>
+					<p>Ladder Level: {friendProfile.ladderLevel}</p>
+					<p>Wins: {friendProfile.wins}</p>
+					<p>Losses: {friendProfile.losses}</p>
+					{/* Render additional details here */}
+				</div>
+			)}
 		</div>
 	);
 }
