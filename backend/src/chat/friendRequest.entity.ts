@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity()
-export class Chat {
+export class FriendRequest {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 

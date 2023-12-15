@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateChatDto {
+export class FriendRequestDto {
 	@IsString()
 	@IsNotEmpty()
 	readonly recipient: string;

@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './create.chat.dto';
+import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
 
 @Controller('chat')
@@ -23,7 +23,7 @@ export class ChatController {
 	// Endpoint to send a friendrequest
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
-	async create(@Body() createChatDto: CreateChatDto, @Req() req, @Res() res: Response) {
+	async create(@Body() createChatDto: FriendRequestDto, @Req() req, @Res() res: Response) {
 		//console.log('friendrequest arrived, dto: ', createChatDto);
 		if (createChatDto.recipient === req.user.name) {
 			res.status(HttpStatus.BAD_REQUEST).json({
