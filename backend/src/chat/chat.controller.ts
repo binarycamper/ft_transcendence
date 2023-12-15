@@ -23,9 +23,17 @@ export class ChatController {
 	// Endpoint to send a chat message or friend request
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
-	async create(@Body() createChatDto: CreateChatDto, @Req() req) {
-		//console.log('friendrequest arrived, dto: ', createChatDto);
-		return this.chatService.create(createChatDto, req.user);
+	async create(@Body() createChatDto: CreateChatDto, @Req() req, @Res() res: Response) {
+		console.log('friendrequest arrived, dto: ', createChatDto);
+		if (createChatDto.recipient === req.user.name) {
+			res.status(HttpStatus.BAD_REQUEST).json({
+				statusCode: HttpStatus.BAD_REQUEST,
+				message: 'User cannot add himself as a friend.',
+			});
+		} else {
+			const chat = await this.chatService.create(createChatDto, req.user);
+			res.status(HttpStatus.CREATED).json(chat);
+		}
 	}
 
 	// Endpoint to get all pending requests for the logged-in user

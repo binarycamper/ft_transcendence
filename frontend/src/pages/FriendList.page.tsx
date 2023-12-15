@@ -143,21 +143,16 @@ export function FriendList() {
 			setError('Please enter the name of the friend you want to add.');
 			return;
 		}
-
-		// You may need to adjust the size check based on your requirements
 		if (newFriendName.length > 100) {
-			setNewFriendName(''); // Reset input field
+			setNewFriendName('');
 			setError('The entered name is too long.');
 			return;
 		}
-
-		// Construct the friend request message
 		const friendRequestMessage = {
 			recipient: newFriendName,
 			content: `Hi ${newFriendName}, I would like to add you as a friend!`,
 			messageType: 'friend_request',
 		};
-
 		try {
 			const response = await fetch('http://localhost:8080/chat/friendrequest', {
 				method: 'POST',
@@ -167,17 +162,18 @@ export function FriendList() {
 				},
 				body: JSON.stringify(friendRequestMessage),
 			});
-
 			if (!response.ok) {
-				throw new Error(`Network response was not ok. Status: ${response.status}`);
+				const errorData = await response.json();
+				setError(errorData.message || 'Failed to send friend request.');
+			} else {
+				const result = await response.json();
+				console.log(result);
+				setNewFriendName('');
+				setError(null);
+				setSuccessMessage('Friend request sent successfully!');
 			}
-			const result: [] = await response.json();
-			console.log(result);
-			setNewFriendName(''); // Reset input field after successful request
-			setError(null); // Clear any existing errors
-			setSuccessMessage('Friend request sent successfully!'); // Set success message
 		} catch (error) {
-			setError('Failed to send friend request');
+			setError('There was an error sending the friend request.');
 			console.error('There was an error sending the friend request:', error);
 		}
 	};
@@ -227,14 +223,13 @@ export function FriendList() {
 				// Update the UI by filtering out the removed friend
 				setFriends((prevFriends) => prevFriends.filter((friend) => friend.id !== friendId));
 				await fetchFriends();
-				setSuccessMessage('Friend removed successfully!'); // Set success message
+				setSuccessMessage('Friend removed successfully!');
 			} else {
-				// If you expect a JSON message even on successful delete, parse it here
 				const result = await response.json();
 				console.log(result.message);
 			}
 		} catch (error) {
-			setError('Failed to remove friend'); // Set error message
+			setError('Failed to remove friend');
 			console.error('There was an error removing the friend:', error);
 		}
 	};
