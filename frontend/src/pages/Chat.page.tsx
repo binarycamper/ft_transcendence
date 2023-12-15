@@ -25,7 +25,7 @@ export function Chat() {
 	const fetchOpenRequests = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/chat/requests', {
+			const response = await fetch('http://localhost:8080/chat/pendingrequests', {
 				credentials: 'include',
 			});
 			if (!response.ok) {

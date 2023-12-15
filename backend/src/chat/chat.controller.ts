@@ -13,14 +13,14 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './create.chat.dto'; // DTO for creating a chat message
+import { CreateChatDto } from './create.chat.dto';
 import { Response } from 'express';
 
 @Controller('chat')
 export class ChatController {
 	constructor(private readonly chatService: ChatService) {}
 
-	// Endpoint to send a chat message or friend request
+	// Endpoint to send a friendrequest
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
 	async create(@Body() createChatDto: CreateChatDto, @Req() req, @Res() res: Response) {
@@ -38,7 +38,7 @@ export class ChatController {
 
 	// Endpoint to get all pending requests for the logged-in user
 	@UseGuards(JwtAuthGuard)
-	@Get('requests')
+	@Get('pendingrequests')
 	async findAll(@Req() req) {
 		return this.chatService.findAll(req.user.id);
 	}
