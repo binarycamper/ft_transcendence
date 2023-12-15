@@ -6,21 +6,111 @@ type Friend = {
 	id: string;
 	name: string;
 	status: string;
-	// Add any other properties that your Friend entity might have
+};
+
+type ChatRequest = {
+	id: string;
+	senderName: string;
+	senderId: string;
+	receiverId: string;
+	messageType: 'friend_request' | 'system_message';
+	content: string;
+	status: 'pending' | 'accepted' | 'declined';
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+	container: {
+		padding: '20px',
+		backgroundColor: 'transparent',
+	},
+	heading: {
+		color: '#fff',
+	},
+	friendRequestNotification: {
+		cursor: 'pointer',
+		color: 'white',
+		backgroundColor: '#17a2b8',
+		padding: '10px',
+		borderRadius: '5px',
+		margin: '10px 0',
+		textAlign: 'center',
+		width: 'auto',
+		display: 'inline-block',
+	},
+	input: {
+		padding: '10px',
+		marginRight: '10px',
+		borderRadius: '5px',
+		border: '1px solid #ddd',
+	},
+	addButton: {
+		backgroundColor: '#28a745',
+		color: 'white',
+		padding: '10px 20px',
+		border: 'none',
+		borderRadius: '5px',
+		cursor: 'pointer',
+	},
+	successMessage: {
+		color: '#28a745',
+	},
+	errorMessage: {
+		color: '#dc3545',
+	},
+	friendListItem: {
+		cursor: 'pointer',
+		backgroundColor: 'transparent',
+		padding: '10px',
+		margin: '10px 0',
+		borderRadius: '5px',
+		boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+	},
+	removeButton: {
+		backgroundColor: '#dc3545',
+		color: 'white',
+		padding: '5px 10px',
+		border: 'none',
+		borderRadius: '5px',
+		cursor: 'pointer',
+		marginLeft: '10px',
+	},
 };
 
 export function FriendList() {
 	const [friends, setFriends] = useState<Friend[]>([]);
-	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [newFriendName, setNewFriendName] = useState<string>('');
+	const [newFriendName, setNewFriendName] = useState('');
 	const [friendProfile, setFriendProfile] = useState(null);
 	const [successMessage, setSuccessMessage] = useState('');
+	const [pendingRequestCount, setPendingRequestCount] = useState(0);
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		fetchFriends();
+		fetchPendingRequestsCount();
 	}, []);
+
+	const fetchPendingRequestsCount = async () => {
+		setIsLoading(true);
+		try {
+			const response = await fetch('http://localhost:8080/chat/requests', {
+				credentials: 'include',
+			});
+			if (!response.ok) {
+				navigate('/login');
+				return;
+			}
+			const data: ChatRequest[] = await response.json();
+
+			const pendingRequests = data.filter((message) => message.status === 'pending');
+			setPendingRequestCount(pendingRequests.length);
+		} catch (error) {
+			console.error('Error fetching messages:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const fetchFriends = async () => {
 		try {
@@ -69,7 +159,6 @@ export function FriendList() {
 		};
 
 		try {
-			// Send the friend request message to the server
 			const response = await fetch('http://localhost:8080/chat/friendrequest', {
 				method: 'POST',
 				credentials: 'include',
@@ -82,10 +171,8 @@ export function FriendList() {
 			if (!response.ok) {
 				throw new Error(`Network response was not ok. Status: ${response.status}`);
 			}
-
-			// Handle the response here. For example, you might want to show a success message or update the UI
 			const result: [] = await response.json();
-			console.log(result); // Assuming the server sends back a success message
+			console.log(result);
 			setNewFriendName(''); // Reset input field after successful request
 			setError(null); // Clear any existing errors
 			setSuccessMessage('Friend request sent successfully!'); // Set success message
@@ -134,7 +221,6 @@ export function FriendList() {
 				throw new Error(`Network response was not ok. Status: ${response.status}`);
 			}
 
-			// If the response status code is 204 No Content, then don't try to parse the response as JSON
 			if (response.status === 204) {
 				console.log('Friend removed successfully.');
 
@@ -153,40 +239,55 @@ export function FriendList() {
 		}
 	};
 
+	const navigateToChat = () => {
+		navigate('/chat');
+	};
+
 	return (
-		<div>
-			<h1>My Friends</h1>
-			{/* Input and button to add a new friend */}
-			<input
-				type="text"
-				placeholder="Enter friend's name"
-				value={newFriendName}
-				onChange={(e) => setNewFriendName(e.target.value)}
-			/>
-			<button onClick={addFriend}>Add New Friend</button>
-			{successMessage && <p className="success">{successMessage}</p>}
-			{error && <p>{error}</p>}
+		<div style={styles.container}>
+			<h1 style={styles.heading}>My Friends</h1>
+			{pendingRequestCount > 0 && (
+				<div onClick={navigateToChat} style={styles.friendRequestNotification}>
+					You have {pendingRequestCount} friend request(s). Click here to review.
+				</div>
+			)}
+			<div style={{ margin: '20px 0' }}>
+				<input
+					type="text"
+					placeholder="Enter friend's name"
+					value={newFriendName}
+					onChange={(e) => setNewFriendName(e.target.value)}
+					style={styles.input}
+				/>
+				<button onClick={addFriend} style={styles.addButton}>
+					Add New Friend
+				</button>
+			</div>
+			{successMessage && (
+				<p className="success" style={styles.successMessage}>
+					{successMessage}
+				</p>
+			)}
+			{error && <p style={styles.errorMessage}>{error}</p>}
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
-				<>
-					<ul>
-						{friends.map((friend) => (
-							<li
-								key={friend.id}
-								onClick={() => handleFriendClick(friend.name)}
-								style={{ cursor: 'pointer' }}
-							>
-								{friend.name} - {friend.status}
-								{/* Pass the event object to the removeFriend function */}
-								<button onClick={(e) => removeFriend(e, friend.id)}>Remove</button>
-							</li>
-						))}
-					</ul>
-					{/* Render the FriendProfile component with the friendProfile data */}
-					{friendProfile && <FriendProfile profile={friendProfile} />}
-				</>
+				<ul style={{ listStyleType: 'none', padding: 0 }}>
+					{friends.map((friend) => (
+						<li
+							key={friend.id}
+							onClick={() => handleFriendClick(friend.name)}
+							style={styles.friendListItem}
+						>
+							{friend.name} - {friend.status}
+							<button onClick={(e) => removeFriend(e, friend.id)} style={styles.removeButton}>
+								Remove
+							</button>
+						</li>
+					))}
+				</ul>
 			)}
+			{friendProfile && <FriendProfile profile={friendProfile} />}
 		</div>
 	);
 }
