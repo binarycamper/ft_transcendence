@@ -16,13 +16,15 @@ export function Chat() {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [pendingRequestCount, setPendingRequestCount] = useState(0);
+	const [myRequests, setMyRequests] = useState<ChatMessage[]>([]);
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		fetchOpenRequests();
+		fetchPendingRequests();
+		fetchMyRequests(); // Fetch your own requests
 	}, []);
 
-	const fetchOpenRequests = async () => {
+	const fetchPendingRequests = async () => {
 		setIsLoading(true);
 		try {
 			const response = await fetch('http://localhost:8080/chat/pendingrequests', {
@@ -44,6 +46,25 @@ export function Chat() {
 		}
 	};
 
+	const fetchMyRequests = async () => {
+		setIsLoading(true);
+		try {
+			const response = await fetch('http://localhost:8080/chat/myrequests', {
+				credentials: 'include',
+			});
+			if (!response.ok) {
+				navigate('/login');
+				return;
+			}
+			const data: ChatMessage[] = await response.json();
+			setMyRequests(data); // Update state with your own requests
+		} catch (error) {
+			console.error('Error fetching my requests:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const handleAction = async (messageId: string, action: string) => {
 		try {
 			const response = await fetch(`http://localhost:8080/chat/${action}/?messageid=${messageId}`, {
@@ -51,7 +72,7 @@ export function Chat() {
 				credentials: 'include',
 			});
 			if (!response.ok) throw new Error('Failed to update message status');
-			fetchOpenRequests();
+			fetchPendingRequests();
 		} catch (error) {
 			console.error('Error updating message:', error);
 		}
@@ -102,34 +123,46 @@ export function Chat() {
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
-				<ul>
-					{messages.map((message) => (
-						<li key={message.id}>
-							{/* Check if the message is a friend request and display the sender's name */}
-							{message.messageType === 'friend_request' ? (
-								<p>{message.senderName} sent a friend request.</p>
-							) : (
-								<p>{message.content}</p>
-							)}
-							{message.messageType === 'friend_request' && (
-								<div>
-									<button
-										style={acceptButtonStyle}
-										onClick={() => handleAction(message.id, 'accept')}
-									>
-										Accept
-									</button>
-									<button
-										style={declineButtonStyle}
-										onClick={() => handleAction(message.id, 'decline')}
-									>
-										Decline
-									</button>
-								</div>
-							)}
-						</li>
-					))}
-				</ul>
+				<>
+					<ul>
+						{messages.map((message) => (
+							<li key={message.id}>
+								{message.messageType === 'friend_request' ? (
+									<p>{message.senderName} sent a friend request.</p>
+								) : (
+									<p>{message.content}</p>
+								)}
+								{message.messageType === 'friend_request' && (
+									<div>
+										<button
+											style={acceptButtonStyle}
+											onClick={() => handleAction(message.id, 'accept')}
+										>
+											Accept
+										</button>
+										<button
+											style={declineButtonStyle}
+											onClick={() => handleAction(message.id, 'decline')}
+										>
+											Decline
+										</button>
+									</div>
+								)}
+							</li>
+						))}
+					</ul>
+					<h2>My Requests:</h2>
+					<ul>
+						{myRequests.map((request) => (
+							<li key={request.id}>
+								<p>
+									To: {request.receiverId} - {request.content} (Status: {request.status})
+								</p>
+								{/* Include buttons or actions for your own requests if needed */}
+							</li>
+						))}
+					</ul>
+				</>
 			)}
 		</div>
 	);

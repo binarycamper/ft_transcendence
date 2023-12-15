@@ -39,8 +39,14 @@ export class ChatController {
 	// Endpoint to get all pending requests for the logged-in user
 	@UseGuards(JwtAuthGuard)
 	@Get('pendingrequests')
-	async findAll(@Req() req) {
-		return this.chatService.findAll(req.user.id);
+	async findAllPending(@Req() req) {
+		return this.chatService.findAllPending(req.user.id);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('myrequests')
+	async MyRequests(@Req() req) {
+		return this.chatService.findMyRequests(req.user.id);
 	}
 
 	//TODO: add new friend to User Table of these USers which requests 'eachother'

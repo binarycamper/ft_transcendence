@@ -77,10 +77,17 @@ export class ChatService {
 		await this.chatRepository.remove(request);
 	}
 
-	async findAll(userId: string): Promise<Chat[]> {
+	async findAllPending(userId: string): Promise<Chat[]> {
 		//console.log('USerid: ', userId);
 		return this.chatRepository.find({
 			where: [{ recipientId: userId }],
+		});
+	}
+
+	async findMyRequests(userId: string): Promise<Chat[]> {
+		//console.log('USerid: ', userId);
+		return this.chatRepository.find({
+			where: [{ senderId: userId }],
 		});
 	}
 
