@@ -7,6 +7,7 @@ import { AuthToken } from 'src/auth/auth.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import { unlink } from 'fs/promises';
+import { Chat } from 'src/chat/chat.entity';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -18,6 +19,8 @@ export class UserService {
 		@InjectRepository(AuthToken)
 		private readonly authTokenRepository: Repository<AuthToken>,
 		private jwtService: JwtService,
+		@InjectRepository(Chat)
+		private chatRepository: Repository<Chat>,
 	) {}
 
 	findAll(): Promise<User[]> {
@@ -150,6 +153,16 @@ export class UserService {
 				friendEntity.friends = friendEntity.friends.filter((f) => f.id !== userId);
 				await this.userRepository.save(friendEntity);
 			}
+		}
+
+		// Get all friend requests where the user is either the sender or the recipient
+		const friendRequests = await this.chatRepository.find({
+			where: [{ senderId: userId }, { recipientId: userId }],
+		});
+
+		// Remove all related friend requests
+		if (friendRequests.length > 0) {
+			await this.chatRepository.remove(friendRequests);
 		}
 
 		if (userImage) {

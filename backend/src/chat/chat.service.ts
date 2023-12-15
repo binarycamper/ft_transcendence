@@ -39,6 +39,24 @@ export class ChatService {
 	}
 
 	async create(createChatDto: CreateChatDto, user): Promise<Chat> {
+		// Find the recipient user by name
+		const recipientUser = await this.userService.findProfileByName(createChatDto.recipient);
+		if (!recipientUser) {
+			throw new Error('Recipient user not found.');
+		}
+		// Check for existing pending requests between these two users
+		const existingRequest = await this.chatRepository.findOne({
+			where: [
+				{ senderId: user.id, recipientId: recipientUser.id, status: 'pending' },
+				{ senderId: recipientUser.id, recipientId: user.id, status: 'pending' },
+			],
+		});
+
+		// If a pending request exists, throw an error
+		if (existingRequest) {
+			throw new Error('A pending friend request already exists.');
+		}
+
 		// Create and save a new chat message
 		//console.log('createChatDto Body: ', createChatDto);
 		const recipient_user = await this.userService.findProfileByName(createChatDto.recipient);

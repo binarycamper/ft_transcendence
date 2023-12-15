@@ -24,15 +24,22 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
 	async create(@Body() createChatDto: CreateChatDto, @Req() req, @Res() res: Response) {
-		console.log('friendrequest arrived, dto: ', createChatDto);
+		//console.log('friendrequest arrived, dto: ', createChatDto);
 		if (createChatDto.recipient === req.user.name) {
 			res.status(HttpStatus.BAD_REQUEST).json({
 				statusCode: HttpStatus.BAD_REQUEST,
-				message: 'User cannot add himself as a friend.',
+				message: 'You cannot send a friend request to yourself.',
 			});
 		} else {
-			const chat = await this.chatService.create(createChatDto, req.user);
-			res.status(HttpStatus.CREATED).json(chat);
+			try {
+				const chat = await this.chatService.create(createChatDto, req.user);
+				res.status(HttpStatus.CREATED).json(chat);
+			} catch (error) {
+				res.status(HttpStatus.BAD_REQUEST).json({
+					statusCode: HttpStatus.BAD_REQUEST,
+					message: 'There is already a pending friend request between you and this user.',
+				});
+			}
 		}
 	}
 
