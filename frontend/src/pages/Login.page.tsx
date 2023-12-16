@@ -29,8 +29,12 @@ export function Login() {
 			});
 
 			if (response.ok) {
-				console.log('HEaders of Login: ', response.headers);
-				navigate('/profile'); // Navigate to profile with the data
+				const data = await response.json();
+				if (data.require2FA) {
+					navigate('/twofactorsetup', { state: { userId: data.userId } });
+				} else {
+					navigate('/profile');
+				}
 			} else {
 				console.error('Login fehlgeschlagen');
 			}

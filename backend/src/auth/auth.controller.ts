@@ -47,18 +47,15 @@ export class AuthController {
 	async signup(@Res() res: Response) {
 		const clientId = this.configService.get<string>('INTRA_UID');
 		const url = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=http://localhost:8080/auth/callback&response_type=code`;
-		//console.log(url);
 		return res.json({ url });
 	}
 
 	@Post('login')
-	async login(@Body() loginDto: LoginDto, @Req() req: Request, @Res() res: Response) {
+	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
 		const { email, password } = loginDto;
 
 		const userId = await this.userService.findUserIdByMail(email);
-		//console.log('userId = ', userId);
 		const user = await this.userService.findProfileById(userId);
-		//console.log('user = ', user);
 		if (!user) {
 			return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
 		}
@@ -67,16 +64,19 @@ export class AuthController {
 			return res.status(401).json({ message: 'Wrong password.' });
 		}
 
-		const userPayload = {
-			name: user.name,
-			email: user.email,
-			id: user.id,
-			intraId: user.intraId,
-			password: user.password,
-		};
-		const jwtToken = this.jwtService.sign(userPayload);
+		if (user.isTwoFactorAuthenticationEnabled) {
+			return res.status(HttpStatus.OK).json({
+				message: '2FA required',
+				require2FA: true,
+				userId: user.id,
+			});
+		}
 
-		// Clear old cookie and set new one
+		const jwtToken = await this.authService.createAccessToken(user.id);
+		if (!jwtToken) {
+			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+		}
+
 		res.clearCookie('token');
 		res.cookie('token', jwtToken, {
 			httpOnly: true,
@@ -84,7 +84,9 @@ export class AuthController {
 			secure: process.env.NODE_ENV !== 'development',
 			sameSite: 'lax',
 		});
-		return res.status(200).json({ message: 'Login successfully', userId: user.id });
+		return res
+			.status(200)
+			.json({ message: 'Login successfully', accessToken: jwtToken, userId: user.id });
 	}
 
 	@Get('callback')
@@ -102,12 +104,9 @@ export class AuthController {
 				});
 
 				const redirectUrl = new URL('http://localhost:5173/completeprofile');
-				redirectUrl.searchParams.append('/?userId', result.userId);
 				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
 				redirectUrl.searchParams.append('token', result.access_token);
 				redirectUrl.searchParams.append('userId', result.userId);
-				redirectUrl.searchParams.append('token', result.access_token);
-				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
 
 				res.redirect(redirectUrl.toString());
 			} catch (error) {
@@ -126,14 +125,11 @@ export class AuthController {
 		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('/2fa/verify-2fa')
-	async verifyTwoFactorAuthentication(
-		@Body() verifyDto: Verify2FADto,
-		@Res() response: Response,
-		@Req() req,
-	) {
-		const user = req.user;
+	async verifyTwoFactorAuthentication(@Body() verifyDto: Verify2FADto, @Res() response: Response) {
+		console.log("@Post('/2fa/verify-2fa') activated");
+		const userId = verifyDto.userId;
+		const user = await this.userService.findProfileById(userId);
 		if (!user) {
 			throw new UnauthorizedException('User not found');
 		}
@@ -143,19 +139,28 @@ export class AuthController {
 		if (!isValid) {
 			return response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid 2FA token' });
 		} else {
-			const accessToken = this.authService.createAccessToken(user.id);
-			return response.status(HttpStatus.OK).json({ accessToken });
+			const jwtToken = await this.authService.createAccessToken(user.id);
+			if (!jwtToken) {
+				throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+			}
+			response.clearCookie('token');
+			response.cookie('token', jwtToken, {
+				httpOnly: true,
+				maxAge: 86400000 * 7,
+				secure: process.env.NODE_ENV !== 'development',
+				sameSite: 'lax',
+			});
+			return response.status(HttpStatus.OK).json({ accessToken: jwtToken, userId: user.id });
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Get('/2fa/setup')
-	async setupTwoFactorAuthentication(@Req() req) {
-		const request = req;
-		if (!request.user) {
+	async setupTwoFactorAuthentication(@Query('userId') userId: string) {
+		const user = await this.userService.findProfileById(userId);
+		if (!user) {
 			throw new Error('User not found');
 		}
-		const { qrCodeUrl } = await this.authService.setupTwoFactorAuthentication(request.user);
+		const { qrCodeUrl } = await this.authService.setupTwoFactorAuthentication(user);
 		return { qrCodeUrl };
 	}
 }

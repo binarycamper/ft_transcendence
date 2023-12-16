@@ -76,9 +76,13 @@ export function CompleteProfile() {
 				credentials: 'include',
 			});
 
-			if (response.status === 200 || response.status === 303) {
-				if (setup2FA && response.status === 200) {
-					navigate('/twofactorsetup'); // Weiterleitung zur 2FA-Setup-Seite
+			const data = await response.json();
+			console.log('Complete Profile Response:', data);
+
+			if (response.ok) {
+				if (setup2FA) {
+					console.log('UserId for 2FA setup:', data.userId);
+					navigate('/twofactorsetup', { state: { userId: data.userId } }); // Weiterleitung zur 2FA-Setup-Seite
 				} else {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}

@@ -172,28 +172,45 @@ export class AuthService {
 	}
 
 	async verifyTwoFactorAuthenticationToken(user: User, token: string): Promise<boolean> {
-		if (!user || !user.unconfirmedTwoFactorSecret) {
-			throw new Error('2FA setup not completed or user not found');
+		if (!user) {
+			throw new Error('User not found');
 		}
 
-		const isValid = this.is2FATokenValid(user, token);
+		let secret = user.isTwoFactorAuthenticationEnabled
+			? user.twoFactorAuthenticationSecret
+			: user.unconfirmedTwoFactorSecret;
 
-		if (isValid) {
+		if (!secret) {
+			throw new Error('2FA secret not set');
+		}
+
+		const isValid = speakeasy.totp.verify({
+			secret: secret,
+			encoding: 'base32',
+			token: token,
+		});
+
+		if (isValid && !user.twoFactorAuthenticationSecret) {
 			await this.enable2FAForUser(user);
 		}
-
 		return isValid;
 	}
 
 	async createAccessToken(userId: string): Promise<string> {
 		const user = await this.userService.findProfileById(userId);
+		if (!user) {
+			console.log('User not found');
+			return null;
+		}
 		const payload = {
 			name: user.name,
 			id: user.id,
 			email: user.email,
-			password: user.password,
+			// password: user.password,
+			require2FA: user.isTwoFactorAuthenticationEnabled,
 		};
-		return this.jwtService.sign(payload);
+		const accesToken = this.jwtService.sign(payload);
+		return accesToken;
 	}
 
 	async setupTwoFactorAuthentication(user: User): Promise<{ qrCodeUrl: string }> {
