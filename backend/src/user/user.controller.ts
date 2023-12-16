@@ -97,7 +97,9 @@ export class UserController {
 		}
 
 		await this.userService.complete(userId, completeProfileDto.password);
-		return res.status(HttpStatus.OK).json({ message: 'Profile updated successfully' });
+		return res
+			.status(HttpStatus.OK)
+			.json({ message: 'Profile updated successfully', userId: userId });
 	}
 
 	//Get the profile, must be complete user, render own profile, or redirect to signup if client has no account
