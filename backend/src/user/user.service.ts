@@ -83,7 +83,7 @@ export class UserService {
 			where: { email: email },
 		});
 		if (!user) {
-			return undefined;
+			throw new Error('User not found');
 		}
 		return user.id;
 	}

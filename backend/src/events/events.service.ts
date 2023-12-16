@@ -32,16 +32,20 @@ export class EventsService {
 	}
 
 	async userDisconnected(email: string) {
-		const userId = await this.userService.findUserIdByMail(email);
-		if (userId) {
-			const timeout = setTimeout(async () => {
-				console.log('User tracked offline ', userId);
-				await this.userService.setUserOffline(userId);
-			}, 2000); // 2 Sekunden Verzögerung
+		try {
+			const userId = await this.userService.findUserIdByMail(email);
+			if (userId) {
+				const timeout = setTimeout(async () => {
+					console.log('User tracked offline ', userId);
+					await this.userService.setUserOffline(userId);
+				}, 2000); // 2 Sekunden Verzögerung
 
-			this.userConnectionMap.set(userId, timeout);
-		} else {
-			console.log('User not found: ', email);
+				this.userConnectionMap.set(userId, timeout);
+			} else {
+				console.log('User not found: ', email);
+			}
+		} catch (error) {
+			console.error(error.message);
 		}
 	}
 }

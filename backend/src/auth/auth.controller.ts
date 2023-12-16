@@ -82,7 +82,7 @@ export class AuthController {
 			httpOnly: true,
 			maxAge: 86400000 * 7,
 			secure: process.env.NODE_ENV !== 'development',
-			sameSite: 'lax',
+			sameSite: true, //'none', //TODO: set to true in school
 		});
 		return res.status(200).json({ message: 'Login successfully', userId: user.id });
 	}
@@ -97,18 +97,14 @@ export class AuthController {
 				res.cookie('token', result.access_token, {
 					httpOnly: true,
 					maxAge: 86400000 * 7,
-					sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
-					secure: true,
+					sameSite: 'none', //TODO: set to true in school
+					secure: true, // process.env.NODE_ENV !== 'development',
 				});
 
 				const redirectUrl = new URL('http://localhost:5173/completeprofile');
 				redirectUrl.searchParams.append('/?userId', result.userId);
 				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
 				redirectUrl.searchParams.append('token', result.access_token);
-				redirectUrl.searchParams.append('userId', result.userId);
-				redirectUrl.searchParams.append('token', result.access_token);
-				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
-
 				res.redirect(redirectUrl.toString());
 			} catch (error) {
 				throw error;

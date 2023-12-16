@@ -44,7 +44,10 @@ export function CompleteProfile() {
 				const data = await response.json();
 				setIsProfileComplete(data.isComplete);
 				if (data.isComplete) {
-					navigate('/profile'); // Weiterleitung zur Profilseite
+					navigate('/profile');
+				} else if (response.status === 401) {
+					console.log('User without account detected, navigate to login page.');
+					navigate('/login');
 				}
 			} catch (error) {
 				console.error('Error checking profile status:', error);
@@ -76,11 +79,12 @@ export function CompleteProfile() {
 				credentials: 'include',
 			});
 
-			if (response.status === 200 || response.status === 303) {
+			if (response.status === 200 || response.status === 303 || response.status === 401) {
 				if (setup2FA && response.status === 200) {
-					navigate('/twofactorsetup'); // Weiterleitung zur 2FA-Setup-Seite
+					navigate('/twofactorsetup');
 				} else {
-					navigate('/profile'); // Weiterleitung zur Profilseite
+					console.log('User without account detected, navigate to login page.');
+					navigate('/profile');
 				}
 			} else {
 				const data = await response.json();
