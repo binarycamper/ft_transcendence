@@ -32,7 +32,7 @@ export class ChatController {
 			});
 		} else {
 			try {
-				//TODO: One edgecase missed solved with
+				//TODO: One edgecase missed
 				const chat = await this.chatService.create(createChatDto, req.user);
 				res.status(HttpStatus.CREATED).json(chat);
 			} catch (error) {
@@ -52,7 +52,6 @@ export class ChatController {
 		return this.chatService.findAllPending(req.user.id);
 	}
 
-	//finds all open requests of that user
 	@UseGuards(JwtAuthGuard)
 	@Get('myrequests')
 	async MyRequests(@Req() req) {

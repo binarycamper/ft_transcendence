@@ -38,14 +38,18 @@ export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
-	//returns all friends
+	//returns all users
+	@Get('users')
+	async getAll(): Promise<User[]> {
+		return this.userService.findAll();
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Get('userfriends')
 	async getAllFriends(@Req() req): Promise<User[]> {
 		return this.userService.findAllFriends(req.user);
 	}
 
-	//removes a friendship between friends
 	@UseGuards(JwtAuthGuard)
 	@Delete('friends')
 	async removeFriend(@Query('friendid') friendId: string, @Req() req, @Res() res) {
@@ -70,7 +74,7 @@ export class UserController {
 		return { isComplete };
 	}
 
-	//complete Profile and set your first Password, is protected && navigates 303 when user without accounts try
+	//complete Profile and set your first Password
 	@UseGuards(JwtAuthGuard)
 	@Post('complete')
 	@UsePipes(new ValidationPipe())
@@ -82,7 +86,7 @@ export class UserController {
 		const userId = req.user?.id;
 		if (!userId) {
 			throw new UnauthorizedException({
-				status: HttpStatus.SEE_OTHER,
+				status: HttpStatus.UNAUTHORIZED,
 				error:
 					'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
 				location: '/login',
@@ -105,34 +109,17 @@ export class UserController {
 	//Get the profile, must be complete user, render own profile, or redirect to signup if client has no account
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Get('profile')
-	async getProfile(@Req() req, @Res() res: Response) {
+	async getProfile(@Req() req) {
 		const userId = req.user.id;
-		try {
-			const userProfile = await this.userService.findProfileById(userId);
+		const userProfile = await this.userService.findProfileById(userId);
 
-			// Exclude password and other sensitive fields from the result
-			const {
-				password,
-				id,
-				unconfirmedTwoFactorSecret,
-				twoFactorAuthenticationSecret,
-				isTwoFactorAuthenticationEnabled,
-				...result
-			} = userProfile;
-			return res.status(HttpStatus.OK).json(result);
-		} catch (error) {
-			// Log the error for debugging purposes
-			console.error('Error fetching user profile:', error);
+		// Exclude password and other sensitive fields from the result
+		//console.log('user profile data: ', userProfile.status);
+		const { password, id, ...result } = userProfile;
 
-			// Send a user-friendly message along with an appropriate status code
-			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-				statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-				message: 'Unable to fetch user profile at the moment. Please try again later.',
-			});
-		}
+		return result;
 	}
 
-	//Deletes your account
 	@UseGuards(JwtAuthGuard)
 	@Delete('delete')
 	async deleteUser(
@@ -148,7 +135,6 @@ export class UserController {
 		return { message: 'User deleted successfully' };
 	}
 
-	//Checks the image and uploads it
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('image'))
 	@Post('uploadImage')
@@ -205,7 +191,6 @@ export class UserController {
 		}
 	}
 
-	//edit Nickname of the user && check if it is unique
 	@UseGuards(JwtAuthGuard)
 	@Post('editName')
 	async editNickName(@Body() editNicknameDto: EditNicknameDto, @Req() req, @Res() res: Response) {
@@ -246,14 +231,7 @@ export class UserController {
 			}
 
 			const friends = user.friends.map((friend) => {
-				const {
-					password,
-					id,
-					unconfirmedTwoFactorSecret,
-					twoFactorAuthenticationSecret,
-					isTwoFactorAuthenticationEnabled,
-					...friendDetails
-				} = friend; // Exclude sensitive information
+				const { password, ...friendDetails } = friend; // Exclude sensitive information
 				return friendDetails;
 			});
 
@@ -264,7 +242,6 @@ export class UserController {
 		}
 	}
 
-	//TODO: USE DTO instead friendname!
 	@UseGuards(JwtAuthGuard)
 	@Post('addFriend')
 	async addFriend(@Req() req, @Body('friendName') friendName: string, @Res() res: Response) {
@@ -285,31 +262,18 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('publicprofile')
-	async getPublicProfile(@Query('friendname') friendname: string, @Req() req, @Res() res) {
+	async getPublicProfile(@Query('friendname') friendname: string, @Req() req) {
 		// Access the user's ID from the request object
 
-		try {
-			const friendProfile = await this.userService.findProfileByName(friendname);
-			// Exclude password and other sensitive fields from the result
-			const { password, id, intraId, ...result } = friendProfile;
+		const friendProfile = await this.userService.findProfileByName(friendname);
 
-			return result;
-		} catch (error) {
-			console.error('Error fetching friendprofile', error);
-			res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'Error fetching friendprofile' });
-		}
+		// Exclude password and other sensitive fields from the result
+		const { password, id, intraId, ...result } = friendProfile;
+
+		return result;
 	}
 
-	//Debugfunctions: TODO: Delete for eval
-
-	//returns all users
-	@Get('users')
-	async getAll(): Promise<User[]> {
-		return this.userService.findAll();
-	}
-
+	//Debug: TODO: Delete for eval
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('createDebugUser')
 	async createDebugUser(@Res() res: Response) {

@@ -82,7 +82,7 @@ export class AuthController {
 			httpOnly: true,
 			maxAge: 86400000 * 7,
 			secure: process.env.NODE_ENV !== 'development',
-			sameSite: true, //'none', //TODO: set to true in school
+			sameSite: 'lax',
 		});
 		return res
 			.status(200)
@@ -99,8 +99,8 @@ export class AuthController {
 				res.cookie('token', result.access_token, {
 					httpOnly: true,
 					maxAge: 86400000 * 7,
-					sameSite: 'none', //TODO: set to true in school
-					secure: true, // process.env.NODE_ENV !== 'development',
+					sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
+					secure: true,
 				});
 
 				const redirectUrl = new URL('http://localhost:5173/completeprofile');

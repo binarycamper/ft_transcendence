@@ -30,8 +30,8 @@ export class EventsGateway {
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {
 			const cookies = cookie.parse(client.handshake.headers.cookie || '');
-			if (!cookies.token || cookies.token === '') {
-				console.log('No cookies provided');
+			if (!cookies.token) {
+				//console.log('No cookies provided');
 				return;
 			}
 

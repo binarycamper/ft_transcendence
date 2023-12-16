@@ -44,10 +44,7 @@ export function CompleteProfile() {
 				const data = await response.json();
 				setIsProfileComplete(data.isComplete);
 				if (data.isComplete) {
-					navigate('/profile');
-				} else if (response.status === 401) {
-					console.log('User without account detected, navigate to login page.');
-					navigate('/login');
+					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
 			} catch (error) {
 				console.error('Error checking profile status:', error);
@@ -79,12 +76,15 @@ export function CompleteProfile() {
 				credentials: 'include',
 			});
 
-			if (response.status === 200 || response.status === 303 || response.status === 401) {
-				if (setup2FA && response.status === 200) {
-					navigate('/twofactorsetup');
+			const data = await response.json();
+			console.log('Complete Profile Response:', data);
+
+			if (response.ok) {
+				if (setup2FA) {
+					console.log('UserId for 2FA setup:', data.userId);
+					navigate('/twofactorsetup', { state: { userId: data.userId } }); // Weiterleitung zur 2FA-Setup-Seite
 				} else {
-					console.log('User without account detected, navigate to login page.');
-					navigate('/profile');
+					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
 			} else {
 				const data = await response.json();
