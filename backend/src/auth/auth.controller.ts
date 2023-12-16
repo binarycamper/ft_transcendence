@@ -127,7 +127,6 @@ export class AuthController {
 
 	@Post('/2fa/verify-2fa')
 	async verifyTwoFactorAuthentication(@Body() verifyDto: Verify2FADto, @Res() response: Response) {
-		console.log("@Post('/2fa/verify-2fa') activated");
 		const userId = verifyDto.userId;
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
