@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import io from 'socket.io-client';
-
-//how to use the declared socket of app.jsx
-export const socket = io('http://localhost:8080/', { withCredentials: true });
+import { SocketContext } from './context/socketContext';
 
 const listStyles: React.CSSProperties = {
 	listStyle: 'none',
@@ -82,7 +79,7 @@ export function Chat() {
 	const [overlayTop, setOverlayTop] = useState(0);
 	const [overlayLeft, setOverlayLeft] = useState(0);
 	const navigate = useNavigate();
-
+	const socket = useContext(SocketContext);
 	useEffect(() => {
 		fetchPendingRequests();
 		fetchMyRequests();

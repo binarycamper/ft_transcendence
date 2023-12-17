@@ -1,15 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Router } from './Router';
 import { theme } from './theme';
-import io from 'socket.io-client';
-
-const socket = io('http://localhost:8080/', {
-	withCredentials: true,
-});
+import { SocketContext } from './pages/context/socketContext';
 
 export default function App() {
+	const socket = useContext(SocketContext);
 	useEffect(() => {
 		socket.on('connect', () => {
 			console.log(`Connected to server with socket id: ${socket.id}`);
