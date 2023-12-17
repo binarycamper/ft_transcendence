@@ -46,7 +46,7 @@ export function Profile() {
 					navigate('/login');
 				}
 				const profileData: UserProfile = await response.json();
-				console.log('User profile data: ', profileData);
+				//console.log('User profile data: ', profileData);
 				if (isSubscribed) {
 					setProfile(profileData);
 					if (profileData.image) {
