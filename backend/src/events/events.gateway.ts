@@ -29,12 +29,12 @@ export class EventsGateway {
 
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {
-			const cookies = cookie.parse(client.handshake.headers.cookie);
+			//console.log('client: ', client);
+			const cookies = cookie.parse(client.handshake.headers.cookie || '');
 			if (!cookies.token) {
 				//console.log('No cookies provided');
 				return;
 			}
-
 			//console.log('cookies: ', cookies);
 			//console.log('token type: ', typeof cookies);
 			const token = cookies['token'];
@@ -42,10 +42,8 @@ export class EventsGateway {
 				//console.log('No token provided');
 				return;
 			}
-
 			//console.log('token: ', token);
 			//console.log('token type: ', typeof token);
-
 			try {
 				const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
 				client.data.user = decoded;
