@@ -68,4 +68,23 @@ export class EventsGateway {
 			console.log('User without account detected');
 		}
 	}
+
+	@SubscribeMessage('sendMessage')
+	async handleMessage(
+		@MessageBody() data: { senderId: number; receiverId: number; content: string },
+		@ConnectedSocket() client: Socket,
+	) {
+		// Save the message to the database
+		/*const message = await this.chatService.saveMessage(
+			data.senderId,
+			data.receiverId,
+			data.content,
+		);
+
+		// Emit the message to the recipient if they're online
+		client.to(`user_${data.receiverId}`).emit('receiveMessage', {
+			receiverId: message.receiverId,
+			content: message.content,
+		});*/
+	}
 }

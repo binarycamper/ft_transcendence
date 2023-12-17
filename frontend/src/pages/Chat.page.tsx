@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import io from 'socket.io-client';
+
+//how to use the declared socket of app.jsx
+export const socket = io('http://localhost:8080/', { withCredentials: true });
 
 const listStyles: React.CSSProperties = {
 	listStyle: 'none',
@@ -188,13 +192,28 @@ export function Chat() {
 		setSelectedFriend({ id: friend.id, name: friend.name });
 	};
 
-	const sendMessage = async () => {
+	// Inside your React component, add:
+	const sendMessage = (content) => {
 		if (selectedFriend) {
-			console.log(`Send message to ${selectedFriend.name}`);
-			// For now, we'll just reset the selected friend
-			setSelectedFriend(null);
+			// Assuming you have a token or credential saved in the current user's state
+			// You might have stored it after the user logged in
+			socket.emit('sendMessage', {
+				receiverId: selectedFriend.id, // The ID of the friend to send the message to
+				content: content, // The content of the message
+			});
 		}
 	};
+
+	useEffect(() => {
+		socket.on('receiveMessage', (message) => {
+			// Handle the received message, e.g., by adding it to the state
+			console.log('Message received', message);
+		});
+
+		return () => {
+			socket.off('receiveMessage');
+		};
+	}, []);
 
 	// Function to send an invite (placeholder function for now)
 	const sendInvite = async () => {

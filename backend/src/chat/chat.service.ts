@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import { FriendRequestDto } from './friendRequest.dto';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
+import { ChatMessage } from './chat.entity';
 
 @Injectable()
 export class ChatService {
@@ -15,6 +16,8 @@ export class ChatService {
 		@InjectRepository(FriendRequest)
 		private readonly friendrequestRepository: Repository<FriendRequest>,
 		private userService: UserService,
+		@InjectRepository(ChatMessage)
+		private chatMessageRepository: Repository<ChatMessage>,
 	) {}
 
 	setServer(server: Server) {
@@ -125,5 +128,18 @@ export class ChatService {
 	//debug
 	async getAllRequests(): Promise<FriendRequest[]> {
 		return this.friendrequestRepository.find({});
+	}
+
+	async saveMessage(senderId: number, receiverId: number, content: string) {
+		const message = new ChatMessage();
+		message.senderId = senderId;
+		message.receiverId = receiverId;
+		message.content = content;
+		await this.chatMessageRepository.save(message);
+		return message;
+	}
+
+	async getMessagesBetweenUsers(userId1: number, userId2: number) {
+		// Query to get messages between two users
 	}
 }
