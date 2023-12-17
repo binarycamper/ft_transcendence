@@ -8,6 +8,7 @@ const listStyles: React.CSSProperties = {
 
 const listItemStyles: React.CSSProperties = {
 	marginBottom: '0.5rem',
+	cursor: 'pointer',
 };
 
 type Friend = {
@@ -23,9 +24,6 @@ const overlayStyle: React.CSSProperties = {
 	borderRadius: '5px',
 	boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
 	zIndex: 1000,
-	top: '50%',
-	left: '50%',
-	transform: 'translate(-50%, -50%)',
 	minWidth: '150px',
 };
 
@@ -77,6 +75,8 @@ export function Chat() {
 	const [myRequests, setMyRequests] = useState<ChatMessage[]>([]);
 	const [friends, setFriends] = useState<Friend[]>([]);
 	const [selectedFriend, setSelectedFriend] = useState<SelectedFriend>(null);
+	const [overlayTop, setOverlayTop] = useState(0);
+	const [overlayLeft, setOverlayLeft] = useState(0);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -126,16 +126,31 @@ export function Chat() {
 		}
 	};
 
-	// Add your fetchFriends function here
-	// This is a placeholder function, update it with actual API call and logic
 	const fetchFriends = async () => {
-		// TODO: Replace with actual logic to fetch friends
-		const dummy = [
-			// Dummy data for example
-			{ id: '1', name: 'Alice', status: 'online' },
-			{ id: '2', name: 'Bob', status: 'offline' },
-		];
-		setFriends(dummy);
+		setIsLoading(true);
+		try {
+			// Update the URL with the correct endpoint for fetching friends
+			const response = await fetch('http://localhost:8080/user/friends', {
+				method: 'GET',
+				credentials: 'include', // For session cookies, if required
+				headers: {
+					'Content-Type': 'application/json',
+					// Include other headers if required by your backend
+				},
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.json();
+			setFriends(data); // Assuming the API returns an array of friends
+		} catch (error) {
+			console.error('Error fetching friends:', error);
+			// Handle errors as needed, perhaps setting an error state or notifying the user
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const handleAction = async (messageId: string, action: string) => {
@@ -146,18 +161,35 @@ export function Chat() {
 			});
 			if (!response.ok) throw new Error('Failed to update message status');
 			fetchPendingRequests();
+			fetchFriends();
 		} catch (error) {
 			console.error('Error updating message:', error);
 		}
 	};
 
-	const handleFriendClick = (friend: Friend) => {
+	type FriendOverlayProps = {
+		style: React.CSSProperties;
+		selectedFriend: SelectedFriend;
+		sendMessage: () => Promise<void>;
+		sendInvite: () => Promise<void>;
+		closeOverlay: () => void;
+	};
+
+	const handleFriendClick = (friend: Friend, event: React.MouseEvent<HTMLLIElement>) => {
+		const listItem = event.currentTarget;
+		const listItemRect = listItem.getBoundingClientRect();
+
+		// Calculate the position for the overlay
+		const desiredOffsetX = -450; // Adjust this value as needed for X axis offset
+		const desiredOffsetY = listItem.offsetHeight / 2; // Center it vertically relative to the list item
+		setOverlayTop(listItemRect.top + window.scrollY + desiredOffsetY);
+		setOverlayLeft(listItemRect.left + listItemRect.width + desiredOffsetX);
+
 		setSelectedFriend({ id: friend.id, name: friend.name });
 	};
 
 	const sendMessage = async () => {
 		if (selectedFriend) {
-			// Here you would implement the actual logic to send a message
 			console.log(`Send message to ${selectedFriend.name}`);
 			// For now, we'll just reset the selected friend
 			setSelectedFriend(null);
@@ -173,17 +205,22 @@ export function Chat() {
 			setSelectedFriend(null);
 		}
 	};
-
 	// Overlay component for the selected friend
-	const FriendOverlay = () => {
+	const FriendOverlay = ({
+		style,
+		selectedFriend,
+		sendMessage,
+		sendInvite,
+		closeOverlay,
+	}: FriendOverlayProps) => {
 		if (!selectedFriend) return null;
 
 		return (
-			<div style={overlayStyle}>
+			<div style={{ ...overlayStyle, ...style }}>
 				<h3>{selectedFriend.name}</h3>
 				<button onClick={sendMessage}>Send Message</button>
 				<button onClick={sendInvite}>Invite</button>
-				<button onClick={() => setSelectedFriend(null)}>Close</button>
+				<button onClick={closeOverlay}>Close</button>
 			</div>
 		);
 	};
@@ -237,7 +274,6 @@ export function Chat() {
 								</li>
 							))}
 						</ul>
-						{/* Render myRequests here */}
 						<h2>My Requests:</h2>
 						<ul>
 							{myRequests.map((request) => (
@@ -250,21 +286,32 @@ export function Chat() {
 						</ul>
 					</div>
 					<div style={{ float: 'right', width: '50%' }}>
-						{/* Render friend list here */}
 						<h2>My Friends:</h2>
 						<ul style={listStyles}>
 							{friends.map((friend) => (
 								<li
 									key={friend.id}
 									style={listItemStyles}
-									onClick={() => handleFriendClick(friend)}
+									onClick={(event) => handleFriendClick(friend, event)}
 								>
 									{friend.name} - {friend.status}
 								</li>
 							))}
 						</ul>
 					</div>
-					{selectedFriend && <FriendOverlay />}
+					{selectedFriend && (
+						<FriendOverlay
+							style={{
+								position: 'fixed',
+								top: overlayTop,
+								left: overlayLeft,
+							}}
+							selectedFriend={selectedFriend}
+							sendMessage={sendMessage}
+							sendInvite={sendInvite}
+							closeOverlay={() => setSelectedFriend(null)}
+						/>
+					)}
 				</>
 			)}
 		</div>
