@@ -293,7 +293,7 @@ export function FriendList() {
 				<div>
 					<h3>{friendProfile.nickname || friendProfile.name}'s Profile</h3>
 					<img
-						src={friendProfile.imageUrl || friendProfile.image}
+						src={friendProfile.image ? friendProfile.image : friendProfile.imageUrl}
 						alt={`${friendProfile.nickname || friendProfile.name}'s profile`}
 					/>
 					<p>Email: {friendProfile.email}</p>
