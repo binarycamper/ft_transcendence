@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FriendRequest } from './friendRequest.entity'; // Adjust the path to your actual Chat entity
+import { FriendRequest } from './friendRequest.entity';
 import { Server } from 'socket.io';
 import { FriendRequestDto } from './friendRequest.dto';
 import { UserService } from 'src/user/user.service';
@@ -42,9 +42,15 @@ export class ChatService {
 		return friendRequest;
 	}
 
-	async create(firendRequestDto: FriendRequestDto, user): Promise<FriendRequest> {
-		// Find the recipient user by name
-		const recipientUser = await this.userService.findProfileByName(firendRequestDto.recipient);
+	async create(friendRequestDto: FriendRequestDto, user): Promise<FriendRequest> {
+		const thisuser: User = await this.userService.findProfileByName(user.name);
+		const isAlreadyFriends = thisuser.friends.some(
+			(friend) => friend.name === friendRequestDto.recipient,
+		);
+		if (isAlreadyFriends) {
+			throw new Error('You are already friends with this user.');
+		}
+		const recipientUser = await this.userService.findProfileByName(friendRequestDto.recipient);
 		if (!recipientUser) {
 			throw new Error('Recipient user not found.');
 		}
@@ -61,18 +67,17 @@ export class ChatService {
 			throw new Error('A pending friend request already exists.');
 		}
 
-		// Create and save a new chat message
-		//console.log('createChatDto Body: ', createChatDto);
-		const recipient_user = await this.userService.findProfileByName(firendRequestDto.recipient);
-		const chat = this.friendrequestRepository.create({
-			...firendRequestDto,
+		// Create and save a new friendRequest
+		const recipient_user = await this.userService.findProfileByName(friendRequestDto.recipient);
+		const friendRequest = this.friendrequestRepository.create({
+			...friendRequestDto,
 			senderId: user.id,
 			senderName: user.name,
 			recipientId: recipient_user.id,
 			status: 'pending',
 		});
-		await this.friendrequestRepository.save(chat);
-		return chat;
+		await this.friendrequestRepository.save(friendRequest);
+		return friendRequest;
 	}
 
 	async acceptRequest(messageId: string, user: User) {
@@ -86,10 +91,10 @@ export class ChatService {
 		user = await this.userService.addFriend(user, friend.name);
 		friend = await this.userService.addFriend(friend, user.name);
 		await this.friendrequestRepository.remove(request);
-		return { success: true, message: 'Chat request accepted.' };
+		return { success: true, message: 'FriendRequest request accepted.' };
 	}
 
-	// Method to decline a chat request
+	// Method to decline a FriendRequest request
 	async declineRequest(messageId: string, user: User) {
 		//console.log('Decline request started!');
 		const request = await this.friendrequestRepository.findOne({ where: { id: messageId } });
