@@ -1,31 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import FriendProfile from '../components/Header/ProfileComponent';
 import { useNavigate } from 'react-router-dom';
-
-type Friend = {
-	id: string;
-	name: string;
-	nickname: string;
-	email: string;
-	status: string;
-	imageUrl: string;
-	image: string;
-	ladderLevel: number;
-	losses: number;
-	wins: number;
-	// Include additional properties as needed
-	// ...
-};
-
-type ChatRequest = {
-	id: string;
-	senderName: string;
-	senderId: string;
-	receiverId: string;
-	messageType: 'friend_request' | 'system_message';
-	content: string;
-	status: 'pending' | 'accepted' | 'declined';
-};
+import useFetchFriendList from '../hooks/useFetchFriendList';
 
 const styles: { [key: string]: React.CSSProperties } = {
 	container: {
@@ -86,172 +60,26 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 export function FriendList() {
-	const [friends, setFriends] = useState<Friend[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [newFriendName, setNewFriendName] = useState('');
-	const [friendProfile, setFriendProfile] = useState<Friend | null>(null);
-	const [successMessage, setSuccessMessage] = useState('');
-	const [pendingRequestCount, setPendingRequestCount] = useState(0);
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		fetchFriends();
-		fetchPendingRequestsCount();
-	}, []);
-
-	const fetchPendingRequestsCount = async () => {
-		setIsLoading(true);
-		try {
-			const response = await fetch('http://localhost:8080/chat/pendingrequests', {
-				credentials: 'include',
-			});
-			if (!response.ok) {
-				navigate('/login');
-				return;
-			}
-			const data: ChatRequest[] = await response.json();
-
-			const pendingRequests = data.filter((message) => message.status === 'pending');
-			setPendingRequestCount(pendingRequests.length);
-		} catch (error) {
-			console.error('Error fetching messages:', error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const fetchFriends = async () => {
-		try {
-			setIsLoading(true);
-			const response = await fetch('http://localhost:8080/user/friends', {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			});
-
-			if (!response.ok) {
-				navigate('/login');
-			}
-
-			const data = await response.json();
-
-			setFriends(data);
-		} catch (error) {
-			setError('Failed to load friends');
-			console.error('There was an error fetching the friends:', error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const addFriend = async () => {
-		if (!newFriendName) {
-			setError('Please enter the name of the friend you want to add.');
-			return;
-		}
-		if (newFriendName.length > 100) {
-			setNewFriendName('');
-			setError('The entered name is too long.');
-			return;
-		}
-		const friendRequestMessage = {
-			recipient: newFriendName,
-			content: `Hi ${newFriendName}, I would like to add you as a friend!`,
-			messageType: 'friend_request',
-		};
-		try {
-			const response = await fetch('http://localhost:8080/chat/friendrequest', {
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(friendRequestMessage),
-			});
-			if (!response.ok) {
-				const errorData = await response.json();
-				setError(errorData.message || 'Failed to send friend request.');
-			} else {
-				const result = await response.json();
-				console.log(result);
-				setNewFriendName('');
-				setError(null);
-				setSuccessMessage('Friend request sent successfully!');
-			}
-		} catch (error) {
-			setError('There was an error sending the friend request.');
-			console.error('There was an error sending the friend request:', error);
-		}
-	};
-
-	const handleFriendClick = async (friendName: string) => {
-		try {
-			const response = await fetch(
-				`http://localhost:8080/user/publicprofile?friendname=${friendName}`,
-				{
-					method: 'GET',
-					credentials: 'include',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				},
-			);
-
-			if (!response.ok) {
-				throw new Error('Network response was not ok');
-			}
-
-			const friendProfileData: Friend = await response.json();
-			setFriendProfile(friendProfileData);
-		} catch (error) {
-			console.error('There was an error fetching the friend profile:', error);
-		}
-	};
-
-	const removeFriend = async (event: React.MouseEvent, friendId: string) => {
-		event.stopPropagation();
-		try {
-			const response = await fetch(`http://localhost:8080/user/friends/?friendid=${friendId}`, {
-				method: 'DELETE',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			});
-
-			if (!response.ok) {
-				throw new Error(`Network response was not ok. Status: ${response.status}`);
-			}
-
-			if (response.status === 204) {
-				console.log('Friend removed successfully.');
-
-				// Update the UI by filtering out the removed friend
-				setFriends((prevFriends) => prevFriends.filter((friend) => friend.id !== friendId));
-				await fetchFriends();
-				setSuccessMessage('Friend removed successfully!');
-			} else {
-				const result = await response.json();
-				console.log(result.message);
-			}
-		} catch (error) {
-			setError('Failed to remove friend');
-			console.error('There was an error removing the friend:', error);
-		}
-	};
-
-	const navigateToChat = () => {
-		navigate('/chat');
-	};
+	const {
+		addFriend,
+		error,
+		friendProfile,
+		friends,
+		handleFriendClick,
+		isLoading,
+		newFriendName,
+		pendingRequestCount,
+		removeFriend,
+		setNewFriendName,
+		successMessage,
+	} = useFetchFriendList();
 
 	return (
 		<div style={styles.container}>
 			<h1 style={styles.heading}>My Friends</h1>
 			{pendingRequestCount > 0 && (
-				<div onClick={navigateToChat} style={styles.friendRequestNotification}>
+				<div onClick={() => navigate('/chat')} style={styles.friendRequestNotification}>
 					You have {pendingRequestCount} friend request(s). Click here to review.
 				</div>
 			)}
