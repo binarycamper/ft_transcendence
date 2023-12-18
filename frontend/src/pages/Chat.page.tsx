@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SocketContext } from './context/socketContext';
 
@@ -69,6 +69,29 @@ type SelectedFriend = {
 	name: string;
 } | null;
 
+type FriendOverlayProps = {
+	style: React.CSSProperties;
+	selectedFriend: SelectedFriend;
+	openChat: () => Promise<void>;
+	sendInvite: () => Promise<void>;
+	closeOverlay: () => void;
+};
+
+const FriendOverlay = React.memo(
+	({ style, selectedFriend, openChat, sendInvite, closeOverlay }: FriendOverlayProps) => {
+		if (!selectedFriend) return null;
+
+		return (
+			<div style={{ ...overlayStyle, ...style }}>
+				<h3>{selectedFriend.name}</h3>
+				<button onClick={openChat}>Open Chat</button>
+				<button onClick={sendInvite}>Invite</button>
+				<button onClick={closeOverlay}>Close</button>
+			</div>
+		);
+	},
+);
+
 export function Chat() {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +102,6 @@ export function Chat() {
 	const [overlayTop, setOverlayTop] = useState(0);
 	const [overlayLeft, setOverlayLeft] = useState(0);
 	const navigate = useNavigate();
-	const socket = useContext(SocketContext);
 	useEffect(() => {
 		fetchPendingRequests();
 		fetchMyRequests();
@@ -167,73 +189,35 @@ export function Chat() {
 		}
 	};
 
-	type FriendOverlayProps = {
-		style: React.CSSProperties;
-		selectedFriend: SelectedFriend;
-		openChat: () => Promise<void>;
-		sendInvite: () => Promise<void>;
-		closeOverlay: () => void;
-	};
+	const handleFriendClick = useCallback(
+		(friend: Friend, event: React.MouseEvent<HTMLLIElement>) => {
+			const listItem = event.currentTarget;
+			const listItemRect = listItem.getBoundingClientRect();
 
-	const handleFriendClick = (friend: Friend, event: React.MouseEvent<HTMLLIElement>) => {
-		const listItem = event.currentTarget;
-		const listItemRect = listItem.getBoundingClientRect();
+			// Calculate the position for the overlay
+			const desiredOffsetX = -450; // Adjust this value as needed for X axis offset
+			const desiredOffsetY = listItem.offsetHeight / 2; // Center it vertically relative to the list item
+			setOverlayTop(listItemRect.top + window.scrollY + desiredOffsetY);
+			setOverlayLeft(listItemRect.left + listItemRect.width + desiredOffsetX);
 
-		// Calculate the position for the overlay
-		const desiredOffsetX = -450; // Adjust this value as needed for X axis offset
-		const desiredOffsetY = listItem.offsetHeight / 2; // Center it vertically relative to the list item
-		setOverlayTop(listItemRect.top + window.scrollY + desiredOffsetY);
-		setOverlayLeft(listItemRect.left + listItemRect.width + desiredOffsetX);
+			setSelectedFriend({ id: friend.id, name: friend.name });
+		},
+		[],
+	);
 
-		setSelectedFriend({ id: friend.id, name: friend.name });
-	};
-
-	const openChat = () => {
+	const openChat = useCallback(() => {
 		if (selectedFriend) {
-			navigate('chatroom');
+			navigate(`chatroom?friendId=${selectedFriend.id}`);
 		}
-	};
-
-	useEffect(() => {
-		socket.on('receiveMessage', (message) => {
-			// Handle the received message, e.g., by adding it to the state
-			console.log('Message received', message);
-		});
-
-		return () => {
-			socket.off('receiveMessage');
-		};
-	}, []);
+	}, [selectedFriend, navigate]); // Add dependencies
 
 	// Function to send an invite (placeholder function for now)
-	const sendInvite = async () => {
+	const sendInvite = useCallback(async () => {
 		if (selectedFriend) {
-			// Here you would implement the actual logic to send an invite
 			console.log(`Send invite to ${selectedFriend.name}`);
-			// For now, we'll just reset the selected friend
 			setSelectedFriend(null);
 		}
-	};
-
-	// Overlay component for the selected friend
-	const FriendOverlay = ({
-		style,
-		selectedFriend,
-		openChat,
-		sendInvite,
-		closeOverlay,
-	}: FriendOverlayProps) => {
-		if (!selectedFriend) return null;
-
-		return (
-			<div style={{ ...overlayStyle, ...style }}>
-				<h3>{selectedFriend.name}</h3>
-				<button onClick={openChat}>Open Chat</button>
-				<button onClick={sendInvite}>Invite</button>
-				<button onClick={closeOverlay}>Close</button>
-			</div>
-		);
-	};
+	}, [selectedFriend]); // Add dependencies
 
 	const acceptButtonStyle: React.CSSProperties = {
 		...buttonStyleBase,

@@ -11,6 +11,7 @@ import { FriendList } from './pages/FriendList.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import AuthCallback from './pages/AuthCallback.page';
 import { Chat } from './pages/Chat.page';
+import { ChatRoom } from './pages/ChatRoom.page.';
 
 const router = createBrowserRouter([
 	{
@@ -25,6 +26,11 @@ const router = createBrowserRouter([
 			{
 				path: 'chat',
 				element: <Chat />,
+				children: [],
+			},
+			{
+				path: 'chat/chatroom',
+				element: <ChatRoom />, // Assuming you have a separate ChatRoom component
 			},
 			{
 				path: 'play',

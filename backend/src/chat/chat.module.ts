@@ -6,14 +6,20 @@ import { ChatController } from './chat.controller';
 import { FriendRequest } from './friendRequest.entity'; // Update with the correct import path
 import { UserModule } from 'src/user/user.module';
 import { ChatMessage } from './chat.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { User } from 'src/user/user.entity';
 
 @Module({
 	imports: [
 		UserModule,
-		TypeOrmModule.forFeature([FriendRequest, ChatMessage]), // Register the Chat entity with TypeORM
+		TypeOrmModule.forFeature([FriendRequest, ChatMessage, User]),
+		JwtModule.register({
+			secret: process.env.JWT_SECRET, // The secret key to sign the JWTs
+			signOptions: { expiresIn: '1d' },
+		}),
 	],
-	providers: [ChatService], // Provide the ChatService
-	controllers: [ChatController], // Include the ChatController if you have one
-	exports: [ChatService], // Export ChatService to make it available in other modules
+	providers: [ChatService],
+	controllers: [ChatController],
+	exports: [ChatService],
 })
 export class ChatModule {}
