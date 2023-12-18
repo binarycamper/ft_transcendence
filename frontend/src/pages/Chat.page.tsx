@@ -102,6 +102,7 @@ export function Chat() {
 	const [overlayTop, setOverlayTop] = useState(0);
 	const [overlayLeft, setOverlayLeft] = useState(0);
 	const navigate = useNavigate();
+
 	useEffect(() => {
 		fetchPendingRequests();
 		fetchMyRequests();
