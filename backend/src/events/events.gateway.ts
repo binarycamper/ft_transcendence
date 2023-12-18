@@ -72,6 +72,7 @@ export class EventsGateway {
 		@MessageBody() data: { senderId: number; receiverId: number; content: string },
 		@ConnectedSocket() client: Socket,
 	) {
+		console.log('handleMessage arrived NICE');
 		// Save the message to the database
 		/*const message = await this.chatService.saveMessage(
 			data.senderId,

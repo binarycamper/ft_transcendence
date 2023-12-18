@@ -145,10 +145,9 @@ export function Chat() {
 			}
 
 			const data = await response.json();
-			setFriends(data); // Assuming the API returns an array of friends
+			setFriends(data);
 		} catch (error) {
 			console.error('Error fetching friends:', error);
-			// Handle errors as needed, perhaps setting an error state or notifying the user
 		} finally {
 			setIsLoading(false);
 		}
@@ -171,7 +170,7 @@ export function Chat() {
 	type FriendOverlayProps = {
 		style: React.CSSProperties;
 		selectedFriend: SelectedFriend;
-		sendMessage: () => Promise<void>;
+		openChat: () => Promise<void>;
 		sendInvite: () => Promise<void>;
 		closeOverlay: () => void;
 	};
@@ -189,15 +188,9 @@ export function Chat() {
 		setSelectedFriend({ id: friend.id, name: friend.name });
 	};
 
-	// Inside your React component, add:
-	const sendMessage = (content) => {
+	const openChat = () => {
 		if (selectedFriend) {
-			// Assuming you have a token or credential saved in the current user's state
-			// You might have stored it after the user logged in
-			socket.emit('sendMessage', {
-				receiverId: selectedFriend.id, // The ID of the friend to send the message to
-				content: content, // The content of the message
-			});
+			navigate('chatroom');
 		}
 	};
 
@@ -221,11 +214,12 @@ export function Chat() {
 			setSelectedFriend(null);
 		}
 	};
+
 	// Overlay component for the selected friend
 	const FriendOverlay = ({
 		style,
 		selectedFriend,
-		sendMessage,
+		openChat,
 		sendInvite,
 		closeOverlay,
 	}: FriendOverlayProps) => {
@@ -234,7 +228,7 @@ export function Chat() {
 		return (
 			<div style={{ ...overlayStyle, ...style }}>
 				<h3>{selectedFriend.name}</h3>
-				<button onClick={sendMessage}>Send Message</button>
+				<button onClick={openChat}>Open Chat</button>
 				<button onClick={sendInvite}>Invite</button>
 				<button onClick={closeOverlay}>Close</button>
 			</div>
@@ -262,7 +256,6 @@ export function Chat() {
 			) : (
 				<>
 					<div style={{ float: 'left', width: '50%' }}>
-						{/* Render messages here */}
 						<ul>
 							{messages.map((message) => (
 								<li key={message.id}>
@@ -323,7 +316,7 @@ export function Chat() {
 								left: overlayLeft,
 							}}
 							selectedFriend={selectedFriend}
-							sendMessage={sendMessage}
+							openChat={openChat}
 							sendInvite={sendInvite}
 							closeOverlay={() => setSelectedFriend(null)}
 						/>
