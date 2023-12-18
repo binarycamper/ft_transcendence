@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { SocketContext } from './context/socketContext';
 import { useSearchParams } from 'react-router-dom';
+import sanitizeHtml from 'sanitize-html';
 
 type ChatMessage = {
 	id: string;
@@ -17,7 +18,7 @@ export const ChatRoom = () => {
 	const [chat, setChat] = useState('');
 
 	// Listen for messages from the server
-	socket.on('message', (message) => {
+	socket.on('getMessage', (message) => {
 		// Update the state of the ChatRoom page to display the new message
 		setMessages((prevMessages) => [...prevMessages, message]);
 		setChat(chat + message.content + '\n'); // Store the chat history
@@ -25,8 +26,9 @@ export const ChatRoom = () => {
 
 	// Clear the input field after sending the message
 	const handleSendMessage = () => {
-		socket.emit('message', {
-			content: inputValue,
+		const sanitizedInput = sanitizeHtml(inputValue);
+		socket.emit('sendMessage', {
+			content: sanitizedInput,
 			senderId: friendId,
 		});
 		setInputValue(''); // Clear the input field after sending the message
@@ -40,8 +42,14 @@ export const ChatRoom = () => {
 				<textarea
 					placeholder="Chat Verlauf"
 					value={chat}
+					readOnly={true}
 					onChange={(event) => setChat(event.target.value)}
 				></textarea>
+				<ul>
+					{messages.map((message) => (
+						<li key={message.id}>{message.content}</li>
+					))}
+				</ul>
 			</div>
 			<div>
 				<input
