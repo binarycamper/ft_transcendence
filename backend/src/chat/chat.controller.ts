@@ -10,6 +10,7 @@ import {
 	Query,
 	HttpStatus,
 	Res,
+	Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
@@ -94,11 +95,16 @@ export class ChatController {
 	//########################Debug#############################
 	@Get('allrequests')
 	async getAll() {
-		return this.chatService.getAllRequests();
+		return await this.chatService.getAllRequests();
 	}
 	// Endpoint to get all pending requests for the logged-in user
 	@Get('allchats')
 	async findAllChats() {
-		return this.chatService.findAllChats();
+		return await this.chatService.findAllChats();
+	}
+
+	@Delete('allchats')
+	async deleteAllChats() {
+		return await this.chatService.deleteAllChats();
 	}
 }

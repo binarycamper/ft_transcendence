@@ -110,15 +110,14 @@ export class EventsGateway {
 		data: { receiverId: string; content: string },
 		@ConnectedSocket() client: Socket,
 	) {
+		//console.log('client : ', client);
 		try {
 			const isAuthenticated = await this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
 				console.log('Invalid credentials');
 				return;
 			}
-			const content = data.content;
-			const receiverId = isAuthenticated.userId;
-			//console.log('handleMessage arrived: ', data.content;);
+			//console.log('handleMessage arrived: ', data.content);
 			//console.log('receiverId: ', data.receiverId);
 			//console.log('senderId: ', isAuthenticated.userId);
 			const message = await this.chatService.saveMessage(

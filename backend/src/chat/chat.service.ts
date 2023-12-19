@@ -150,4 +150,9 @@ export class ChatService {
 	async findAllChats(): Promise<ChatMessage[]> {
 		return this.chatMessageRepository.find({});
 	}
+
+	async deleteAllChats(): Promise<void> {
+		const allChats = await this.findAllChats();
+		await this.chatMessageRepository.remove(allChats);
+	}
 }

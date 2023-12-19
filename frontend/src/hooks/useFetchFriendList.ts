@@ -118,7 +118,7 @@ export default function useFetchFriendList() {
 				const result = await response.json();
 				console.log(result);
 				setNewFriendName('');
-				setError(null);
+				setError('');
 				setSuccessMessage('Friend request sent successfully!');
 			}
 		} catch (error) {
