@@ -9,6 +9,15 @@ type ChatMessage = {
 	senderId: string;
 };
 
+// Styles for the button
+const buttonStyle = {
+	marginLeft: '10px',
+	padding: '2px 6px',
+	fontSize: '0.7em',
+	lineHeight: '1',
+	alignSelf: 'center', // Align self is used to align the button when using flex on the parent
+};
+
 export const ChatRoom = () => {
 	const [searchParams] = useSearchParams();
 	const friendId = searchParams.get('friendId');
@@ -37,10 +46,32 @@ export const ChatRoom = () => {
 		setInputValue(''); // Clear the input field after sending the message
 	};
 
+	const deleteMyChats = async () => {
+		try {
+			const response = await fetch('/chat/myChats', {
+				method: 'DELETE',
+				credentials: 'include',
+			});
+			if (!response.ok) {
+				throw new Error('Failed to delete chats');
+			}
+			// Clear the messages state if the chats are successfully deleted
+			setMessages([]);
+			setChat('');
+
+			console.log('Chats deleted successfully');
+		} catch (error) {
+			console.error('Error deleting chats:', error);
+		}
+	};
+
 	return (
 		<div style={{ display: 'flex', flexDirection: 'column' }}>
 			<h2>Chat Room</h2>
 			<p>Chatting with friend ID: {friendId}</p>
+			<button onClick={deleteMyChats} style={buttonStyle}>
+				Clear All My Chats
+			</button>
 			<div style={{ flexGrow: 1, minHeight: 200 }}>
 				<textarea
 					placeholder="Chat Verlauf"

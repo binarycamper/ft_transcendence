@@ -11,6 +11,7 @@ import {
 	HttpStatus,
 	Res,
 	Delete,
+	HttpCode,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
@@ -22,6 +23,13 @@ export class ChatController {
 	constructor(private readonly chatService: ChatService) {}
 
 	//########################CHatRooms#############################
+
+	@UseGuards(JwtAuthGuard)
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@Delete('myChats')
+	async deleteMyChats(@Req() req) {
+		return await this.chatService.deleteMyChats(req.user.id);
+	}
 
 	//########################CHatMessages#############################
 
@@ -91,19 +99,21 @@ export class ChatController {
 		}
 	}
 
-	//TODO: delete before eval
-	//########################Debug#############################
+	//########################Debug#############################	//TODO: delete before eval
+
+	// Endpoint to get all pending requests for the logged-in user
 	@Get('allrequests')
 	async getAll() {
 		return await this.chatService.getAllRequests();
 	}
-	// Endpoint to get all pending requests for the logged-in user
+
 	@Get('allchats')
 	async findAllChats() {
 		return await this.chatService.findAllChats();
 	}
 
 	@Delete('allchats')
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAllChats() {
 		return await this.chatService.deleteAllChats();
 	}

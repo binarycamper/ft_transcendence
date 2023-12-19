@@ -38,6 +38,24 @@ export class ChatService {
 		await this.chatMessageRepository.save(message);
 	}
 
+	async findChatsWithId(userId: string): Promise<ChatMessage[]> {
+		const sentMessages = await this.chatMessageRepository.find({
+			where: { senderId: userId },
+		});
+		const receivedMessages = await this.chatMessageRepository.find({
+			where: { receiverId: userId },
+		});
+
+		// Combine both lists of messages
+		const allMessages = [...sentMessages, ...receivedMessages];
+		return allMessages;
+	}
+
+	async deleteMyChats(userId: string): Promise<void> {
+		const allChats = await this.findChatsWithId(userId);
+		await this.chatMessageRepository.remove(allChats);
+	}
+
 	//########################FrienRequests#############################
 	async sendFriendRequest(
 		senderId: string,
