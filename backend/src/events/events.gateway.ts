@@ -25,6 +25,7 @@ export class EventsGateway {
 	server: Server;
 
 	constructor(
+		private chatService: ChatService,
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 	) {}
@@ -106,7 +107,7 @@ export class EventsGateway {
 	@SubscribeMessage('sendMessage')
 	async handleMessage(
 		@MessageBody()
-		data: { senderId: number; receiverId: number; content: string; Credential: string },
+		data: { receiverId: string; content: string },
 		@ConnectedSocket() client: Socket,
 	) {
 		try {
@@ -117,12 +118,16 @@ export class EventsGateway {
 			}
 			const content = data.content;
 			const receiverId = isAuthenticated.userId;
-			const senderId = data.senderId;
-			console.log('handleMessage arrived: ', content);
-			console.log('receiverId: ', receiverId);
-			console.log('senderId: ', senderId);
+			//console.log('handleMessage arrived: ', data.content;);
+			//console.log('receiverId: ', data.receiverId);
+			//console.log('senderId: ', isAuthenticated.userId);
+			const message = await this.chatService.saveMessage(
+				data.receiverId,
+				isAuthenticated.userId.toString(),
+				data.content,
+			);
 		} catch (error) {
-			console.error('Error in handleConnection:', error.message);
+			console.error('Error in handleMessage:', error.message);
 		}
 	}
 }

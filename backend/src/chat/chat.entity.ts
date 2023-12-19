@@ -6,10 +6,10 @@ export class ChatMessage {
 	id: string;
 
 	@Column()
-	senderId: number;
+	senderId: string;
 
 	@Column()
-	receiverId: number;
+	receiverId: string;
 
 	@Column()
 	content: string;

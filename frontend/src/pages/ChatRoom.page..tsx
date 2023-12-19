@@ -32,7 +32,7 @@ export const ChatRoom = () => {
 		}
 		socket.emit('sendMessage', {
 			content: sanitizedInput,
-			senderId: friendId,
+			receiverId: friendId,
 		});
 		setInputValue(''); // Clear the input field after sending the message
 	};

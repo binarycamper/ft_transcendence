@@ -20,6 +20,12 @@ import { Response } from 'express';
 export class ChatController {
 	constructor(private readonly chatService: ChatService) {}
 
+	//########################CHatRooms#############################
+
+	//########################CHatMessages#############################
+
+	//########################FrienRequests#############################
+
 	// Endpoint to send a friendrequest
 	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
@@ -84,17 +90,15 @@ export class ChatController {
 		}
 	}
 
-	// Endpoint to get a specific chat message
-	@UseGuards(JwtAuthGuard)
-	@Get(':id')
-	async findOne(@Param('id') id: string) {
-		//return this.chatService.findOne(id);
-	}
-
 	//TODO: delete before eval
-	//Debug:
-	@Post('all')
+	//########################Debug#############################
+	@Get('allrequests')
 	async getAll() {
 		return this.chatService.getAllRequests();
+	}
+	// Endpoint to get all pending requests for the logged-in user
+	@Get('allchats')
+	async findAllChats() {
+		return this.chatService.findAllChats();
 	}
 }

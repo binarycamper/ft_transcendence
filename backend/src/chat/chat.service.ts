@@ -24,6 +24,21 @@ export class ChatService {
 		this.server = server;
 	}
 
+	//########################CHatRooms#############################
+
+	//########################CHatMessages#############################
+
+	async saveMessage(receiverId: string, senderId: string, content: string) {
+		const now = new Date();
+		const message = new ChatMessage();
+		message.senderId = senderId;
+		message.receiverId = receiverId;
+		message.content = content;
+		message.createdAt = now;
+		await this.chatMessageRepository.save(message);
+	}
+
+	//########################FrienRequests#############################
 	async sendFriendRequest(
 		senderId: string,
 		recipientId: string,
@@ -103,6 +118,7 @@ export class ChatService {
 		const request = await this.friendrequestRepository.findOne({ where: { id: messageId } });
 		if (!request) {
 			throw new Error('Request not found');
+			//return; TODO bfore eval: activate return, delete throw
 		}
 		await this.friendrequestRepository.remove(request);
 	}
@@ -125,21 +141,13 @@ export class ChatService {
 		return this.friendrequestRepository.findOneBy({ id });
 	}
 
-	//debug
+	//########################Debug#############################
+
 	async getAllRequests(): Promise<FriendRequest[]> {
 		return this.friendrequestRepository.find({});
 	}
 
-	async saveMessage(senderId: number, receiverId: number, content: string) {
-		const message = new ChatMessage();
-		message.senderId = senderId;
-		message.receiverId = receiverId;
-		message.content = content;
-		await this.chatMessageRepository.save(message);
-		return message;
-	}
-
-	async getMessagesBetweenUsers(userId1: number, userId2: number) {
-		// Query to get messages between two users
+	async findAllChats(): Promise<ChatMessage[]> {
+		return this.chatMessageRepository.find({});
 	}
 }
