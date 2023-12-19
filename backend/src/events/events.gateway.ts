@@ -10,6 +10,8 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EventsService } from './events.service';
 import { ChatService } from 'src/chat/chat.service';
+import { Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @WebSocketGateway({
 	cors: {
@@ -27,35 +29,43 @@ export class EventsGateway {
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 	) {}
 
+	//Provides the User id and checks cookie
+	async verifyAuthentication(
+		client: Socket,
+	): Promise<{ isAuthenticated: boolean; userId: number }> {
+		const cookies = cookie.parse(client.handshake.headers.cookie || '');
+		if (!cookies.token) {
+			console.log('No cookies provided');
+			return { isAuthenticated: false, userId: null };
+		}
+
+		const token = cookies['token'];
+		if (!token) {
+			console.log('No token provided');
+			return { isAuthenticated: false, userId: null };
+		}
+
+		const decoded = await this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
+		if (decoded) {
+			client.data.user = decoded;
+			return { isAuthenticated: true, userId: decoded.id };
+		}
+
+		return { isAuthenticated: false, userId: null };
+	}
+
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {
-			//console.log('client: ', client);
-			const cookies = cookie.parse(client.handshake.headers.cookie || '');
-			if (!cookies.token) {
-				//console.log('No cookies provided');
+			const isAuthenticated = await this.verifyAuthentication(client);
+			if (!isAuthenticated.isAuthenticated) {
+				console.log('Invalid credentials');
 				return;
 			}
-			//console.log('cookies: ', cookies);
-			//console.log('token type: ', typeof cookies);
-			const token = cookies['token'];
-			if (!token) {
-				//console.log('No token provided');
-				return;
-			}
-			//console.log('token: ', token);
-			//console.log('token type: ', typeof token);
-			try {
-				const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
-				client.data.user = decoded;
-				//console.log('decoded client data: ', decoded);
-				if (decoded) {
-					this.eventsService.userConnected(decoded.email);
-				}
-			} catch (innerError) {
-				console.log('JWT decode error:', innerError.message);
-			}
+
+			// User is authenticated, proceed with connection
+			this.eventsService.userConnected(client.data.user.email);
 		} catch (error) {
-			console.log('Error in handleConnection:', error.message);
+			console.error('Error in handleConnection:', error.message);
 		}
 	}
 
@@ -67,14 +77,21 @@ export class EventsGateway {
 		}
 	}
 
+	/*@UseGuards(JwtAuthGuard)
 	@SubscribeMessage('sendMessage')
 	async handleMessage(
 		@MessageBody() data: { senderId: number; receiverId: number; content: string },
 		@ConnectedSocket() client: Socket,
 	) {
-		console.log('handleMessage arrived NICE');
+		const content = data.content;
+		const receiverId = data.receiverId;
+		const senderId = data.senderId;
+
+		console.log('handleMessage arrived: ', content);
+		console.log('receiverId: ', receiverId);
+		console.log('senderId: ', senderId);
 		// Save the message to the database
-		/*const message = await this.chatService.saveMessage(
+		const message = await this.chatService.saveMessage(
 			data.senderId,
 			data.receiverId,
 			data.content,
@@ -84,6 +101,28 @@ export class EventsGateway {
 		client.to(`user_${data.receiverId}`).emit('receiveMessage', {
 			receiverId: message.receiverId,
 			content: message.content,
-		});*/
+		});}*/
+
+	@SubscribeMessage('sendMessage')
+	async handleMessage(
+		@MessageBody()
+		data: { senderId: number; receiverId: number; content: string; Credential: string },
+		@ConnectedSocket() client: Socket,
+	) {
+		try {
+			const isAuthenticated = await this.verifyAuthentication(client);
+			if (!isAuthenticated.isAuthenticated) {
+				console.log('Invalid credentials');
+				return;
+			}
+			const content = data.content;
+			const receiverId = isAuthenticated.userId;
+			const senderId = data.senderId;
+			console.log('handleMessage arrived: ', content);
+			console.log('receiverId: ', receiverId);
+			console.log('senderId: ', senderId);
+		} catch (error) {
+			console.error('Error in handleConnection:', error.message);
+		}
 	}
 }

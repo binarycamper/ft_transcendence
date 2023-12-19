@@ -27,6 +27,9 @@ export const ChatRoom = () => {
 	// Clear the input field after sending the message
 	const handleSendMessage = () => {
 		const sanitizedInput = sanitizeHtml(inputValue);
+		if (!inputValue) {
+			return; // Don't send an empty message
+		}
 		socket.emit('sendMessage', {
 			content: sanitizedInput,
 			senderId: friendId,
