@@ -54,7 +54,7 @@ const buttonStyleBase: React.CSSProperties = {
 	transition: 'all 0.3s ease', // smooth transition for hover effects
 };
 
-type ChatMessage = {
+type FriendRequestMessage = {
 	id: string;
 	senderName: string;
 	senderId: string;
@@ -92,11 +92,11 @@ const FriendOverlay = React.memo(
 	},
 );
 
-export function Chat() {
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
+export function FriendRequest() {
+	const [messages, setMessages] = useState<FriendRequestMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [pendingRequestCount, setPendingRequestCount] = useState(0);
-	const [myRequests, setMyRequests] = useState<ChatMessage[]>([]);
+	const [myRequests, setMyRequests] = useState<FriendRequestMessage[]>([]);
 	const [friends, setFriends] = useState<Friend[]>([]);
 	const [selectedFriend, setSelectedFriend] = useState<SelectedFriend>(null);
 	const [overlayTop, setOverlayTop] = useState(0);
@@ -119,7 +119,7 @@ export function Chat() {
 				navigate('/login');
 				return;
 			}
-			const data: ChatMessage[] = await response.json();
+			const data: FriendRequestMessage[] = await response.json();
 			setMessages(data);
 
 			const pendingRequests = data.filter((message) => message.status === 'pending');
@@ -141,7 +141,7 @@ export function Chat() {
 				navigate('/login');
 				return;
 			}
-			const data: ChatMessage[] = await response.json();
+			const data: FriendRequestMessage[] = await response.json();
 			setMyRequests(data); // Update state with your own requests
 		} catch (error) {
 			console.error('Error fetching my requests:', error);

@@ -10,7 +10,7 @@ import { CompleteProfile } from './pages/CompleteProfile';
 import { FriendList } from './pages/FriendList.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import AuthCallback from './pages/AuthCallback.page';
-import { Chat } from './pages/Chat.page';
+import { FriendRequest } from './pages/Request.page';
 import { ChatRoom } from './pages/ChatRoom.page.';
 
 const router = createBrowserRouter([
@@ -24,13 +24,13 @@ const router = createBrowserRouter([
 				element: <HomePage />,
 			},
 			{
-				path: 'chat',
-				element: <Chat />,
+				path: 'friendrequest',
+				element: <FriendRequest />,
 				children: [],
 			},
 			{
-				path: 'chat/chatroom',
-				element: <ChatRoom />, // Assuming you have a separate ChatRoom component
+				path: 'friendrequest/chatroom', //TODO: Is it possible to put that as children of Friendrequest?
+				element: <ChatRoom />,
 			},
 			{
 				path: 'play',
