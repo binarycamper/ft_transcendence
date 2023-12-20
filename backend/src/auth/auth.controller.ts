@@ -63,9 +63,10 @@ export class AuthController {
 		}
 
 		if (!user.password || !(await bcrypt.compare(password, user.password))) {
-			return res.status(401).json({ message: 'Wrong password.' });
+			throw new UnauthorizedException('Invalid password.');
 		}
 
+		//If TwoAuth is enable then skip login and response ok, Fronent creates Qr Code Site
 		if (user.isTwoFactorAuthenticationEnabled) {
 			return res.status(HttpStatus.OK).json({
 				message: '2FA required',
