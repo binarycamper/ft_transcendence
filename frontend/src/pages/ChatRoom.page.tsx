@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 type Friend = {
 	id: string;
 	name: string;
+	nickname: string;
 	status: string;
 };
 
@@ -136,7 +137,7 @@ export const ChatRoom = () => {
 	// Function to get the display name for each message
 	const getDisplayName = (senderId: string) => {
 		if (senderId === currentUserId) return currentUserName;
-		if (senderId === selectedFriend?.id) return selectedFriend.name;
+		if (senderId === selectedFriend?.id) return selectedFriend.nickname || selectedFriend.name;
 		return 'Unknown'; // Fallback for any mismatch
 	};
 
@@ -176,7 +177,9 @@ export const ChatRoom = () => {
 								backgroundColor: selectedFriend?.id === friend.id ? 'green' : 'transparent',
 							}}
 						>
-							<span onClick={() => handleSelectFriend(friend)}>{friend.name}</span>
+							<span onClick={() => handleSelectFriend(friend)}>
+								{friend.nickname || friend.name}
+							</span>
 							<button onClick={() => handleClearChat(friend.id)} style={{ marginLeft: '10px' }}>
 								Clear Chat
 							</button>
@@ -186,7 +189,11 @@ export const ChatRoom = () => {
 				{/* Conditional rendering to check if selectedFriend is not null */}
 				{selectedFriend && (
 					<>
-						<h2>Chat with {selectedFriend.name}</h2>
+						<h2>
+							Chat with {selectedFriend.name}
+							{selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
+							{selectedFriend.status && ` - Status: ${selectedFriend.status}`}
+						</h2>
 						<div
 							style={{
 								border: '1px solid #ccc',

@@ -35,8 +35,6 @@ Insert error logs here
 ## jjesberg
 
 ```
-- The user should be able to choose a unique name that will be displayed on the website.
-
 - The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
 
 - The user should be able to block other users. This way, they will see no more messages from the account they blocked.
@@ -92,6 +90,7 @@ customization options
 
 #### 3. User Account
 
+- The user should be able to choose a unique name that will be displayed on the website.
 - The user should be able to add other users as friends and see their current status (online, offline, in a game, and so forth).
 - upload avatar else default one must be set (intra pic)
 - Stats (such as: wins and losses, ladder level, achievements, and so forth) have to be displayed on the user profile.
