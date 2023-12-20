@@ -58,8 +58,8 @@ export class ChatController {
 			});
 		} else {
 			try {
-				const chat = await this.chatService.create(createChatDto, req.user);
-				res.status(HttpStatus.CREATED).json(chat);
+				const friendRequest = await this.chatService.create(createChatDto, req.user);
+				res.status(HttpStatus.CREATED).json(friendRequest);
 			} catch (error) {
 				res.status(HttpStatus.BAD_REQUEST).json({
 					statusCode: HttpStatus.BAD_REQUEST,

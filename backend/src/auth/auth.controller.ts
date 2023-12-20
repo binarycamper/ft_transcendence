@@ -53,8 +53,10 @@ export class AuthController {
 	@Post('login')
 	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
 		const { email, password } = loginDto;
-
 		const userId = await this.userService.findUserIdByMail(email);
+		if (!userId) {
+			throw new UnauthorizedException('Invalid email.');
+		}
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
 			return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });

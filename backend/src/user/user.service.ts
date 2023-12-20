@@ -76,7 +76,7 @@ export class UserService {
 	async findProfileByName(friendName: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { name: friendName },
-			relations: ['friends'],
+			relations: ['friends', 'ignorelist'],
 		});
 		if (!user) {
 			throw new Error('User not found');

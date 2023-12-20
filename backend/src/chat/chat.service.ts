@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequest } from './friendRequest.entity';
@@ -105,17 +105,35 @@ export class ChatService {
 	}
 
 	async create(friendRequestDto: FriendRequestDto, user): Promise<FriendRequest> {
-		const thisuser: User = await this.userService.findProfileByName(user.name);
-		const isAlreadyFriends = thisuser.friends.some(
+		const currUser = await this.userService.findProfileByName(user.name);
+		if (!currUser) {
+			throw new NotFoundException('User not found.');
+		}
+		const recipientUser = await this.userService.findProfileByName(friendRequestDto.recipient);
+		if (!recipientUser) {
+			throw new NotFoundException('Recipient user not found.');
+		}
+		// Check if the currUser is on ignorelist of friend target
+		const isInIgnoreListrecip = recipientUser.ignorelist.some(
+			(ignoredUser) => ignoredUser.name === currUser.name,
+		);
+		if (isInIgnoreListrecip) {
+			throw new Error('You cannot send a friend request to a user in your ignore list.');
+		}
+		// Check if the recipient is on ignorelist of currUser
+		const isInIgnoreListcurr = currUser.ignorelist.some(
+			(ignoredUser) => ignoredUser.name === friendRequestDto.recipient,
+		);
+		if (isInIgnoreListcurr) {
+			throw new Error('You cannot send a friend request to a user in your ignore list.');
+		}
+		const isAlreadyFriends = currUser.friends.some(
 			(friend) => friend.name === friendRequestDto.recipient,
 		);
 		if (isAlreadyFriends) {
 			throw new Error('You are already friends with this user.');
 		}
-		const recipientUser = await this.userService.findProfileByName(friendRequestDto.recipient);
-		if (!recipientUser) {
-			throw new Error('Recipient user not found.');
-		}
+
 		// Check for existing pending requests between these two users
 		const existingRequest = await this.friendrequestRepository.findOne({
 			where: [
