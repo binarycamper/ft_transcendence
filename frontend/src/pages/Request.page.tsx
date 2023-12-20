@@ -163,7 +163,8 @@ export function FriendRequest() {
 			});
 
 			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
+				navigate('/login');
+				return;
 			}
 
 			const data = await response.json();

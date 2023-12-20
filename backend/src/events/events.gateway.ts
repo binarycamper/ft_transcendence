@@ -64,7 +64,8 @@ export class EventsGateway {
 			}
 
 			// User is authenticated, proceed with connection
-			this.eventsService.userConnected(client.data.user.email);
+			//console.log('Email to track online: ', client.data.user.email);
+			await this.eventsService.userConnected(client.data.user.email);
 		} catch (error) {
 			console.error('Error in handleConnection:', error.message);
 		}
