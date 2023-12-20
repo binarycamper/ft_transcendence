@@ -141,6 +141,27 @@ export const ChatRoom = () => {
 		return 'Unknown'; // Fallback for any mismatch
 	};
 
+	const handleClearChat = async (friendId: string) => {
+		const confirmation = window.confirm(
+			'Clearing this chat will also clear it for your friend. Do you want to proceed?',
+		);
+
+		if (confirmation) {
+			try {
+				await fetch(`http://localhost:8080/chat/deleteChat?friendId=${friendId}`, {
+					method: 'DELETE',
+					credentials: 'include',
+				});
+				// Clear chat messages from the state if the selected friend's chat is being cleared
+				if (selectedFriend?.id === friendId) {
+					setChatMessages([]);
+				}
+			} catch (error) {
+				console.error('Error clearing chat:', error);
+			}
+		}
+	};
+
 	return (
 		<div>
 			Current User: {currentUserName || 'Loading...'}
@@ -156,7 +177,10 @@ export const ChatRoom = () => {
 								backgroundColor: selectedFriend?.id === friend.id ? 'green' : 'transparent',
 							}}
 						>
-							{friend.name}
+							<span onClick={() => handleSelectFriend(friend)}>{friend.name}</span>
+							<button onClick={() => handleClearChat(friend.id)} style={{ marginLeft: '10px' }}>
+								Clear Chat
+							</button>
 						</li>
 					))}
 				</ul>

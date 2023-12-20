@@ -10,9 +10,6 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EventsService } from './events.service';
 import { ChatService } from 'src/chat/chat.service';
-import { Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-
 @WebSocketGateway({
 	cors: {
 		origin: 'http://localhost:5173', // Replace with your frontend's origin
