@@ -76,32 +76,6 @@ export class EventsGateway {
 		}
 	}
 
-	/*@UseGuards(JwtAuthGuard)
-	@SubscribeMessage('sendMessage')
-	async handleMessage(
-		@MessageBody() data: { senderId: number; receiverId: number; content: string },
-		@ConnectedSocket() client: Socket,
-	) {
-		const content = data.content;
-		const receiverId = data.receiverId;
-		const senderId = data.senderId;
-
-		console.log('handleMessage arrived: ', content);
-		console.log('receiverId: ', receiverId);
-		console.log('senderId: ', senderId);
-		// Save the message to the database
-		const message = await this.chatService.saveMessage(
-			data.senderId,
-			data.receiverId,
-			data.content,
-		);
-
-		// Emit the message to the recipient if they're online
-		client.to(`user_${data.receiverId}`).emit('receiveMessage', {
-			receiverId: message.receiverId,
-			content: message.content,
-		});}*/
-
 	@SubscribeMessage('sendMessage')
 	async handleMessage(
 		@MessageBody() data: { receiverId: string; content: string },
@@ -113,7 +87,7 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-			console.log('handleMessage arrived, Chat entry gets created:', data.content);
+			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
 			const message = await this.chatService.saveMessage(
 				data.receiverId,
 				isAuthenticated.userId,
@@ -124,7 +98,15 @@ export class EventsGateway {
 				content: message.content,
 				senderId: message.senderId,
 				receiverId: message.receiverId,
-				messageId: message.id,
+				id: message.id,
+			});
+
+			// Emit the message to the sender, update the chat display
+			this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
+				content: message.content,
+				senderId: message.senderId,
+				receiverId: message.receiverId,
+				id: message.id,
 			});
 		} catch (error) {
 			console.error('Error in handleMessage:', error.message);

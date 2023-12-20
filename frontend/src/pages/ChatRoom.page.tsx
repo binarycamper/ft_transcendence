@@ -180,11 +180,11 @@ export const ChatRoom = () => {
 									key={message.id}
 									className={`message ${message.senderId === currentUserId ? 'sent' : 'received'}`}
 									style={{
-										backgroundColor: message.senderId === currentUserId ? '#101' : '#454', // Darker backgrounds for messages
+										backgroundColor: message.senderId === currentUserId ? '#101' : '#454',
 										padding: '1px',
-										borderRadius: '3px',
-										margin: '1px 0',
-										color: '#fff', // Ensure text color is light for readability
+										borderRadius: '1px',
+										margin: '2px 0',
+										color: '#fff',
 									}}
 								>
 									<p>
