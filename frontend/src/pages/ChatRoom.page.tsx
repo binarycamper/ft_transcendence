@@ -73,7 +73,6 @@ export const ChatRoom = () => {
 
 	const handleSelectFriend = (friend: Friend) => {
 		setSelectedFriend(friend);
-		//console.log('friend: ', friend);
 	};
 
 	// Effect for fetching chat history when a friend is selected
@@ -109,7 +108,7 @@ export const ChatRoom = () => {
 				(message.senderId === currentUserId && message.receiverId === selectedFriend?.id) ||
 				(message.receiverId === currentUserId && message.senderId === selectedFriend?.id)
 			) {
-				console.log('?: ', message.content);
+				//console.log('chat verlauf: ', message.content);
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 		};

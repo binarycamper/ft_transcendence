@@ -35,10 +35,25 @@ Insert error logs here
 ## jjesberg
 
 ```
-create GrpChats with Admins pw etc.
-backend: NestJS
-try fix error when get authtoken from 42api
-match history
+- The user should be able to choose a unique name that will be displayed on the website.
+
+- The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
+
+- The user should be able to block other users. This way, they will see no more messages from the account they blocked.
+
+- The user who has created a new channel is automatically set as the channel owner until they leave it.
+
+◦ The channel owner can set a password required to access the channel, change it, and also remove it.
+
+◦ The channel owner is a channel administrator. They can set other users as administrators.
+
+◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
+
+• The user should be able to invite other users to play a Pong game through the chat interface.
+
+• The user should be able to access other players profiles through the chat interface.
+
+- Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it.
 ```
 
 ## kfergani
@@ -54,7 +69,7 @@ database: PostgreSQL
     x    =    passwords in database must be hashed
         =    protect against SQL injections
         =    server-side validation for forms and any user input
-    x    =    login using OAuth system of 42 intranet <------------------------------------------------ !!!Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2!!!
+    x    =    login using OAuth system of 42 intranet <-------------- !!!Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2!!! try fix error when get authtoken from 42api
     x    =    two-factor authentication
 ```
 
@@ -77,10 +92,13 @@ customization options
 
 #### 3. User Account
 
+- The user should be able to add other users as friends and see their current status (online, offline, in a game, and so forth).
 - upload avatar else default one must be set (intra pic)
-- stats have to be displayed on the user profile
-- Chat between friends
+- Stats (such as: wins and losses, ladder level, achievements, and so forth) have to be displayed on the user profile.
 
 #### 4. Chat
+
+- Chat between friends (The user should be able to send direct messages to other users.)
+-
 
 #### 5. Game
