@@ -33,26 +33,23 @@ export class EventsGateway {
 	//Provides the User id and checks cookie
 	async verifyAuthentication(
 		client: Socket,
-	): Promise<{ isAuthenticated: boolean; userId: number }> {
+	): Promise<{ isAuthenticated: boolean; userId: string }> {
 		const cookies = cookie.parse(client.handshake.headers.cookie || '');
 		if (!cookies.token) {
 			console.log('No cookies provided');
 			return { isAuthenticated: false, userId: null };
 		}
-
 		const token = cookies['token'];
 		if (!token) {
 			console.log('No token provided');
 			return { isAuthenticated: false, userId: null };
 		}
-
 		const decoded = await this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
 		if (decoded) {
 			client.data.user = decoded;
 			return { isAuthenticated: true, userId: decoded.id };
 		}
-
-		return { isAuthenticated: false, userId: null };
+		return { isAuthenticated: false, userId: '' };
 	}
 
 	async handleConnection(client: Socket, ...args: any[]) {
@@ -62,12 +59,11 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-
 			// User is authenticated, proceed with connection
 			//console.log('Email to track online: ', client.data.user.email);
 			await this.eventsService.userConnected(client.data.user.email);
 		} catch (error) {
-			console.error('Error in handleConnection:', error.message);
+			console.error('In handleConnection:', error.message);
 		}
 	}
 
@@ -118,12 +114,12 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-			//console.log('handleMessage arrived: ', data.content);
-			//console.log('receiverId: ', data.receiverId);
-			//console.log('senderId: ', isAuthenticated.userId);
+			console.log('handleMessage arrived, Chat entry gets created:\n', data.content);
+			console.log('receiverId: ', data.receiverId);
+			console.log('senderId: ', isAuthenticated.userId);
 			const message = await this.chatService.saveMessage(
 				data.receiverId,
-				isAuthenticated.userId.toString(),
+				isAuthenticated.userId,
 				data.content,
 			);
 		} catch (error) {

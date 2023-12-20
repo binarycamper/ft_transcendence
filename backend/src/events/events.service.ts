@@ -21,7 +21,7 @@ export class EventsService {
 				// Wenn der Benutzer wieder verbunden ist, löschen Sie das Timeout, falls vorhanden
 				if (this.userConnectionMap.has(userId)) {
 					clearTimeout(this.userConnectionMap.get(userId));
-					this.userConnectionMap.delete(userId);
+					await this.userConnectionMap.delete(userId);
 				}
 			} else {
 				console.log('User not found for email: ', email);
