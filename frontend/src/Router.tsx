@@ -11,7 +11,7 @@ import { FriendList } from './pages/FriendList.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import AuthCallback from './pages/AuthCallback.page';
 import { FriendRequest } from './pages/Request.page';
-import { ChatRoom } from './pages/ChatRoom.page.';
+import { ChatRoom } from './pages/ChatRoom.page';
 
 const router = createBrowserRouter([
 	{

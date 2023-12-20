@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+/*import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from './context/socketContext';
 import { useSearchParams } from 'react-router-dom';
 
@@ -35,8 +35,16 @@ const buttonStyle = {
 	alignSelf: 'center', // Align self is used to align the button when using flex on the parent
 };
 
+const chatAreaStyle = {
+	width: '100%', // Full width of the container
+	minHeight: '200px', // Minimum height of the chat area
+	overflowY: 'auto', // Show scrollbar when content overflows
+	// Add additional styling as needed
+};
+
 export const ChatRoom = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
+	const [currentUserId, setCurrentUserId] = useState(null); // State to store the current user's ID
 	const friendId = searchParams.get('friendId');
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const socket = useContext(SocketContext);
@@ -44,20 +52,25 @@ export const ChatRoom = () => {
 	const [friends, setFriends] = useState<Friend[]>([]);
 	const [chat, setChat] = useState('');
 
-	// Listen for messages from the server
-	/*useEffect(() => {
-		const getMessage = (message: ChatMessage) => {
-			setMessages((prevMessages) => [...prevMessages, message]);
-			setChat(chat + message.content + '\n');
+	useEffect(() => {
+		const getCurrentUserId = async () => {
+			try {
+				const response = await fetch('http://localhost:8080/user/id', {
+					credentials: 'include',
+				});
+				if (!response.ok) {
+					throw new Error('Failed to fetch current user ID');
+				}
+				const data = await response.json(); // Assuming that the response is a JSON object
+				const userId = data.id; // Extract the user ID from the JSON object
+				setCurrentUserId(userId); // Update the state with the actual user ID string
+			} catch (error) {
+				console.error('Error fetching current user ID:', error);
+			}
 		};
 
-		socket.on('getMessage', getMessage);
-
-		// Clean up the listener when the component unmounts
-		return () => {
-			socket.off('getMessage', getMessage);
-		};
-	}, [socket, chat]);*/
+		getCurrentUserId();
+	}, []);
 
 	useEffect(() => {
 		// Fetch friends list when component mounts
@@ -83,15 +96,32 @@ export const ChatRoom = () => {
 	// Clear the input field after sending the message
 	const handleSendMessage = () => {
 		//TODO: Verify input!
-		if (!inputValue) {
+		if (!inputValue.trim()) {
 			return; // Don't send an empty message
 		}
+
+		// Emit the message to the server
 		socket.emit('sendMessage', {
 			content: inputValue,
 			receiverId: friendId,
 		});
-		setInputValue(''); // Clear the input field after sending the message
+
+		// Clear the input field after sending the message
+		setInputValue('');
 	};
+
+	useEffect(() => {
+		const handleNewMessage = (message: ChatMessage) => {
+			setMessages((prevMessages) => [...prevMessages, message]);
+			// No need to update 'chat', as we will directly render messages from 'messages' state
+		};
+
+		socket.on('receiveMessage', handleNewMessage);
+
+		return () => {
+			socket.off('receiveMessage', handleNewMessage);
+		};
+	}, [socket]);
 
 	const deleteMyChats = async (friendId: string) => {
 		try {
@@ -151,18 +181,13 @@ export const ChatRoom = () => {
 				<button onClick={() => friendId && deleteMyChats(friendId)} style={buttonStyle}>
 					Clear Chat
 				</button>
-				<div style={{ flexGrow: 1, minHeight: '200px' }}>
+				<div style={{ flexGrow: 1, minHeight: '200px', overflowY: 'auto' }}>
 					<textarea
 						placeholder="Chat Verlauf"
-						value={chat}
+						value={chat} // This is the concatenated string of messages
 						readOnly={true}
-						onChange={(event) => setChat(event.target.value)}
+						style={chatAreaStyle}
 					></textarea>
-					<ul>
-						{messages.map((message) => (
-							<li key={message.id}>{message.content}</li>
-						))}
-					</ul>
 				</div>
 				<div>
 					<input
@@ -177,3 +202,4 @@ export const ChatRoom = () => {
 		</div>
 	);
 };
+*/

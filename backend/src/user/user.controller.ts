@@ -38,6 +38,14 @@ export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('id')
+	async getId(@Req() req): Promise<{ id: string; name: string }> {
+		const id = req.user.id;
+		const name = req.user.name;
+		return { id: id, name: name };
+	}
+
 	//returns all users
 	@Get('users')
 	async getAll(): Promise<User[]> {
@@ -48,22 +56,6 @@ export class UserController {
 	@Get('userfriends')
 	async getAllFriends(@Req() req): Promise<User[]> {
 		return this.userService.findAllFriends(req.user);
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Delete('friends')
-	async removeFriend(@Query('friendid') friendId: string, @Req() req, @Res() res) {
-		try {
-			await this.userService.removeFriend(req.user.id, friendId);
-			return res.status(HttpStatus.NO_CONTENT).send();
-		} catch (error) {
-			console.error('Error removing friend:', error.message);
-			const status =
-				error instanceof NotFoundException
-					? HttpStatus.NOT_FOUND
-					: HttpStatus.INTERNAL_SERVER_ERROR;
-			return res.status(status).json({ message: error.message });
-		}
 	}
 
 	@Get('isProfileComplete')
@@ -239,6 +231,22 @@ export class UserController {
 		} catch (error) {
 			console.error('Error retrieving friends:', error);
 			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Delete('friends')
+	async removeFriend(@Query('friendid') friendId: string, @Req() req, @Res() res) {
+		try {
+			await this.userService.removeFriend(req.user.id, friendId);
+			return res.status(HttpStatus.NO_CONTENT).send();
+		} catch (error) {
+			console.error('Error removing friend:', error.message);
+			const status =
+				error instanceof NotFoundException
+					? HttpStatus.NOT_FOUND
+					: HttpStatus.INTERNAL_SERVER_ERROR;
+			return res.status(status).json({ message: error.message });
 		}
 	}
 

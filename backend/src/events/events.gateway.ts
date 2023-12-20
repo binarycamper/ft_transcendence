@@ -122,6 +122,13 @@ export class EventsGateway {
 				isAuthenticated.userId,
 				data.content,
 			);
+			// Emit the message to the recipient if they're online //TODO: And to the sender also!
+			await this.server.to(`user_${data.receiverId}`).emit('receiveMessage', {
+				content: message.content,
+				senderId: message.senderId,
+				receiverId: message.receiverId,
+				messageId: message.id,
+			});
 		} catch (error) {
 			console.error('Error in handleMessage:', error.message);
 		}

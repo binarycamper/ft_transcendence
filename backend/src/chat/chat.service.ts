@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequest } from './friendRequest.entity';
@@ -36,6 +36,26 @@ export class ChatService {
 		message.content = content;
 		message.createdAt = now;
 		await this.chatMessageRepository.save(message);
+		return message;
+	}
+
+	async findFriendChat(userId: string, friendId: string): Promise<ChatMessage[]> {
+		try {
+			const friendChatHistory = await this.chatMessageRepository.find({
+				where: [
+					{ senderId: userId, receiverId: friendId },
+					{ senderId: friendId, receiverId: userId },
+				],
+				order: {
+					createdAt: 'ASC', // Assuming you have a createdAt field to sort by date
+				},
+			});
+			return friendChatHistory;
+		} catch (error) {
+			// Handle or log the error appropriately
+			console.log(`Failed to fetch chat history: ${error.message}`);
+			throw new InternalServerErrorException('Failed to fetch chat history');
+		}
 	}
 
 	async findChatsWithId(userId: string): Promise<ChatMessage[]> {

@@ -11,6 +11,7 @@ import {
 	Res,
 	Delete,
 	HttpCode,
+	HttpException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
@@ -23,14 +24,25 @@ export class ChatController {
 
 	//########################CHatRooms#############################
 
+	//########################CHatMessages#############################
+
+	@UseGuards(JwtAuthGuard)
+	@Get('history')
+	async getFriendChat(@Req() req, @Query('friendId') friendId: string) {
+		try {
+			const userId = req.user.id;
+			return await this.chatService.findFriendChat(userId, friendId);
+		} catch (error) {
+			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('deleteChat')
 	async deleteMyChats(@Query('friendId') friendId: string, @Req() req) {
 		return await this.chatService.deleteChat(friendId, req.user.id);
 	}
-
-	//########################CHatMessages#############################
 
 	//########################FrienRequests#############################
 
