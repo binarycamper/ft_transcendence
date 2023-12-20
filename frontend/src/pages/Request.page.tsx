@@ -1,6 +1,5 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SocketContext } from './context/socketContext';
 
 const listStyles: React.CSSProperties = {
 	listStyle: 'none',

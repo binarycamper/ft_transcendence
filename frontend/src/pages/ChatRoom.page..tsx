@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from './context/socketContext';
 import { useSearchParams } from 'react-router-dom';
-import sanitizeHtml from 'sanitize-html';
 
 type ChatMessage = {
 	id: string;
@@ -46,11 +45,19 @@ export const ChatRoom = () => {
 	const [chat, setChat] = useState('');
 
 	// Listen for messages from the server
-	socket.on('getMessage', (message) => {
-		// Update the state of the ChatRoom page to display the new message
-		setMessages((prevMessages) => [...prevMessages, message]);
-		setChat(chat + message.content + '\n'); // Store the chat history
-	});
+	/*useEffect(() => {
+		const getMessage = (message: ChatMessage) => {
+			setMessages((prevMessages) => [...prevMessages, message]);
+			setChat(chat + message.content + '\n');
+		};
+
+		socket.on('getMessage', getMessage);
+
+		// Clean up the listener when the component unmounts
+		return () => {
+			socket.off('getMessage', getMessage);
+		};
+	}, [socket, chat]);*/
 
 	useEffect(() => {
 		// Fetch friends list when component mounts
@@ -63,7 +70,7 @@ export const ChatRoom = () => {
 					throw new Error('Failed to fetch friends');
 				}
 				const friendsList = await response.json();
-				console.log('GOOD: ', friendsList);
+				//console.log('Friends: ', friendsList);
 				setFriends(friendsList);
 			} catch (error) {
 				console.error('Error fetching friends:', error);
@@ -75,12 +82,12 @@ export const ChatRoom = () => {
 
 	// Clear the input field after sending the message
 	const handleSendMessage = () => {
-		const sanitizedInput = sanitizeHtml(inputValue);
+		//TODO: Verify input!
 		if (!inputValue) {
 			return; // Don't send an empty message
 		}
 		socket.emit('sendMessage', {
-			content: sanitizedInput,
+			content: inputValue,
 			receiverId: friendId,
 		});
 		setInputValue(''); // Clear the input field after sending the message
@@ -110,6 +117,11 @@ export const ChatRoom = () => {
 		// Additional logic to switch chat context can be added here
 	};
 
+	const getFriendNameById = (id: string) => {
+		const friend = friends.find((friend) => friend.id === id);
+		return friend ? friend.name : 'Unknown';
+	};
+
 	return (
 		<div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 			{/* Friends List */}
@@ -135,7 +147,7 @@ export const ChatRoom = () => {
 				{' '}
 				{/* Ensure this div takes full width */}
 				<h2>Chat Room</h2>
-				<p>Chatting with friend ID: {friendId}</p>
+				<p>Chatting with: {getFriendNameById(friendId)}</p>
 				<button onClick={deleteMyChats} style={buttonStyle}>
 					Clear All My Chats
 				</button>
