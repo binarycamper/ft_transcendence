@@ -35,9 +35,9 @@ Insert error logs here
 ## jjesberg
 
 ```
-- The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
-
 - The user should be able to block other users. This way, they will see no more messages from the account they blocked.
+
+- The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
 
 - The user who has created a new channel is automatically set as the channel owner until they leave it.
 

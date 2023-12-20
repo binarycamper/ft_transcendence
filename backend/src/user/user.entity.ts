@@ -25,6 +25,10 @@ export class User {
 	@JoinTable()
 	friends: User[];
 
+	@ManyToMany(() => User)
+	@JoinTable()
+	ignorelist: User[];
+
 	@Column()
 	intraId: string;
 

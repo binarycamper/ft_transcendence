@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -8,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import { unlink } from 'fs/promises';
 import { FriendRequest } from 'src/chat/friendRequest.entity';
+import { NotFoundError } from 'rxjs';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -192,7 +198,61 @@ export class UserService {
 		}
 	}
 
-	async removeFriend(userId: string, friendId: string): Promise<void> {
+	async removeFriend(
+		userId: string,
+		friendId: string,
+	): Promise<{ removed: boolean; message: string }> {
+		let removed = false;
+		let message = '';
+
+		await this.userRepository.manager.transaction(async (transactionalEntityManager) => {
+			const user = await transactionalEntityManager.findOne(User, {
+				where: { id: userId },
+				relations: ['friends'],
+			});
+
+			if (!user) {
+				throw new Error('User not found');
+			}
+
+			if (user.friends.some((friend) => friend.id === friendId)) {
+				// Remove the friend from the user's list of friends
+				user.friends = user.friends.filter((friend) => friend.id !== friendId);
+				await transactionalEntityManager.save(user);
+			} else {
+				console.log('User does not have this friend on their list');
+			}
+
+			const friend = await transactionalEntityManager.findOne(User, {
+				where: { id: friendId },
+				relations: ['friends'],
+			});
+
+			// Check and remove the friend from the user's list
+			if (user.friends.some((friend) => friend.id === friendId)) {
+				user.friends = user.friends.filter((friend) => friend.id !== friendId);
+				await transactionalEntityManager.save(user);
+				removed = true;
+				message = 'Friend removed successfully.';
+			} else {
+				message = 'User does not have this friend on their list.';
+			}
+
+			// Check and remove the user from the friend's list
+			if (friend && friend.friends.some((f) => f.id === userId)) {
+				friend.friends = friend.friends.filter((f) => f.id !== userId);
+				await transactionalEntityManager.save(friend);
+				removed = true;
+				message = 'Friend removed successfully.';
+			} else {
+				message = message || 'Friend does not have this user on their list.';
+			}
+		});
+
+		return { removed, message };
+	}
+
+	/*async removeFriend(userId: string, friendId: string): Promise<void> {
 		await this.userRepository.manager.transaction(async (transactionalEntityManager) => {
 			const user = await transactionalEntityManager.findOne(User, {
 				where: { id: userId },
@@ -224,7 +284,7 @@ export class UserService {
 				console.log('Friend does not have this user on their list');
 			}
 		});
-	}
+	}*/
 
 	async updateUser(user: User): Promise<User> {
 		return this.userRepository.save(user);
@@ -318,6 +378,42 @@ export class UserService {
 		// Add new friend
 		userWithFriends.friends.push(friendToAdd);
 		return await this.userRepository.save(userWithFriends);
+	}
+
+	async ignoreUser(currUser: User, userName: string): Promise<User> {
+		// Retrieve the user with their current relations
+		const userWithRelations = await this.userRepository.findOne({
+			where: { id: currUser.id },
+			relations: ['friends', 'ignorelist'],
+		});
+		if (!userWithRelations) {
+			throw new NotFoundException('User not found');
+		}
+
+		// Check if the user is already in the ignorelist
+		const isAlreadyBlocked = userWithRelations.ignorelist.some(
+			(ignoredUser) => ignoredUser.name === userName,
+		);
+		if (isAlreadyBlocked) {
+			throw new BadRequestException('User already blocked');
+		}
+
+		//get UserToBlock with relations
+		const userToBlock = await this.userRepository.findOne({
+			where: { name: userName },
+			relations: ['friends', 'ignorelist'],
+		});
+		if (!userToBlock) {
+			throw new NotFoundException('User not found');
+		}
+
+		//block User
+		userWithRelations.ignorelist.push(userToBlock);
+
+		//remove them as friends if they was.
+		await this.removeFriend(userWithRelations.id, userToBlock.id);
+		await this.removeFriend(userToBlock.id, userWithRelations.id);
+		return await this.userRepository.save(userWithRelations);
 	}
 
 	//debug:

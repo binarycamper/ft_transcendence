@@ -30,6 +30,7 @@ import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { EditNicknameDto } from './dto/userName.dto';
 import { CompleteProfileDto } from './dto/completeProfile.dto';
+import { NotFoundError } from 'rxjs';
 
 const uploadPath = '/usr/src/app/uploads/';
 
@@ -269,6 +270,27 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Post('blockUser')
+	async blockUser(@Req() req, @Body('userName') userName: string, @Res() res: Response) {
+		const user = req.user;
+		try {
+			const updatedUser = await this.userService.ignoreUser(user, userName);
+			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
+		} catch (error) {
+			console.error('Error while blocking user: ', error.message);
+
+			if (error instanceof NotFoundError) {
+				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
+			} else if (error instanceof BadRequestException) {
+				res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+			} else {
+				// Handle other types of errors, e.g., internal server errors
+				res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+			}
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Get('publicprofile')
 	async getPublicProfile(@Query('friendname') friendname: string, @Req() req) {
 		// Access the user's ID from the request object
@@ -276,7 +298,16 @@ export class UserController {
 		const friendProfile = await this.userService.findProfileByName(friendname);
 
 		// Exclude password and other sensitive fields from the result
-		const { password, id, intraId, ...result } = friendProfile;
+		const {
+			password,
+			id,
+			intraId,
+			ignorelist,
+			isTwoFactorAuthenticationEnabled,
+			unconfirmedTwoFactorSecret,
+			twoFactorAuthenticationSecret,
+			...result
+		} = friendProfile;
 
 		return result;
 	}
