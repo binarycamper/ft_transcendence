@@ -31,7 +31,7 @@ export class EventsGateway {
 	async verifyAuthentication(
 		client: Socket,
 	): Promise<{ isAuthenticated: boolean; userId: string }> {
-		const cookies = cookie.parse(client.handshake.headers.cookie || '');
+		const cookies = await cookie.parse(client.handshake.headers.cookie || '');
 		if (!cookies.token) {
 			console.log('No cookies provided');
 			return { isAuthenticated: false, userId: null };

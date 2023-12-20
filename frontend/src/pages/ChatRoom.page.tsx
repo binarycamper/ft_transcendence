@@ -109,7 +109,7 @@ export const ChatRoom = () => {
 				(message.senderId === currentUserId && message.receiverId === selectedFriend?.id) ||
 				(message.receiverId === currentUserId && message.senderId === selectedFriend?.id)
 			) {
-				//console.log('?: ', message.content);
+				console.log('?: ', message.content);
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 		};
