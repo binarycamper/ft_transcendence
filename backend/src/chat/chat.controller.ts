@@ -58,14 +58,12 @@ export class ChatController {
 			});
 		} else {
 			try {
-				//TODO: One edgecase missed
 				const chat = await this.chatService.create(createChatDto, req.user);
 				res.status(HttpStatus.CREATED).json(chat);
 			} catch (error) {
 				res.status(HttpStatus.BAD_REQUEST).json({
 					statusCode: HttpStatus.BAD_REQUEST,
-					message:
-						'There is already a pending friend request between you and this user. or: ' + error,
+					message: '' + error,
 				});
 			}
 		}
