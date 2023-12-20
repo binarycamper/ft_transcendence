@@ -62,6 +62,7 @@ export class EventsGateway {
 			// User is authenticated, proceed with connection
 			//console.log('Email to track online: ', client.data.user.email);
 			await this.eventsService.userConnected(client.data.user.email);
+			client.join(`user_${isAuthenticated.userId}`);
 		} catch (error) {
 			console.error('In handleConnection:', error.message);
 		}
@@ -103,27 +104,23 @@ export class EventsGateway {
 
 	@SubscribeMessage('sendMessage')
 	async handleMessage(
-		@MessageBody()
-		data: { receiverId: string; content: string },
+		@MessageBody() data: { receiverId: string; content: string },
 		@ConnectedSocket() client: Socket,
 	) {
-		//console.log('client : ', client);
 		try {
 			const isAuthenticated = await this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
 				console.log('Invalid credentials');
 				return;
 			}
-			console.log('handleMessage arrived, Chat entry gets created:\n', data.content);
-			console.log('receiverId: ', data.receiverId);
-			console.log('senderId: ', isAuthenticated.userId);
+			console.log('handleMessage arrived, Chat entry gets created:', data.content);
 			const message = await this.chatService.saveMessage(
 				data.receiverId,
 				isAuthenticated.userId,
 				data.content,
 			);
-			// Emit the message to the recipient if they're online //TODO: And to the sender also!
-			await this.server.to(`user_${data.receiverId}`).emit('receiveMessage', {
+			// Emit the message to the recipient if they're online
+			this.server.to(`user_${data.receiverId}`).emit('receiveMessage', {
 				content: message.content,
 				senderId: message.senderId,
 				receiverId: message.receiverId,

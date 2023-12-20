@@ -28,6 +28,7 @@ export const ChatRoom = () => {
 	const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
 
 	const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+	const [newMessage, setNewMessage] = useState('');
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -95,7 +96,7 @@ export const ChatRoom = () => {
 				throw new Error('Failed to fetch chat history');
 			}
 			const history = await response.json();
-			console.log('res: ', history);
+			//console.log('res: ', history);
 			setChatMessages(history);
 		} catch (error) {
 			console.error('Error fetching chat history:', error);
@@ -108,6 +109,7 @@ export const ChatRoom = () => {
 				(message.senderId === currentUserId && message.receiverId === selectedFriend?.id) ||
 				(message.receiverId === currentUserId && message.senderId === selectedFriend?.id)
 			) {
+				//console.log('?: ', message.content);
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 		};
@@ -119,9 +121,29 @@ export const ChatRoom = () => {
 		};
 	}, [socket, currentUserId, selectedFriend]);
 
+	const handleSendMessage = () => {
+		if (!newMessage.trim()) return; // Avoid sending empty messages
+
+		const messageToSend = {
+			content: newMessage,
+			receiverId: selectedFriend?.id,
+			// Add any other required fields
+		};
+
+		socket.emit('sendMessage', messageToSend);
+		setNewMessage('');
+	};
+
+	// Function to get the display name for each message
+	const getDisplayName = (senderId: string) => {
+		if (senderId === currentUserId) return currentUserName;
+		if (senderId === selectedFriend?.id) return selectedFriend.name;
+		return 'Unknown'; // Fallback for any mismatch
+	};
+
 	return (
 		<div>
-			Current User: {currentUserName ? currentUserName : 'Loading...'}
+			Current User: {currentUserName || 'Loading...'}
 			<div>
 				<h2>My Friends</h2>
 				<ul>
@@ -138,17 +160,51 @@ export const ChatRoom = () => {
 						</li>
 					))}
 				</ul>
-				<h2>Chat with {selectedFriend?.name}</h2>
-				<div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-					{chatMessages.map((message) => (
+				{/* Conditional rendering to check if selectedFriend is not null */}
+				{selectedFriend && (
+					<>
+						<h2>Chat with {selectedFriend.name}</h2>
 						<div
-							key={message.id}
-							className={`message ${message.senderId === currentUserId ? 'sent' : 'received'}`}
+							style={{
+								border: '1px solid #ccc',
+								borderRadius: '8px',
+								padding: '10px',
+								maxHeight: '400px',
+								overflowY: 'auto',
+								backgroundColor: '#f9f9f9',
+								margin: '10px 0',
+							}}
 						>
-							<p>{message.content}</p>
+							{chatMessages.map((message) => (
+								<div
+									key={message.id}
+									className={`message ${message.senderId === currentUserId ? 'sent' : 'received'}`}
+									style={{
+										backgroundColor: message.senderId === currentUserId ? '#101' : '#454', // Darker backgrounds for messages
+										padding: '1px',
+										borderRadius: '3px',
+										margin: '1px 0',
+										color: '#fff', // Ensure text color is light for readability
+									}}
+								>
+									<p>
+										<strong>{getDisplayName(message.senderId)}</strong>: {message.content}
+									</p>
+								</div>
+							))}
 						</div>
-					))}
-				</div>
+						<div style={{ display: 'flex' }}>
+							<input
+								type="text"
+								value={newMessage}
+								onChange={(e) => setNewMessage(e.target.value)}
+								placeholder="Type a message..."
+								style={{ flexGrow: 1 }}
+							/>
+							<button onClick={handleSendMessage}>Send</button>
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);
