@@ -51,7 +51,7 @@ export class ChatService {
 		return allMessages;
 	}
 
-	async deleteMyChats(userId: string): Promise<void> {
+	async deleteChat(userId: string): Promise<void> {
 		const allChats = await this.findChatsWithId(userId);
 		await this.chatMessageRepository.remove(allChats);
 	}

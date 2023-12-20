@@ -93,9 +93,9 @@ export const ChatRoom = () => {
 		setInputValue(''); // Clear the input field after sending the message
 	};
 
-	const deleteMyChats = async () => {
+	const deleteMyChats = async (friendId: string) => {
 		try {
-			const response = await fetch('http://localhost:8080/chat/myChats', {
+			const response = await fetch(`http://localhost:8080/chat/deleteChat?friendId=${friendId}`, {
 				method: 'DELETE',
 				credentials: 'include',
 			});
@@ -147,9 +147,9 @@ export const ChatRoom = () => {
 				{' '}
 				{/* Ensure this div takes full width */}
 				<h2>Chat Room</h2>
-				<p>Chatting with: {getFriendNameById(friendId)}</p>
-				<button onClick={deleteMyChats} style={buttonStyle}>
-					Clear All My Chats
+				<p>Chatting with: {friendId !== null ? getFriendNameById(friendId) : 'Unknown'}</p>
+				<button onClick={() => friendId && deleteMyChats(friendId)} style={buttonStyle}>
+					Clear Chat
 				</button>
 				<div style={{ flexGrow: 1, minHeight: '200px' }}>
 					<textarea

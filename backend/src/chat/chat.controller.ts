@@ -4,7 +4,6 @@ import {
 	Post,
 	Body,
 	Get,
-	Param,
 	UseGuards,
 	Req,
 	Query,
@@ -26,9 +25,9 @@ export class ChatController {
 
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	@Delete('myChats')
+	@Delete('deleteChat')
 	async deleteMyChats(@Req() req) {
-		return await this.chatService.deleteMyChats(req.user.id);
+		return await this.chatService.deleteChat(req.user.id);
 	}
 
 	//########################CHatMessages#############################
@@ -73,7 +72,6 @@ export class ChatController {
 		return this.chatService.findMyRequests(req.user.id);
 	}
 
-	//TODO: add new friend to User Table of these USers which requests 'eachother'
 	//accept a friend-request and save the friendships
 	@UseGuards(JwtAuthGuard)
 	@Post('accept')
