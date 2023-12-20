@@ -51,9 +51,15 @@ export class ChatService {
 		return allMessages;
 	}
 
-	async deleteChat(userId: string): Promise<void> {
-		const allChats = await this.findChatsWithId(userId);
-		await this.chatMessageRepository.remove(allChats);
+	async deleteChat(friendId: string, userId: string): Promise<void> {
+		// Find the chat that involves both users
+		const chats = await this.chatMessageRepository.find({
+			where: [
+				{ senderId: friendId, receiverId: userId },
+				{ senderId: userId, receiverId: friendId },
+			],
+		});
+		await this.chatMessageRepository.remove(chats);
 	}
 
 	//########################FrienRequests#############################

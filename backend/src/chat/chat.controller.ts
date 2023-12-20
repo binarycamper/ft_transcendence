@@ -26,8 +26,8 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('deleteChat')
-	async deleteMyChats(@Req() req) {
-		return await this.chatService.deleteChat(req.user.id);
+	async deleteMyChats(@Query('friendId') friendId: string, @Req() req) {
+		return await this.chatService.deleteChat(friendId, req.user.id);
 	}
 
 	//########################CHatMessages#############################
