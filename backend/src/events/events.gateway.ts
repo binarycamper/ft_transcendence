@@ -71,9 +71,9 @@ export class EventsGateway {
 		}
 	}
 
-	handleDisconnect(client: any) {
+	async handleDisconnect(client: any) {
 		if (client.data.user) {
-			this.eventsService.userDisconnected(client.data.user.email);
+			await this.eventsService.userDisconnected(client.data.user.email);
 		} else {
 			console.log('User without account detected');
 		}
