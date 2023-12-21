@@ -165,4 +165,19 @@ export class AuthController {
 		const { qrCodeUrl } = await this.authService.setupTwoFactorAuthentication(user);
 		return { qrCodeUrl };
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('/toggle-2fa')
+	async toggleTwoFactorAuthentication(
+		@Req() req: any,
+		@Res() res: Response,
+		@Query('enable2FA') enable2FA: boolean,
+	): Promise<any> {
+		const response = await this.authService.toggleTwoFactorAuthentication(enable2FA, req.user); // req.user enthält die Benutzerinformationen (vorausgesetzt, Sie verwenden Passport oder eine ähnliche Authentifizierungsbibliothek)
+		const user = await this.userRepository.findOne({ where: { id: req.user.id } });
+		if (user.unconfirmedTwoFactorSecret === null && enable2FA === true) {
+			return res.status(HttpStatus.SEE_OTHER).json(response);
+		}
+		return res.status(HttpStatus.OK).json(response);
+	}
 }

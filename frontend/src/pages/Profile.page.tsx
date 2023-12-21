@@ -15,6 +15,7 @@ type UserProfile = {
 	losses: number;
 	ladderLevel: number;
 	achievements: string[];
+	isTwoFactorAuthenticationEnabled: boolean;
 };
 
 export function Profile() {
@@ -28,6 +29,7 @@ export function Profile() {
 	const [imageUrl, setImageUrl] = useState('');
 	const [newNickname, setNewNickname] = useState(''); // State to hold the new nickname input by the user
 	const [nicknameError, setNicknameError] = useState(''); // State to hold any error message
+	const [isTwoFactorAuthenticationEnabled, setIsTwoFactorAuthenticationEnabled] = useState(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -53,6 +55,9 @@ export function Profile() {
 						fetchImage(profileData.image);
 					}
 				}
+
+				// Set the 2FA status
+				setIsTwoFactorAuthenticationEnabled(profileData.isTwoFactorAuthenticationEnabled);
 			} catch (error) {
 				console.error('Error fetching profile:', error);
 				if (isSubscribed) {
@@ -217,6 +222,42 @@ export function Profile() {
 		return <div>Loading profile...</div>;
 	}
 
+	const handleToggle2FA = async () => {
+		try {
+			const opposite2FAStatus = !isTwoFactorAuthenticationEnabled;
+			// API-Aufruf, um 2FA zu aktivieren/deaktivieren
+			const response = await fetch(
+				`http://localhost:8080/auth/toggle-2fa?enable2FA=${opposite2FAStatus}`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				},
+			);
+			console.log('response: ');
+			if (response.status === 303) {
+				const res = await fetch(`http://localhost:8080/user/id`, {
+					method: 'GET',
+					credentials: 'include',
+				});
+				const data = await res.json();
+				// console.log('res: ', data.id);
+				navigate('/twofactorsetup', { state: { userId: data.id } });
+			}
+
+			if (response.ok) {
+				console.log('2FA Status geändert');
+				window.location.reload();
+			} else {
+				console.error('Fehler beim Ändern des 2FA-Status');
+			}
+		} catch (error) {
+			console.error('Fehler beim Ändern des 2FA-Status:', error);
+		}
+	};
+
 	return (
 		<div>
 			<h1>Profile</h1>
@@ -249,6 +290,10 @@ export function Profile() {
 			/>
 			<button onClick={changeNickname}>Change Nickname</button>
 			{nicknameError && <p style={{ color: 'red' }}>{nicknameError}</p>}
+
+			<button onClick={handleToggle2FA}>
+				{profile.isTwoFactorAuthenticationEnabled ? '2FA deaktivieren' : '2FA aktivieren'}
+			</button>
 		</div>
 	);
 }

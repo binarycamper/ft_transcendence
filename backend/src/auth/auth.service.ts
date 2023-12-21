@@ -56,37 +56,66 @@ export class AuthService {
 	/*
     This method creates a new user or updates it if it already exists.
     */
+	// private async createUserOrUpdate(userData: any): Promise<User> {
+	// 	//console.log('userData= ', userData);
+	// 	let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
+	// 	let UserId;
+	// 	let state = 'fresh';
+	// 	let pw = 'hashed-pw';
+	// 	if (!user) {
+	// 		UserId = uuidv4();
+	// 	} else {
+	// 		state = user.status;
+	// 		UserId = user.id;
+	// 		pw = user.password;
+	// 	}
+	// 	const userPayload = {
+	// 		id: UserId,
+	// 		name: userData.login,
+	// 		email: userData.email,
+	// 		password: pw,
+	// 		status: state,
+	// 		intraId: userData.id,
+	// 		imageUrl: userData.image?.versions?.medium,
+	// 		isTwoFactorAuthenticationEnabled: false,
+	// 	};
+
+	// 	if (!user) {
+	// 		user = this.userRepository.create(userPayload);
+	// 	} else {
+	// 		this.userRepository.merge(user, userPayload);
+	// 	}
+	// 	await this.userRepository.save(user);
+	// 	return user;
+	// }
+
 	private async createUserOrUpdate(userData: any): Promise<User> {
-		//console.log('userData= ', userData);
 		let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
-		let UserId;
-		let state = 'fresh';
-		let pw = 'hashed-pw';
-		if (!user) {
-			const UserId = uuidv4();
-		} else {
-			state = user.status;
-			UserId = user.id;
-			pw = user.password;
-		}
-		const userPayload = {
-			id: UserId,
-			name: userData.login,
-			email: userData.email,
-			password: pw,
-			status: state,
-			intraId: userData.id,
-			imageUrl: userData.image?.versions?.medium,
-			isTwoFactorAuthenticationEnabled: false,
-		};
 
 		if (!user) {
-			user = this.userRepository.create(userPayload);
+			// Benutzer existiert nicht, erstelle neuen Benutzer
+			const newUser = this.userRepository.create({
+				id: uuidv4(),
+				name: userData.login,
+				email: userData.email,
+				password: 'hashed-pw',
+				status: 'fresh',
+				intraId: userData.id,
+				imageUrl: userData.image?.versions?.medium,
+				isTwoFactorAuthenticationEnabled: false,
+			});
+			await this.userRepository.save(newUser);
+			return newUser;
 		} else {
-			this.userRepository.merge(user, userPayload);
+			// Benutzer existiert bereits, update nur sichere Felder
+			// Kein Überschreiben von isTwoFactorAuthenticationEnabled, wenn es bereits aktiviert ist
+			if (!user.isTwoFactorAuthenticationEnabled) {
+				user.isTwoFactorAuthenticationEnabled = false;
+			}
+			// Aktualisiere andere sichere Felder nach Bedarf
+			await this.userRepository.save(user);
+			return user;
 		}
-		await this.userRepository.save(user);
-		return user;
 	}
 
 	async authenticate(
@@ -206,7 +235,6 @@ export class AuthService {
 			name: user.name,
 			id: user.id,
 			email: user.email,
-			// password: user.password,
 			require2FA: user.isTwoFactorAuthenticationEnabled,
 		};
 		const accesToken = this.jwtService.sign(payload);
@@ -221,5 +249,21 @@ export class AuthService {
 		await this.userRepository.save(user);
 
 		return { qrCodeUrl };
+	}
+
+	async toggleTwoFactorAuthentication(enable2FA: boolean, user: User): Promise<any> {
+		const targetUser = await this.userRepository.findOne({ where: { id: user.id } });
+		if (!targetUser) {
+			throw new Error('User not found');
+		}
+
+		if (targetUser.id !== user.id) {
+			throw new Error('Unauthorized');
+		}
+
+		targetUser.isTwoFactorAuthenticationEnabled = enable2FA;
+		await this.userRepository.save(targetUser);
+
+		return { message: `2FA is now ${enable2FA ? 'enabled' : 'disabled'}` };
 	}
 }
