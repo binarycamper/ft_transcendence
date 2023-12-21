@@ -75,11 +75,34 @@ export function FriendList() {
 		successMessage,
 	} = useFetchFriendList();
 
+	const blockFriend = async (event, friendName: string) => {
+		event.stopPropagation(); // Prevent triggering the click event of the parent
+		//console.log('Block friend with name: ', friendName);
+		try {
+			const response = await fetch(
+				`http://localhost:8080/user/blockUser/?friendName=${friendName}`,
+				{
+					method: 'Post',
+					credentials: 'include',
+				},
+			);
+			const data = await response.json();
+
+			if (response.ok) {
+				console.log(data.message); // Or set some state to show a success message
+			} else {
+				console.error('Failed to block user:', data.message); // Or set some state to show an error message
+			}
+		} catch (error) {
+			console.error('Error while blocking user:', error);
+		}
+	};
+
 	return (
 		<div style={styles.container}>
 			<h1 style={styles.heading}>My Friends</h1>
 			{pendingRequestCount > 0 && (
-				<div onClick={() => navigate('/chat')} style={styles.friendRequestNotification}>
+				<div onClick={() => navigate('/friendrequest')} style={styles.friendRequestNotification}>
 					You have {pendingRequestCount} friend request(s). Click here to review.
 				</div>
 			)}
@@ -112,6 +135,9 @@ export function FriendList() {
 							</div>
 							<button onClick={(e) => removeFriend(e, friend.id)} style={styles.removeButton}>
 								Remove
+							</button>
+							<button onClick={(e) => blockFriend(e, friend.id)} style={styles.blockButton}>
+								Block
 							</button>
 						</li>
 					))}

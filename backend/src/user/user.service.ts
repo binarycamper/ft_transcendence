@@ -30,7 +30,7 @@ export class UserService {
 	) {}
 
 	findAll(): Promise<User[]> {
-		return this.userRepository.find({ relations: ['friends'] });
+		return this.userRepository.find({ relations: ['friends', 'ignorelist'] });
 	}
 
 	async findAllFriends(user: User): Promise<User[]> {
@@ -215,12 +215,14 @@ export class UserService {
 				throw new Error('User not found');
 			}
 
+			//TODO: Wrong logic, block fails here even if they re friends!
 			if (user.friends.some((friend) => friend.id === friendId)) {
 				// Remove the friend from the user's list of friends
 				user.friends = user.friends.filter((friend) => friend.id !== friendId);
 				await transactionalEntityManager.save(user);
 			} else {
 				console.log('User does not have this friend on their list');
+				return { removed, message };
 			}
 
 			const friend = await transactionalEntityManager.findOne(User, {
