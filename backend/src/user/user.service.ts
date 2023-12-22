@@ -148,19 +148,6 @@ export class UserService {
 			throw new NotFoundException('User not found');
 		}
 
-		for (const friend of user.friends) {
-			const friendEntity = await this.userRepository.findOne({
-				where: { id: friend.id },
-				relations: ['friends'],
-			});
-
-			if (friendEntity) {
-				// Remove the user from the friend's friends list
-				friendEntity.friends = friendEntity.friends.filter((f) => f.id !== userId);
-				await this.userRepository.save(friendEntity);
-			}
-		}
-
 		// Get all friend requests where the user is either the sender or the recipient
 		const friendRequests = await this.friendRequestRepository.find({
 			where: [{ senderId: userId }, { recipientId: userId }],
@@ -171,6 +158,7 @@ export class UserService {
 			await this.friendRequestRepository.remove(friendRequests);
 		}
 
+		//Deletes uploaded image
 		if (userImage) {
 			const imagePath = uploadPath + userImage.split('?filename=').pop();
 			try {
@@ -214,8 +202,6 @@ export class UserService {
 			if (!user) {
 				throw new Error('User not found');
 			}
-			console.log('user who want block: ', user);
-			console.log('userId to remove as friend : ', friendId);
 			//TODO: Wrong logic, block fails here even if they re friends!
 			if (user.friends.some((friend) => friend.id === friendId)) {
 				// Remove the friend from the user's list of friends
@@ -254,40 +240,6 @@ export class UserService {
 
 		return { removed, message };
 	}
-
-	/*async removeFriend(userId: string, friendId: string): Promise<void> {
-		await this.userRepository.manager.transaction(async (transactionalEntityManager) => {
-			const user = await transactionalEntityManager.findOne(User, {
-				where: { id: userId },
-				relations: ['friends'],
-			});
-
-			if (!user) {
-				throw new Error('User not found');
-			}
-
-			if (user.friends.some((friend) => friend.id === friendId)) {
-				// Remove the friend from the user's list of friends
-				user.friends = user.friends.filter((friend) => friend.id !== friendId);
-				await transactionalEntityManager.save(user);
-			} else {
-				console.log('User does not have this friend on their list');
-			}
-
-			const friend = await transactionalEntityManager.findOne(User, {
-				where: { id: friendId },
-				relations: ['friends'],
-			});
-
-			if (friend && friend.friends.some((f) => f.id === userId)) {
-				// Remove the user from the friend's list of friends
-				friend.friends = friend.friends.filter((f) => f.id !== userId);
-				await transactionalEntityManager.save(friend);
-			} else {
-				console.log('Friend does not have this user on their list');
-			}
-		});
-	}*/
 
 	async updateUser(user: User): Promise<User> {
 		return this.userRepository.save(user);

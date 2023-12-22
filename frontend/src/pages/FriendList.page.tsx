@@ -75,7 +75,7 @@ export function FriendList() {
 		successMessage,
 	} = useFetchFriendList();
 
-	const blockFriend = async (event, friendId: string) => {
+	const blockFriend = async (event: React.MouseEvent<HTMLButtonElement>, friendId: string) => {
 		event.stopPropagation();
 		try {
 			const response = await fetch(`http://localhost:8080/user/blockUser/?friendName=${friendId}`, {
