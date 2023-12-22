@@ -411,13 +411,8 @@ export class UserService {
 		}
 
 		//block User
-		userWithRelations.ignorelist.push(userToBlock);
-
-		console.log('This user want remove a friend: ', userWithRelations.name);
-		console.log('This user will be removed: ', userToBlock.id);
-		//remove them as friends if they was.
-		//await this.removeFriend(userWithRelations.id, userToBlock.id);
-		//await this.removeFriend(userToBlock.id, userWithRelations.id);
+		await userWithRelations.ignorelist.push(userToBlock);
+		await this.userRepository.save(userWithRelations);
 		return await this.userRepository.save(userWithRelations);
 	}
 

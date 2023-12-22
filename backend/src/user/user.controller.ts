@@ -53,6 +53,7 @@ export class UserController {
 		return this.userService.findAll();
 	}
 
+	//get all friends
 	@UseGuards(JwtAuthGuard)
 	@Get('userfriends')
 	async getAllFriends(@Req() req): Promise<User[]> {
@@ -271,10 +272,10 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('blockUser')
-	async blockUser(@Req() req, @Body('userName') userName: string, @Res() res: Response) {
+	async blockUser(@Req() req, @Body('userName') friendId: string, @Res() res: Response) {
 		const user = req.user;
 		try {
-			const updatedUser = await this.userService.ignoreUser(user, userName);
+			const updatedUser = await this.userService.ignoreUser(user, friendId);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {
 			console.error('Error while blocking user: ', error.message);
@@ -284,7 +285,6 @@ export class UserController {
 			} else if (error instanceof BadRequestException) {
 				res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
 			} else {
-				// Handle other types of errors, e.g., internal server errors
 				res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
 			}
 		}

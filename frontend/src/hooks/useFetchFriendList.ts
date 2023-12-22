@@ -168,7 +168,6 @@ export default function useFetchFriendList() {
 
 			if (response.status === 204) {
 				console.log('Friend removed successfully.');
-
 				// Update the UI by filtering out the removed friend
 				setFriends((prevFriends) => prevFriends.filter((friend) => friend.id !== friendId));
 				await fetchFriends();

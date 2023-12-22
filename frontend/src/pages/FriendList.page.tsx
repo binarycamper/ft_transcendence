@@ -75,20 +75,17 @@ export function FriendList() {
 		successMessage,
 	} = useFetchFriendList();
 
-	const blockFriend = async (event, friendName: string) => {
-		event.stopPropagation(); // Prevent triggering the click event of the parent
-		//console.log('Block friend with name: ', friendName);
+	const blockFriend = async (event, friendId: string) => {
+		event.stopPropagation();
 		try {
-			const response = await fetch(
-				`http://localhost:8080/user/blockUser/?friendName=${friendName}`,
-				{
-					method: 'Post',
-					credentials: 'include',
-				},
-			);
+			const response = await fetch(`http://localhost:8080/user/blockUser/?friendName=${friendId}`, {
+				method: 'Post',
+				credentials: 'include',
+			});
 			const data = await response.json();
 
 			if (response.ok) {
+				await removeFriend(event, friendId);
 				console.log(data.message); // Or set some state to show a success message
 			} else {
 				console.error('Failed to block user:', data.message); // Or set some state to show an error message
