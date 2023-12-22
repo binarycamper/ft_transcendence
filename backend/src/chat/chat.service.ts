@@ -118,9 +118,8 @@ export class ChatService {
 			(ignoredUser) => ignoredUser.name === currUser.name,
 		);
 		if (isInIgnoreListrecip) {
-			throw new Error('You cannot send a friend request to a user in your ignore list.');
+			throw new Error('You are on the ignorelist of that user.');
 		}
-		// Check if the recipient is on ignorelist of currUser
 		const isInIgnoreListcurr = currUser.ignorelist.some(
 			(ignoredUser) => ignoredUser.name === friendRequestDto.recipient,
 		);
