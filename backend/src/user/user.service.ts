@@ -64,7 +64,7 @@ export class UserService {
 				'unconfirmedTwoFactorSecret',
 				'friends',
 			],
-			relations: ['friends'],
+			relations: ['friends', 'ignorelist'],
 		});
 		if (!user) {
 			throw new Error('User not found');
@@ -421,6 +421,36 @@ export class UserService {
 		} catch (error) {
 			throw new InternalServerErrorException('Could not retrieve blocked users');
 		}
+	}
+
+	async removeUserInIgnoreList(currUser: User, userName: string): Promise<User> {
+		// Retrieve the user with their current relations
+		const userWithRelations = await this.userRepository.findOne({
+			where: { id: currUser.id },
+			relations: ['friends', 'ignorelist'],
+		});
+		if (!userWithRelations) {
+			throw new NotFoundException('User not found');
+		}
+
+		// Find the user to be removed from the ignore list
+		const userIndex = userWithRelations.ignorelist.findIndex(
+			(ignoredUser) => ignoredUser.name === userName,
+		);
+
+		// Check if the user is in the ignore list
+		if (userIndex === -1) {
+			throw new NotFoundException('User not in ignore list');
+		}
+
+		// Remove the user from the ignore list
+		userWithRelations.ignorelist.splice(userIndex, 1);
+
+		// Save the updated user
+		await this.userRepository.save(userWithRelations);
+
+		// Return the updated user
+		return userWithRelations;
 	}
 
 	//debug:

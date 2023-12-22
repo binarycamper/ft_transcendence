@@ -35,7 +35,7 @@ const IgnoreList = () => {
 
 	const unblockUser = async (userId: string) => {
 		try {
-			const response = await fetch(`http://localhost:8080/user/unblockUser/${userId}`, {
+			const response = await fetch(`http://localhost:8080/user/unblockUser?userid=${userId}`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {

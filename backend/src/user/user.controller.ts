@@ -309,6 +309,27 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Post('unblockUser')
+	async unblockUser(@Req() req, @Query('userid') userIdToBlock: string, @Res() res: Response) {
+		const user = req.user;
+		const userToBlock = await this.userService.findProfileById(userIdToBlock);
+		try {
+			const updatedUser = await this.userService.removeUserInIgnoreList(user, userToBlock.name);
+			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
+		} catch (error) {
+			console.error('Error while unblocking user: ', error.message);
+
+			if (error instanceof NotFoundError) {
+				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
+			} else if (error instanceof BadRequestException) {
+				res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+			} else {
+				res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+			}
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Get('publicprofile')
 	async getPublicProfile(@Query('friendname') friendname: string, @Req() req) {
 		// Access the user's ID from the request object
