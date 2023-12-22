@@ -220,6 +220,10 @@ export function FriendRequest() {
 		}
 	}, [selectedFriend]); // Add dependencies
 
+	const goToIgnoreList = useCallback(() => {
+		navigate('/ignorelist');
+	}, [navigate]);
+
 	const acceptButtonStyle: React.CSSProperties = {
 		...buttonStyleBase,
 		backgroundColor: '#28a745', // Bootstrap green
@@ -232,6 +236,9 @@ export function FriendRequest() {
 
 	return (
 		<div style={{ position: 'relative' }}>
+			<button onClick={goToIgnoreList} style={buttonStyleBase}>
+				View Ignore List
+			</button>
 			<h1>
 				Open Requests:{' '}
 				{pendingRequestCount > 0 && <span style={pendingRequestsStyle}>{pendingRequestCount}</span>}

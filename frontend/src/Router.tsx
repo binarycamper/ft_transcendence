@@ -12,6 +12,7 @@ import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import AuthCallback from './pages/AuthCallback.page';
 import { FriendRequest } from './pages/Request.page';
 import { ChatRoom } from './pages/ChatRoom.page';
+import IgnoreList from './pages/IgnoreList.page';
 
 const router = createBrowserRouter([
 	{
@@ -29,7 +30,7 @@ const router = createBrowserRouter([
 				children: [],
 			},
 			{
-				path: 'friendrequest/chatroom', //TODO: Is it possible to put that as children of Friendrequest?
+				path: 'friendrequest/chatroom',
 				element: <ChatRoom />,
 			},
 			{
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
 	{
 		path: '/callback',
 		element: <AuthCallback />,
+	},
+	{
+		path: '/ignorelist',
+		element: <IgnoreList />,
 	},
 ]);
 
