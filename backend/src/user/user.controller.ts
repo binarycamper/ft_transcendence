@@ -277,6 +277,7 @@ export class UserController {
 		const userToBlock = await this.userService.findUserbyName(userToBlockName);
 		try {
 			const updatedUser = await this.userService.ignoreUser(user, userToBlock.name);
+			await this.userService.removeFriend(user.id, userToBlock.id);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {
 			console.error('Error while blocking user: ', error.message);
