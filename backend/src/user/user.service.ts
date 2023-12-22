@@ -53,7 +53,6 @@ export class UserService {
 			select: [
 				'id',
 				'email',
-				'password',
 				'name',
 				'nickname',
 				'status',
@@ -92,6 +91,17 @@ export class UserService {
 			return undefined;
 		}
 		return user.id;
+	}
+
+	async findUserbyName(name: string): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { name: name },
+			select: ['id', 'email', 'name', 'nickname', 'status', 'imageUrl', 'image'],
+		});
+		if (!user) {
+			throw new Error('User not found (findUserbyName)');
+		}
+		return user;
 	}
 
 	//used from socket.io it event.gateway.ts

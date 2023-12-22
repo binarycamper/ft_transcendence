@@ -272,10 +272,11 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('blockUser')
-	async blockUser(@Req() req, @Body('userName') friendId: string, @Res() res: Response) {
+	async blockUser(@Req() req, @Query('userName') userToBlockName: string, @Res() res: Response) {
 		const user = req.user;
+		const userToBlock = await this.userService.findUserbyName(userToBlockName);
 		try {
-			const updatedUser = await this.userService.ignoreUser(user, friendId);
+			const updatedUser = await this.userService.ignoreUser(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {
 			console.error('Error while blocking user: ', error.message);

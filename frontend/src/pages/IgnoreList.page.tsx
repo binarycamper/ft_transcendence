@@ -8,6 +8,7 @@ interface BlockedUser {
 const IgnoreList = () => {
 	const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [userNameToBlock, setUserNameToBlock] = useState('');
 
 	useEffect(() => {
 		const fetchBlockedUsers = async () => {
@@ -55,9 +56,45 @@ const IgnoreList = () => {
 		}
 	};
 
+	const blockUser = async () => {
+		try {
+			const response = await fetch(
+				`http://localhost:8080/user/blockUser/?userName=${userNameToBlock}`,
+				{
+					method: 'POST',
+					credentials: 'include',
+					headers: {
+						'Content-Type': 'application/json',
+						// Include other headers if required by your backend
+					},
+				},
+			);
+			const data = await response.json();
+
+			if (response.ok) {
+				console.log(data.message); // Or set some state to show a success message
+				setUserNameToBlock(''); // Clear the input field
+				// Optionally refresh the list of blocked users
+			} else {
+				console.error('Failed to block user:', data.message); // Or set some state to show an error message
+			}
+		} catch (error) {
+			console.error('Error while blocking user:', error);
+		}
+	};
+
 	return (
 		<div>
 			<h1>Blocked Users:</h1>
+			<div>
+				<input
+					type="text"
+					value={userNameToBlock}
+					onChange={(e) => setUserNameToBlock(e.target.value)}
+					placeholder="Enter username to block"
+				/>
+				<button onClick={blockUser}>Block User</button>
+			</div>
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (

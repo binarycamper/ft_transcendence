@@ -75,26 +75,6 @@ export function FriendList() {
 		successMessage,
 	} = useFetchFriendList();
 
-	const blockFriend = async (event: React.MouseEvent<HTMLButtonElement>, friendId: string) => {
-		event.stopPropagation();
-		try {
-			const response = await fetch(`http://localhost:8080/user/blockUser/?friendName=${friendId}`, {
-				method: 'Post',
-				credentials: 'include',
-			});
-			const data = await response.json();
-
-			if (response.ok) {
-				await removeFriend(event, friendId);
-				console.log(data.message); // Or set some state to show a success message
-			} else {
-				console.error('Failed to block user:', data.message); // Or set some state to show an error message
-			}
-		} catch (error) {
-			console.error('Error while blocking user:', error);
-		}
-	};
-
 	return (
 		<div style={styles.container}>
 			<h1 style={styles.heading}>My Friends</h1>
@@ -132,9 +112,6 @@ export function FriendList() {
 							</div>
 							<button onClick={(e) => removeFriend(e, friend.id)} style={styles.removeButton}>
 								Remove
-							</button>
-							<button onClick={(e) => blockFriend(e, friend.id)} style={styles.blockButton}>
-								Block
 							</button>
 						</li>
 					))}
