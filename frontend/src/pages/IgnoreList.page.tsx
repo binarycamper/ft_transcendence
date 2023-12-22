@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 interface BlockedUser {
-	id: string; // or string if your id is a string
+	id: string;
 	name: string;
 }
 
@@ -36,19 +36,17 @@ const IgnoreList = () => {
 	const unblockUser = async (userId: string) => {
 		try {
 			const response = await fetch(`http://localhost:8080/user/unblockUser/${userId}`, {
-				method: 'POST', // or 'DELETE', depending on how your backend expects to receive unblock requests
+				method: 'POST',
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
-					// Include other headers if required by your backend
 				},
 			});
 			if (!response.ok) {
 				throw new Error(`Failed to unblock user: ${response.status}`);
 			}
 			const data = await response.json();
-			console.log(data.message); // Or set some state to show a success message
-
+			console.log(data.message);
 			// Filter out the unblocked user from the blockedUsers state
 			setBlockedUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
 		} catch (error) {
@@ -65,19 +63,17 @@ const IgnoreList = () => {
 					credentials: 'include',
 					headers: {
 						'Content-Type': 'application/json',
-						// Include other headers if required by your backend
 					},
 				},
 			);
 			const data = await response.json();
 
 			if (response.ok) {
-				console.log(data.message); // Or set some state to show a success message
-				setUserNameToBlock(''); // Clear the input field
-				// Optionally refresh the list of blocked users
+				console.log(data.message);
+				setUserNameToBlock('');
 				fetchBlockedUsers();
 			} else {
-				console.error('Failed to block user:', data.message); // Or set some state to show an error message
+				console.error('Failed to block user:', data.message);
 			}
 		} catch (error) {
 			console.error('Error while blocking user:', error);
@@ -105,7 +101,6 @@ const IgnoreList = () => {
 							<li key={user.id}>
 								{user.name}
 								<button onClick={() => unblockUser(user.id)}>Unblock</button>
-								{/* Add more user details if necessary */}
 							</li>
 						))
 					) : (

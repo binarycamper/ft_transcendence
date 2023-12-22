@@ -72,6 +72,33 @@ export class UserService {
 		return user;
 	}
 
+	//findUserCreditsById
+
+	async findUserCreditsById(userId: string): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			select: [
+				'id',
+				'email',
+				'name',
+				'nickname',
+				'status',
+				'intraId',
+				'imageUrl',
+				'image',
+				'isTwoFactorAuthenticationEnabled',
+				'twoFactorAuthenticationSecret',
+				'unconfirmedTwoFactorSecret',
+				'friends',
+				'password',
+			],
+			relations: ['friends'],
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		return user;
+	}
 	async findProfileByName(friendName: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { name: friendName },
