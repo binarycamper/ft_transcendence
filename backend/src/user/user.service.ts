@@ -368,6 +368,24 @@ export class UserService {
 		return await this.userRepository.save(userWithRelations);
 	}
 
+	async findIgnoredUsers(userId: string): Promise<User[]> {
+		try {
+			const user = await this.userRepository.findOne({
+				where: { id: userId },
+				relations: ['ignorelist'],
+			});
+
+			if (!user) {
+				throw new NotFoundException('User not found');
+			}
+
+			// Return the ignored users
+			return user.ignorelist;
+		} catch (error) {
+			throw new InternalServerErrorException('Could not retrieve blocked users');
+		}
+	}
+
 	//debug:
 	async createDebugUser(userData: Partial<User>): Promise<User> {
 		// Create a new User entity with the provided data

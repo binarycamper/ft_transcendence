@@ -291,6 +291,23 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Get('blockedUsers')
+	async blockedUsers(@Req() req, @Res() res: Response) {
+		try {
+			const ignoredUsers = await this.userService.findIgnoredUsers(req.user.id);
+			res.status(HttpStatus.OK).json(ignoredUsers);
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
+			} else {
+				res
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.json({ message: 'Could not retrieve blocked users' });
+			}
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Get('publicprofile')
 	async getPublicProfile(@Query('friendname') friendname: string, @Req() req) {
 		// Access the user's ID from the request object
