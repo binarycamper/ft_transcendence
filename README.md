@@ -47,10 +47,6 @@ Insert error logs here
 
 ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 
-• The user should be able to invite other users to play a Pong game through the chat interface.
-
-• The user should be able to access other players profiles through the chat interface.
-
 - Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it.
 ```
 
@@ -63,12 +59,14 @@ database: PostgreSQL
 ## rkedida
 
 ```
+• The user should be able to invite other users to play a Pong game through the chat interface.
+• The user should be able to access other players profiles through the chat interface.
         =    database: PostgreSQL
     x    =    passwords in database must be hashed
         =    protect against SQL injections
         =    server-side validation for forms and any user input
-    x    =    login using OAuth system of 42 intranet <-------------- !!!Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2!!! try fix error when get authtoken from 42api
-    x    =    two-factor authentication
+    x    =    login using OAuth system of 42 intranet <-------------- !!! Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2!!! try fix error when get authtoken from 42api
+    x    =    two-factor authentication -------> button
 ```
 
 ## rmeuth

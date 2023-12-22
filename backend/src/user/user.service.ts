@@ -214,14 +214,15 @@ export class UserService {
 			if (!user) {
 				throw new Error('User not found');
 			}
-
+			console.log('user who want block: ', user);
+			console.log('userId to remove as friend : ', friendId);
 			//TODO: Wrong logic, block fails here even if they re friends!
 			if (user.friends.some((friend) => friend.id === friendId)) {
 				// Remove the friend from the user's list of friends
 				user.friends = user.friends.filter((friend) => friend.id !== friendId);
 				await transactionalEntityManager.save(user);
 			} else {
-				console.log('User does not have this friend on their list');
+				console.log('User does not have this friend on their list, user friends: ', user);
 				return { removed, message };
 			}
 
@@ -412,9 +413,11 @@ export class UserService {
 		//block User
 		userWithRelations.ignorelist.push(userToBlock);
 
+		console.log('This user want remove a friend: ', userWithRelations.name);
+		console.log('This user will be removed: ', userToBlock.id);
 		//remove them as friends if they was.
-		await this.removeFriend(userWithRelations.id, userToBlock.id);
-		await this.removeFriend(userToBlock.id, userWithRelations.id);
+		//await this.removeFriend(userWithRelations.id, userToBlock.id);
+		//await this.removeFriend(userToBlock.id, userWithRelations.id);
 		return await this.userRepository.save(userWithRelations);
 	}
 
