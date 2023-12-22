@@ -10,26 +10,26 @@ const IgnoreList = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [userNameToBlock, setUserNameToBlock] = useState('');
 
-	useEffect(() => {
-		const fetchBlockedUsers = async () => {
-			setIsLoading(true);
-			try {
-				const response = await fetch('http://localhost:8080/user/blockedUsers', {
-					credentials: 'include',
-				});
-				if (!response.ok) {
-					throw new Error(`Failed to fetch blocked users: ${response.status}`);
-				}
-				const data = await response.json();
-				console.log('Blocked Users:', data); // Add this line to check the response
-				setBlockedUsers(data);
-			} catch (error) {
-				console.error('Error fetching blocked users:', error);
-			} finally {
-				setIsLoading(false);
+	const fetchBlockedUsers = async () => {
+		setIsLoading(true);
+		try {
+			const response = await fetch('http://localhost:8080/user/blockedUsers', {
+				credentials: 'include',
+			});
+			if (!response.ok) {
+				throw new Error(`Failed to fetch blocked users: ${response.status}`);
 			}
-		};
+			const data = await response.json();
+			setBlockedUsers(data);
+		} catch (error) {
+			console.error('Error fetching blocked users:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
+	// Call fetchBlockedUsers on component mount
+	useEffect(() => {
 		fetchBlockedUsers();
 	}, []);
 
@@ -75,6 +75,7 @@ const IgnoreList = () => {
 				console.log(data.message); // Or set some state to show a success message
 				setUserNameToBlock(''); // Clear the input field
 				// Optionally refresh the list of blocked users
+				fetchBlockedUsers();
 			} else {
 				console.error('Failed to block user:', data.message); // Or set some state to show an error message
 			}
