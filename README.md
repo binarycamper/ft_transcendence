@@ -4,6 +4,8 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
+• The user should be able to invite other users to play a Pong game through the chat interface. (ChatRoom.page /chat/invite Backend Response)
+
 ```
 
 (frontend)
@@ -13,7 +15,6 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 - optinal: image-upload extension check, only images allowed and Mb size limit and format. provides immediate feedback to the user and reduced Server Load
 - optinal: Use CAPTCHA, will prevent DoS attacks. But is also limited already in backend
 
-- matchmaking system
 ```
 
 - Every User Input should use dto!! Form Validation.
@@ -57,7 +58,7 @@ database: PostgreSQL
 ## rkedida
 
 ```
-• The user should be able to invite other users to play a Pong game through the chat interface.
+- matchmaking system
         =    database: PostgreSQL
         =    protect against SQL injections
         =    server-side validation for forms and any user input
