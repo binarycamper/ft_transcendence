@@ -166,10 +166,25 @@ export const ChatRoom = () => {
 		navigate(`/publicprofile`, { state: { friendName: friendName } });
 	};
 
-	const inviteToPongGame = (friendName: string) => {
-		// Logik zum Senden der Einladung
-		console.log(`Einladung zu einem Pong-Spiel gesendet an ${friendName}`);
-		// Implementieren Sie hier die tatsächliche Einladungslogik
+	const inviteToPongGame = async (friendId: string) => {
+		try {
+			const response = await fetch(`http://localhost:8080/chat/invite?friendId=${friendId}`, {
+				method: 'POST',
+				credentials: 'include',
+			});
+
+			const data = await response.json();
+			if (response.ok) {
+				console.log('Invitation sent:', data.message);
+				// Implement any additional logic on successful invitation
+			} else {
+				console.error('Failed to send invitation:', data.message);
+				// Implement error handling logic
+			}
+		} catch (error) {
+			console.error('Error while sending invitation:', error);
+			// Implement error handling logic
+		}
 	};
 
 	return (
@@ -199,7 +214,7 @@ export const ChatRoom = () => {
 							>
 								Zum Profil
 							</button>
-							<button onClick={() => inviteToPongGame(friend.name)} style={{ marginLeft: '10px' }}>
+							<button onClick={() => inviteToPongGame(friend.id)} style={{ marginLeft: '10px' }}>
 								Zum Pong-Spiel einladen
 							</button>
 						</li>
