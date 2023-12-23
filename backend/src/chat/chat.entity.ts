@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+//chat.entity.ts
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { ChatRoom } from './chatRoom.entity';
 
 @Entity()
 export class ChatMessage {
@@ -16,4 +18,7 @@ export class ChatMessage {
 
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@ManyToOne(() => ChatRoom, (chatRoom) => chatRoom.messages)
+	chatRoom: ChatRoom;
 }

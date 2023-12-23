@@ -1,3 +1,4 @@
+import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
 
 @Entity()
@@ -59,4 +60,8 @@ export class User {
 
 	@Column('simple-array', { default: '' })
 	achievements: string[] = [];
+
+	@ManyToMany(() => ChatRoom)
+	@JoinTable()
+	chatRooms: ChatRoom[];
 }
