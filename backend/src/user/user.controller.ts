@@ -363,7 +363,7 @@ export class UserController {
 		const debugUser = await this.userService.createDebugUser({
 			name: 'DebugUser_' + number.toString(),
 			nickname: 'Debugger_' + number.toString(),
-			email: debugUserId + '@debuguser.com',
+			email: number.toString() + '@debuguser.com',
 			password: '1',
 			intraId: debugUserId,
 			id: debugUserId,
