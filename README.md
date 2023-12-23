@@ -5,7 +5,6 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 # Unassigned:
 
 ```
-- Every User Input should use dto!! Form Validation.
 
 (frontend)
 -handle errors correctly when receiving response..., backend response error gets sended but frontend dont care, see inspect network
@@ -16,6 +15,8 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 - matchmaking system
 ```
+
+- Every User Input should use dto!! Form Validation.
 
 ```
 ERROR Notes, need to be debuged:
@@ -33,7 +34,6 @@ Insert error logs here
 ## jjesberg
 
 ```
-- The user should be able to block other users. This way, they will see no more messages from the account they blocked.
 
 - The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
 
@@ -58,13 +58,9 @@ database: PostgreSQL
 
 ```
 • The user should be able to invite other users to play a Pong game through the chat interface.
-• The user should be able to access other players profiles through the chat interface.
         =    database: PostgreSQL
-    x    =    passwords in database must be hashed
         =    protect against SQL injections
         =    server-side validation for forms and any user input
-    x    =    login using OAuth system of 42 intranet <-------------- !!! Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2!!! try fix error when get authtoken from 42api
-    x    =    two-factor authentication -------> button
 ```
 
 ## rmeuth
@@ -84,7 +80,11 @@ customization options
 
 #### 2. Security concerns
 
+- 2FA
+
 #### 3. User Account
+
+• The user should be able to access other players profiles through the chat interface.
 
 - The user should be able to choose a unique name that will be displayed on the website.
 - The user should be able to add other users as friends and see their current status (online, offline, in a game, and so forth).
@@ -93,6 +93,7 @@ customization options
 
 #### 4. Chat
 
+- The user should be able to block other users. This way, they will see no more messages from the account they blocked.
 - Chat between friends (The user should be able to send direct messages to other users.)
 -
 
