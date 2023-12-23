@@ -31,6 +31,9 @@ export const ChatRoom = () => {
 	const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 	const [newMessage, setNewMessage] = useState('');
 
+	const [chatRoomName, setChatRoomName] = useState('');
+	const [chatRoomType, setChatRoomType] = useState('public');
+
 	useEffect(() => {
 		const getCurrentUserId = async () => {
 			try {
@@ -187,10 +190,67 @@ export const ChatRoom = () => {
 		}
 	};
 
+	// Function to handle the creation of a new chat room
+	const handleCreateChatRoom = async () => {
+		if (!chatRoomName) {
+			alert('Please enter a name for the chat room.');
+			return;
+		}
+
+		// Construct chat room data here based on the state
+		const chatRoomData = {
+			name: chatRoomName,
+			type: chatRoomType,
+			// You can add additional fields here as needed
+		};
+
+		// Call your API to create the chat room
+		// ...
+
+		// Reset form fields
+		setChatRoomName('');
+		setChatRoomType('public');
+	};
+
+	// Function to determine if the form is valid (in this case, if a name has been entered)
+	const isFormValid = () => {
+		return chatRoomName.trim().length > 0;
+	};
+
 	return (
 		<div>
 			Current User: {currentUserName || 'Loading...'}
 			<div>
+				{/* Form for creating a new chat room */}
+				<input
+					type="text"
+					placeholder="Chat Room Name"
+					value={chatRoomName}
+					onChange={(e) => setChatRoomName(e.target.value)}
+				/>
+				<label>
+					<input
+						type="radio"
+						name="chatRoomType"
+						value="public"
+						checked={chatRoomType === 'public'}
+						onChange={(e) => setChatRoomType(e.target.value)}
+					/>
+					Public
+				</label>
+				<label>
+					<input
+						type="radio"
+						name="chatRoomType"
+						value="private"
+						checked={chatRoomType === 'private'}
+						onChange={(e) => setChatRoomType(e.target.value)}
+					/>
+					Private
+				</label>
+				<button onClick={handleCreateChatRoom} disabled={!isFormValid()}>
+					Create Chat Room
+				</button>
 				<h2>My Friends</h2>
 				<ul>
 					{friends.map((friend) => (
