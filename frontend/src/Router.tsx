@@ -13,6 +13,7 @@ import AuthCallback from './pages/AuthCallback.page';
 import { FriendRequest } from './pages/Request.page';
 import { ChatRoom } from './pages/ChatRoom.page';
 import IgnoreList from './pages/IgnoreList.page';
+import { PublicProfile } from './pages/PublicProfile.page';
 
 const router = createBrowserRouter([
 	{
@@ -74,6 +75,10 @@ const router = createBrowserRouter([
 	{
 		path: '/ignorelist',
 		element: <IgnoreList />,
+	},
+	{
+		path: '/publicprofile',
+		element: <PublicProfile />,
 	},
 ]);
 

@@ -162,6 +162,10 @@ export const ChatRoom = () => {
 		}
 	};
 
+	const navigateToFriendProfile = (friendName: string) => {
+		navigate(`/publicprofile`, { state: { friendName: friendName } });
+	};
+
 	return (
 		<div>
 			Current User: {currentUserName || 'Loading...'}
@@ -182,6 +186,12 @@ export const ChatRoom = () => {
 							</span>
 							<button onClick={() => handleClearChat(friend.id)} style={{ marginLeft: '10px' }}>
 								Clear Chat
+							</button>
+							<button
+								onClick={() => navigateToFriendProfile(friend.name)}
+								style={{ marginLeft: '10px' }}
+							>
+								Zum Profil
 							</button>
 						</li>
 					))}
