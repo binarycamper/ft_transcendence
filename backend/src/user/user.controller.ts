@@ -33,6 +33,7 @@ import { CompleteProfileDto } from './dto/completeProfile.dto';
 import { NotFoundError } from 'rxjs';
 
 const uploadPath = '/usr/src/app/uploads/';
+let number = 0;
 
 @Controller('user')
 export class UserController {
@@ -357,9 +358,10 @@ export class UserController {
 	@Post('createDebugUser')
 	async createDebugUser(@Res() res: Response) {
 		const debugUserId = uuidv4();
+		number++;
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
-			name: 'DebugUser_' + debugUserId,
+			name: 'DebugUser_' + number.toString(),
 			nickname: 'Debugger_' + debugUserId,
 			email: debugUserId + '@debuguser.com',
 			password: '1',

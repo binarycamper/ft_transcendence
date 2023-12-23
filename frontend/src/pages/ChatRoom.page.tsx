@@ -17,6 +17,16 @@ type ChatMessage = {
 	// Add any other relevant properties
 };
 
+const buttonStyle = {
+	marginLeft: '10px',
+	padding: '5px 10px',
+	backgroundColor: '#4CAF50',
+	color: 'white',
+	border: 'none',
+	borderRadius: '4px',
+	cursor: 'pointer',
+};
+
 export const ChatRoom = () => {
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();

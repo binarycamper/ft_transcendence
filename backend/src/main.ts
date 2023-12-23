@@ -38,10 +38,10 @@ async function bootstrap() {
 	// Apply rate limiting
 	app.use(
 		rateLimit({
-			windowMs: 10 * 60 * 50,
-			max: 1000,
+			windowMs: 10 * 60 * 50, //30sec
+			max: 1000, //1000 requests
 			skip: function (req, res) {
-				return req.path.includes('/game/'); //TODO: replace with your game's API endpoint
+				return req.path.includes('/game/'); //TODO: replace with your game's API endpoint to exclude
 			},
 		}),
 	);
