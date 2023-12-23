@@ -24,6 +24,23 @@ export class ChatController {
 
 	//########################CHatRooms#############################
 
+	@UseGuards(JwtAuthGuard)
+	@Post('chatroom')
+	async createChatRoom(@Body() chatRoomData, @Req() req) {
+		// chatRoomData now contains the parsed JSON object sent in the request body
+		console.log(chatRoomData); // This will log the chat room data sent from the frontend
+
+		// You can access individual properties like this:
+		const name = chatRoomData.name;
+		const type = chatRoomData.type;
+
+		// Perform your logic here, for example, calling a service method to handle the chat room creation
+		// const result = await this.chatService.createChatRoom(name, type, ...otherData);
+
+		// Return a response, for example, the created chat room object or a success message
+		// return result;
+	}
+
 	//########################CHatMessages#############################
 
 	@UseGuards(JwtAuthGuard)

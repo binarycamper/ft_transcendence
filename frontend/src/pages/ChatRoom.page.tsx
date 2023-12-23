@@ -201,6 +201,7 @@ export const ChatRoom = () => {
 	};
 
 	// Function to handle the creation of a new chat room
+	// Function to handle the creation of a new chat room
 	const handleCreateChatRoom = async () => {
 		if (!chatRoomName) {
 			alert('Please enter a name for the chat room.');
@@ -214,12 +215,33 @@ export const ChatRoom = () => {
 			// You can add additional fields here as needed
 		};
 
-		// Call your API to create the chat room
-		// ...
+		try {
+			// Call your API to create the chat room
+			const response = await fetch('http://localhost:8080/chat/chatroom', {
+				method: 'POST',
+				credentials: 'include', // if you're including credentials like cookies, etc.
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(chatRoomData), // body data type must match "Content-Type" header
+			});
 
-		// Reset form fields
-		setChatRoomName('');
-		setChatRoomType('public');
+			if (response.ok) {
+				const result = await response.json();
+				console.log('Chat room created:', result);
+				// Perform any action after successful chat room creation
+				// ...
+
+				// Reset form fields
+				setChatRoomName('');
+				setChatRoomType('public');
+			} else {
+				throw new Error('Failed to create chat room');
+			}
+		} catch (error) {
+			console.error('Error creating chat room:', error);
+			// Handle errors here, such as displaying a user-friendly message
+		}
 	};
 
 	// Function to determine if the form is valid (in this case, if a name has been entered)
