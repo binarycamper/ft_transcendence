@@ -199,7 +199,9 @@ export const ChatRoom = () => {
 							>
 								Zum Profil
 							</button>
-							<button onClick={() => inviteToPongGame(friend.name)}>Zum Pong-Spiel einladen</button>
+							<button onClick={() => inviteToPongGame(friend.name)} style={{ marginLeft: '10px' }}>
+								Zum Pong-Spiel einladen
+							</button>
 						</li>
 					))}
 				</ul>
