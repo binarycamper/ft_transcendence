@@ -228,17 +228,20 @@ export const ChatRoom = () => {
 	};
 
 	return (
-		<div>
-			Current User: {currentUserName || 'Loading...'}
-			<div>
-				{/* Form for creating a new chat room */}
+		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
+			<div style={{ marginBottom: '30px', textAlign: 'center' }}>
+				Current User: <strong>{currentUserName || 'Loading...'}</strong>
+			</div>
+
+			<div style={{ marginBottom: '20px' }}>
 				<input
 					type="text"
 					placeholder="Chat Room Name"
 					value={chatRoomName}
 					onChange={(e) => setChatRoomName(e.target.value)}
+					style={{ padding: '10px', marginRight: '10px', width: 'calc(100% - 22px)' }}
 				/>
-				<label>
+				<label style={{ marginRight: '10px' }}>
 					<input
 						type="radio"
 						name="chatRoomType"
@@ -258,88 +261,118 @@ export const ChatRoom = () => {
 					/>
 					Private
 				</label>
-				<button onClick={handleCreateChatRoom} disabled={!isFormValid()}>
+				<button
+					onClick={handleCreateChatRoom}
+					disabled={!chatRoomName}
+					style={{
+						padding: '10px 20px',
+						backgroundColor: chatRoomName ? '#4CAF50' : '#9E9E9E',
+						color: 'white',
+						border: 'none',
+						cursor: chatRoomName ? 'pointer' : 'default',
+					}}
+				>
 					Create Chat Room
 				</button>
-				<h2>My Friends</h2>
-				<ul>
-					{friends.map((friend) => (
-						<li
-							key={friend.id}
-							onClick={() => handleSelectFriend(friend)}
-							style={{
-								cursor: 'pointer',
-								backgroundColor: selectedFriend?.id === friend.id ? 'green' : 'transparent',
-							}}
-						>
-							<span onClick={() => handleSelectFriend(friend)}>
-								{friend.nickname || friend.name}
-							</span>
-							<button onClick={() => handleClearChat(friend.id)} style={{ marginLeft: '10px' }}>
+			</div>
+
+			<h2 style={{ marginTop: '40px', textAlign: 'center' }}>My Friends</h2>
+			<ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+				{friends.map((friend) => (
+					<li
+						key={friend.id}
+						onClick={() => handleSelectFriend(friend)}
+						style={{
+							cursor: 'pointer',
+							backgroundColor: selectedFriend?.id === friend.id ? '#D3D3D3' : 'transparent',
+							padding: '10px',
+							border: '1px solid #ccc',
+							borderRadius: '4px',
+							marginBottom: '10px',
+							display: 'flex',
+							justifyContent: 'space-between',
+							alignItems: 'center',
+						}}
+					>
+						<span style={{ flexGrow: 1 }} onClick={() => handleSelectFriend(friend)}>
+							{friend.nickname || friend.name}
+						</span>
+						<span>
+							<button onClick={() => handleClearChat(friend.id)} style={buttonStyle}>
 								Clear Chat
 							</button>
-							<button
-								onClick={() => navigateToFriendProfile(friend.name)}
-								style={{ marginLeft: '10px' }}
+							<button onClick={() => navigateToFriendProfile(friend.name)} style={buttonStyle}>
+								Profile
+							</button>
+							<button onClick={() => inviteToPongGame(friend.id)} style={buttonStyle}>
+								Invite to Game
+							</button>
+						</span>
+					</li>
+				))}
+			</ul>
+
+			{selectedFriend && (
+				<>
+					<h2 style={{ marginTop: '30px', textAlign: 'center' }}>
+						Chat with {selectedFriend.name}
+						{selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
+						{selectedFriend.status && ` - Status: ${selectedFriend.status}`}
+					</h2>
+					<div
+						style={{
+							border: '1px solid #ccc',
+							borderRadius: '8px',
+							padding: '10px',
+							maxHeight: '400px',
+							overflowY: 'auto',
+							backgroundColor: '#f9f9f9',
+							margin: '10px 0',
+						}}
+					>
+						{chatMessages.map((message) => (
+							<div
+								key={message.id}
+								className={`message ${message.senderId === currentUserId ? 'sent' : 'received'}`}
+								style={{
+									backgroundColor: message.senderId === currentUserId ? '#101' : '#454',
+									padding: '10px',
+									borderRadius: '4px',
+									margin: '5px 0',
+									color: '#fff',
+									alignSelf: message.senderId === currentUserId ? 'flex-end' : 'flex-start',
+								}}
 							>
-								Zum Profil
-							</button>
-							<button onClick={() => inviteToPongGame(friend.id)} style={{ marginLeft: '10px' }}>
-								Zum Pong-Spiel einladen
-							</button>
-						</li>
-					))}
-				</ul>
-				{/* Conditional rendering to check if selectedFriend is not null */}
-				{selectedFriend && (
-					<>
-						<h2>
-							Chat with {selectedFriend.name}
-							{selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
-							{selectedFriend.status && ` - Status: ${selectedFriend.status}`}
-						</h2>
-						<div
+								<p>
+									<strong>{getDisplayName(message.senderId)}</strong>: {message.content}
+								</p>
+							</div>
+						))}
+					</div>
+					<div style={{ display: 'flex', marginTop: '10px' }}>
+						<input
+							type="text"
+							value={newMessage}
+							onChange={(e) => setNewMessage(e.target.value)}
+							placeholder="Type a message..."
+							style={{ flexGrow: 1, padding: '10px', marginRight: '10px' }}
+						/>
+						<button
+							onClick={handleSendMessage}
 							style={{
-								border: '1px solid #ccc',
-								borderRadius: '8px',
-								padding: '10px',
-								maxHeight: '400px',
-								overflowY: 'auto',
-								backgroundColor: '#f9f9f9',
-								margin: '10px 0',
+								padding: '10px 20px',
+								backgroundColor: '#4CAF50',
+								color: 'white',
+								border: 'none',
+								borderRadius: '4px',
+								cursor: 'pointer',
 							}}
 						>
-							{chatMessages.map((message) => (
-								<div
-									key={message.id}
-									className={`message ${message.senderId === currentUserId ? 'sent' : 'received'}`}
-									style={{
-										backgroundColor: message.senderId === currentUserId ? '#101' : '#454',
-										padding: '1px',
-										borderRadius: '1px',
-										margin: '2px 0',
-										color: '#fff',
-									}}
-								>
-									<p>
-										<strong>{getDisplayName(message.senderId)}</strong>: {message.content}
-									</p>
-								</div>
-							))}
-						</div>
-						<div style={{ display: 'flex' }}>
-							<input
-								type="text"
-								value={newMessage}
-								onChange={(e) => setNewMessage(e.target.value)}
-								placeholder="Type a message..."
-								style={{ flexGrow: 1 }}
-							/>
-							<button onClick={handleSendMessage}>Send</button>
-						</div>
-					</>
-				)}
-			</div>
+							Send
+						</button>
+					</div>
+				</>
+			)}
 		</div>
 	);
 };
