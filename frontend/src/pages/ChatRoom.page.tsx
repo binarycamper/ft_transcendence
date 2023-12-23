@@ -166,6 +166,12 @@ export const ChatRoom = () => {
 		navigate(`/publicprofile`, { state: { friendName: friendName } });
 	};
 
+	const inviteToPongGame = (friendName: string) => {
+		// Logik zum Senden der Einladung
+		console.log(`Einladung zu einem Pong-Spiel gesendet an ${friendName}`);
+		// Implementieren Sie hier die tatsächliche Einladungslogik
+	};
+
 	return (
 		<div>
 			Current User: {currentUserName || 'Loading...'}
@@ -193,6 +199,7 @@ export const ChatRoom = () => {
 							>
 								Zum Profil
 							</button>
+							<button onClick={() => inviteToPongGame(friend.name)}>Zum Pong-Spiel einladen</button>
 						</li>
 					))}
 				</ul>
