@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
 	const logger = new Logger('Bootstrap');
@@ -35,15 +36,15 @@ async function bootstrap() {
 	);
 
 	// Apply rate limiting
-	/*app.use(
+	app.use(
 		rateLimit({
-			windowMs: 10 * 60 * 1000,
+			windowMs: 10 * 60 * 50,
 			max: 1000,
 			skip: function (req, res) {
 				return req.path.includes('/game/'); //TODO: replace with your game's API endpoint
 			},
 		}),
-	);*/
+	);
 
 	await app.listen(3000);
 }

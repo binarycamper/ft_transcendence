@@ -105,11 +105,11 @@ export class UserController {
 	@Get('profile')
 	async getProfile(@Req() req) {
 		const userId = req.user.id;
-		const userProfile = await this.userService.findProfileById(userId);
+		const userProfileData = await this.userService.findProfileById(userId);
 
 		// Exclude password and other sensitive fields from the result
 		//console.log('user profile data: ', userProfile.status);
-		const { password, id, ...result } = userProfile;
+		const { password, id, ...result } = userProfileData;
 
 		return result;
 	}
