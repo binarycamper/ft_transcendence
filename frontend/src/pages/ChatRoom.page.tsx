@@ -284,7 +284,8 @@ export const ChatRoom = () => {
 						onClick={() => handleSelectFriend(friend)}
 						style={{
 							cursor: 'pointer',
-							backgroundColor: selectedFriend?.id === friend.id ? '#D3D3D3' : 'transparent',
+							backgroundColor: selectedFriend?.id === friend.id ? '#AED581' : 'transparent', // Light green background for better contrast
+							color: selectedFriend?.id === friend.id ? '#263238' : '#FFF', // Dark text color for the selected item
 							padding: '10px',
 							border: '1px solid #ccc',
 							borderRadius: '4px',
