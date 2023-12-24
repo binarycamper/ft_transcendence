@@ -112,7 +112,7 @@ export function CompleteProfile() {
 								onChange={(e) => setPassword(e.target.value)}
 								required
 							/>
-							{passwordError && <p style={{ color: 'red' }}>{passwordError}</p>}
+							{passwordError && <p >{passwordError}</p>}
 						</div>
 						<div>
 							<input

@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 export function TwoFactorSetup() {
 	const [twoFACode, setTwoFACode] = useState('');
 	const [qrCodeUrl, setQrCodeUrl] = useState('');
+	const [errorMessage, setErrorMessage] = useState('');
 	const [isSetup, setIsSetup] = useState(false); // Zustand, um zu überprüfen, ob es sich um eine Ersteinrichtung handelt
 	const location = useLocation();
 	const userId = location.state?.userId;
@@ -54,6 +55,7 @@ export function TwoFactorSetup() {
 				navigate('/profile', {});
 			} else {
 				console.error('Invalid 2FA code');
+				setErrorMessage('Invalid 2FA code');
 			}
 		} catch (error) {
 			console.error('Error verifying 2FA code:', error);
@@ -71,6 +73,7 @@ export function TwoFactorSetup() {
 						onChange={(e) => setTwoFACode(e.target.value)}
 						placeholder="Enter 2FA Code"
 					/>
+					<p style={{ color: 'red' }}>{errorMessage}</p>
 					<button onClick={verify2FACode}>Verify 2FA Code</button>
 				</div>
 			)}

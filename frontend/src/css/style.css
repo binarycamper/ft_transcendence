@@ -1,0 +1,201 @@
+/* Reset some basic elements
+body, h1, h2, h3, p, form, ul, li, figure, figcaption {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Basic styling */
+/* body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+} */
+
+/* Container for centering content */
+/* .container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+} */
+
+/* Header and typography */
+/* header {
+    background: #0056b3; 
+    color: #fff;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #007bff solid 3px;
+} */
+
+/* header a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+} */
+
+/* h1, h2, h3 {
+    padding: 10px 0;
+} */
+
+/* Navigation Menu */
+/* nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+} */
+/* 
+nav ul {
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    margin: 0 10px;
+} */
+
+/* Link styling */
+/* a {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #007bff;
+} */
+
+/* Form styling */
+/* form {
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+input[type="submit"],
+button {
+    display: inline-block;
+    border: none;
+    background: #0056b3;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+input[type="submit"]:hover,
+button:hover {
+    background: #007bff;
+    color: #fff;
+} */
+
+/* Footer styling */
+/* footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+} */
+
+/* Card styling */
+/* .card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+} */
+
+/* Utility classes */
+/* .text-center {
+    text-align: center;
+} */
+
+/* .error {
+    color: red;
+    font-style: italic;
+}
+
+.margin-top {
+    margin-top: 20px;
+}
+
+.padding {
+    padding: 15px;
+} */
+
+/* Responsive design */
+/* @media (max-width: 768px) {
+    .container, nav ul {
+        width: 90%;
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .card {
+        margin: 10px;
+    }
+}  */
+
+
+/* ########### */
+
+.home-container {
+    text-align: center;
+    padding: 50px;
+}
+
+.home-container h1 {
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+.home-container p {
+    font-size: 18px;
+}
+
+/* login page */
+
+.login-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	background-color: #f4f4f4; /* or any color that fits your design */
+  }
+  
+  .login-paper {
+	width: 100%;
+	max-width: 400px; /* Adjust the width as needed */
+	padding: 40px;
+	box-sizing: border-box;
+  }
+  
+  .login-header {
+	margin-bottom: 20px;
+	color: #0056b3; /* Your brand blue */
+  }
+  
+  /* Additional styles for buttons, inputs, etc., can be added here. */
+  
