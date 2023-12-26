@@ -30,10 +30,10 @@ export class ChatService {
 	//########################CHatRooms#############################
 
 	async createChatRoom(chatRoomData: ChatRoom) {
-		console.log('chatRoomData: ', chatRoomData);
+		//console.log('chatRoomData: ', chatRoomData);
 		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
 		chatRoom.ownerId = chatRoomData.ownerId;
-		console.log('Owner id = ', chatRoomData.ownerId);
+		//console.log('Owner id = ', chatRoomData.ownerId);
 		return await this.chatRoomRepository.save(chatRoom);
 	}
 

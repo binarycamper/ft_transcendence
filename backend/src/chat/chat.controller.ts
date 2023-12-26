@@ -29,7 +29,7 @@ export class ChatController {
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
 		// chatRoomData now contains the parsed JSON object sent in the request body
-		console.log(chatRoomData); // This will log the chat room data sent from the frontend
+		//console.log('chatroomdata: ', chatRoomData); // This will log the chat room data sent from the frontend
 
 		// You can access individual properties like this:
 		//const roomName = chatRoomData.name;
@@ -43,7 +43,7 @@ export class ChatController {
 		const result = await this.chatService.createChatRoom(chatRoomData);
 		console.log('res: ', result);
 		// Return a response, for example, the created chat room object or a success message
-		// return result;
+		return result;
 	}
 
 	//########################CHatMessages#############################
