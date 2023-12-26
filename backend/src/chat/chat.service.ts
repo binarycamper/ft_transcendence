@@ -7,6 +7,7 @@ import { FriendRequestDto } from './friendRequest.dto';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
+import { ChatRoom } from './chatRoom.entity';
 
 @Injectable()
 export class ChatService {
@@ -18,6 +19,8 @@ export class ChatService {
 		private userService: UserService,
 		@InjectRepository(ChatMessage)
 		private chatMessageRepository: Repository<ChatMessage>,
+		@InjectRepository(ChatRoom)
+		private chatRoomRepository: Repository<ChatRoom>,
 	) {}
 
 	setServer(server: Server) {
@@ -25,6 +28,14 @@ export class ChatService {
 	}
 
 	//########################CHatRooms#############################
+
+	async createChatRoom(chatRoomData: ChatRoom) {
+		console.log('chatRoomData: ', chatRoomData);
+		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
+		chatRoom.ownerId = chatRoomData.ownerId;
+		console.log('Owner id = ', chatRoomData.ownerId);
+		return await this.chatRoomRepository.save(chatRoom);
+	}
 
 	//########################CHatMessages#############################
 
@@ -203,6 +214,10 @@ export class ChatService {
 	}
 
 	//########################Debug#############################
+
+	async getAllChatRooms(): Promise<ChatRoom[]> {
+		return this.chatRoomRepository.find({});
+	}
 
 	async getAllRequests(): Promise<FriendRequest[]> {
 		return this.friendrequestRepository.find({});

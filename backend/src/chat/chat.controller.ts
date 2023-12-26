@@ -17,10 +17,11 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
+import { UserService } from 'src/user/user.service';
 
 @Controller('chat')
 export class ChatController {
-	constructor(private readonly chatService: ChatService) {}
+	constructor(private readonly chatService: ChatService, private userService: UserService) {}
 
 	//########################CHatRooms#############################
 
@@ -31,12 +32,16 @@ export class ChatController {
 		console.log(chatRoomData); // This will log the chat room data sent from the frontend
 
 		// You can access individual properties like this:
-		const name = chatRoomData.name;
-		const type = chatRoomData.type;
+		//const roomName = chatRoomData.name;
+		//const creatorId = chatRoomData.creator;
+		//const type = chatRoomData.type;
+		//const pw = chatRoomData.password;
 
 		// Perform your logic here, for example, calling a service method to handle the chat room creation
-		// const result = await this.chatService.createChatRoom(name, type, ...otherData);
-
+		const user = await this.userService.findProfileById(req.user.id);
+		//console.log('User: ', user);
+		const result = await this.chatService.createChatRoom(chatRoomData);
+		console.log('res: ', result);
 		// Return a response, for example, the created chat room object or a success message
 		// return result;
 	}
@@ -125,6 +130,11 @@ export class ChatController {
 	}
 
 	//########################Debug#############################	//TODO: delete before eval
+
+	@Get('allchatrooms')
+	async getChatRooms() {
+		return await this.chatService.getAllChatRooms();
+	}
 
 	// Endpoint to get all pending requests for the logged-in user
 	@Get('allrequests')

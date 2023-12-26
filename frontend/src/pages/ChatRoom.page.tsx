@@ -201,37 +201,45 @@ export const ChatRoom = () => {
 	};
 
 	// Function to handle the creation of a new chat room
-	// Function to handle the creation of a new chat room
 	const handleCreateChatRoom = async () => {
 		if (!chatRoomName) {
 			alert('Please enter a name for the chat room.');
 			return;
 		}
 
+		// Prompt for a password, indicating it's optional for public rooms
+		const passwordPrompt =
+			chatRoomType === 'private'
+				? 'Enter a password for the private chat room:'
+				: 'Enter a password for the public chat room (optional):';
+
+		const password = window.prompt(passwordPrompt) || '';
+
 		// Construct chat room data here based on the state
 		const chatRoomData = {
 			name: chatRoomName,
+			ownerId: currentUserId,
 			type: chatRoomType,
-			// You can add additional fields here as needed
+			password: password.trim(), // Trim to ensure no whitespace-only passwords
+			messages: [],
+			users: [],
 		};
 
 		try {
 			// Call your API to create the chat room
 			const response = await fetch('http://localhost:8080/chat/chatroom', {
 				method: 'POST',
-				credentials: 'include', // if you're including credentials like cookies, etc.
+				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify(chatRoomData), // body data type must match "Content-Type" header
+				body: JSON.stringify(chatRoomData),
 			});
 
 			if (response.ok) {
 				const result = await response.json();
 				console.log('Chat room created:', result);
 				// Perform any action after successful chat room creation
-				// ...
-
 				// Reset form fields
 				setChatRoomName('');
 				setChatRoomType('public');
@@ -240,13 +248,7 @@ export const ChatRoom = () => {
 			}
 		} catch (error) {
 			console.error('Error creating chat room:', error);
-			// Handle errors here, such as displaying a user-friendly message
 		}
-	};
-
-	// Function to determine if the form is valid (in this case, if a name has been entered)
-	const isFormValid = () => {
-		return chatRoomName.trim().length > 0;
 	};
 
 	return (
