@@ -63,8 +63,10 @@ export class UserService {
 				'twoFactorAuthenticationSecret',
 				'unconfirmedTwoFactorSecret',
 				'friends',
+				'ignorelist',
+				'chatRooms',
 			],
-			relations: ['friends', 'ignorelist'],
+			relations: ['friends', 'ignorelist', 'chatRooms'],
 		});
 		if (!user) {
 			throw new Error('User not found');

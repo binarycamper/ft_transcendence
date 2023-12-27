@@ -25,6 +25,7 @@ export class ChatController {
 
 	//########################CHatRooms#############################
 
+	//TODO: We need add the ChatRoom to the USer entity as entry!
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
@@ -44,6 +45,23 @@ export class ChatController {
 		console.log('res: ', result);
 		// Return a response, for example, the created chat room object or a success message
 		return result;
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('mychatrooms')
+	async myChatRooms(@Req() req, @Res() res) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			// Assuming you have a method to get chat rooms for a user
+			console.log('Test: ', user.chatRooms);
+			// Return the chat rooms in the response
+			res.status(HttpStatus.OK).json(user.chatRooms);
+		} catch (error) {
+			// Handle any errors that occur
+			res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'An error occurred while fetching chat rooms.' });
+		}
 	}
 
 	//########################CHatMessages#############################

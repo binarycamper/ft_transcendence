@@ -8,6 +8,11 @@ type Friend = {
 	nickname: string;
 	status: string;
 };
+interface ChatRoom {
+	id: string;
+	name: string;
+	// Add other properties from ChatRoom entity if needed
+}
 
 type ChatMessage = {
 	id: string;
@@ -43,6 +48,7 @@ export const ChatRoom = () => {
 
 	const [chatRoomName, setChatRoomName] = useState('');
 	const [chatRoomType, setChatRoomType] = useState('public');
+	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -61,7 +67,6 @@ export const ChatRoom = () => {
 				navigate('/login');
 			}
 		};
-
 		getCurrentUserId();
 	}, []);
 
@@ -251,6 +256,35 @@ export const ChatRoom = () => {
 		}
 	};
 
+	// Fetch chat rooms when component mounts
+	useEffect(() => {
+		const fetchChatRooms = async () => {
+			try {
+				const response = await fetch('http://localhost:8080/chat/mychatrooms', {
+					credentials: 'include',
+				});
+				if (!response.ok) {
+					throw new Error('Failed to fetch chat rooms');
+				}
+				const rooms = await response.json();
+				setChatRooms(rooms);
+			} catch (error) {
+				console.error('Error fetching chat rooms:', error);
+			}
+		};
+
+		fetchChatRooms();
+	}, []);
+
+	// Function to handle chat room selection or navigation
+	const handleChatRoomSelect = (chatRoomId: string) => {
+		// Implement navigation or action to open chat room
+		console.log('Selected chat room:', chatRoomId);
+		// Example: navigate(`/chatroom/${chatRoomId}`);
+	};
+
+	//TODO: create a way to render the Chatrooms of that user on the website. && then implement the invite button to invite users into ur channel
+	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
 			<div style={{ marginBottom: '30px', textAlign: 'center' }}>
@@ -299,7 +333,22 @@ export const ChatRoom = () => {
 					Create Chat Room
 				</button>
 			</div>
-
+			{/* Render Chat Rooms */}
+			<div style={{ marginTop: '20px' }}>
+				<h2>My ChatRooms</h2>
+				<ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+					{chatRooms.map((room: ChatRoom) => (
+						<li
+							key={room.id}
+							onClick={() => handleChatRoomSelect(room.id)}
+							style={{ cursor: 'pointer' }}
+						>
+							{room.name}
+							{/* Add more details or actions here */}
+						</li>
+					))}
+				</ul>
+			</div>
 			<h2 style={{ marginTop: '40px', textAlign: 'center' }}>My Friends</h2>
 			<ul style={{ listStyle: 'none', paddingLeft: 0 }}>
 				{friends.map((friend) => (
