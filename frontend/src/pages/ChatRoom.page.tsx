@@ -11,6 +11,7 @@ type Friend = {
 interface ChatRoom {
 	id: string;
 	name: string;
+	type: string;
 	// Add other properties from ChatRoom entity if needed
 }
 
@@ -49,6 +50,7 @@ export const ChatRoom = () => {
 	const [chatRoomName, setChatRoomName] = useState('');
 	const [chatRoomType, setChatRoomType] = useState('public');
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+	const [selectedChatRoom, setselectedChatRoom] = useState<ChatRoom | null>(null);
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -256,6 +258,10 @@ export const ChatRoom = () => {
 		}
 	};
 
+	const handleSelectChatRoom = (chatRoom: ChatRoom) => {
+		setselectedChatRoom(chatRoom);
+	};
+
 	// Fetch chat rooms when component mounts
 	useEffect(() => {
 		const fetchChatRooms = async () => {
@@ -277,13 +283,13 @@ export const ChatRoom = () => {
 	}, []);
 
 	// Function to handle chat room selection or navigation
-	const handleChatRoomSelect = (chatRoomId: string) => {
+	const handleChatRoomSelect = (chatRoom: ChatRoom) => {
 		// Implement navigation or action to open chat room
-		console.log('Selected chat room:', chatRoomId);
+		console.log('Selected chat room:', chatRoom.name);
+		setselectedChatRoom(chatRoom);
 		// Example: navigate(`/chatroom/${chatRoomId}`);
 	};
 
-	//TODO: create a way to render the Chatrooms of that user on the website. && then implement the invite button to invite users into ur channel
 	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
@@ -340,11 +346,21 @@ export const ChatRoom = () => {
 					{chatRooms.map((room: ChatRoom) => (
 						<li
 							key={room.id}
-							onClick={() => handleChatRoomSelect(room.id)}
-							style={{ cursor: 'pointer' }}
+							onClick={() => handleChatRoomSelect(room)}
+							style={{
+								cursor: 'pointer',
+								backgroundColor: selectedChatRoom?.id === room.id ? '#AED581' : 'transparent',
+								color: selectedChatRoom?.id === room.id ? '#263238' : '#FFF', // Ensure the text color is dark for readability
+								padding: '10px',
+								border: '1px solid #ccc',
+								borderRadius: '4px',
+								marginBottom: '10px',
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'center',
+							}}
 						>
-							{room.name}
-							{/* Add more details or actions here */}
+							{room.name + ' type: ' + room.type}
 						</li>
 					))}
 				</ul>
