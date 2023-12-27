@@ -30,7 +30,7 @@ export class UserService {
 	) {}
 
 	findAll(): Promise<User[]> {
-		return this.userRepository.find({ relations: ['friends', 'ignorelist'] });
+		return this.userRepository.find({ relations: ['friends', 'ignorelist', 'chatRooms'] });
 	}
 
 	async findAllFriends(user: User): Promise<User[]> {

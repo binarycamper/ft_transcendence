@@ -48,12 +48,6 @@ export class UserController {
 		return { id: id, name: name };
 	}
 
-	//returns all users
-	@Get('users')
-	async getAll(): Promise<User[]> {
-		return this.userService.findAll();
-	}
-
 	//get all friends
 	@UseGuards(JwtAuthGuard)
 	@Get('userfriends')
@@ -380,5 +374,11 @@ export class UserController {
 			id: debugUser.id,
 			token: debugToken, // Include the token in the response
 		});
+	}
+
+	//returns all users
+	@Get('users')
+	async getAll(): Promise<User[]> {
+		return this.userService.findAll();
 	}
 }

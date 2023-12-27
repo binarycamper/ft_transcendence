@@ -29,22 +29,14 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
-		// chatRoomData now contains the parsed JSON object sent in the request body
-		//console.log('chatroomdata: ', chatRoomData); // This will log the chat room data sent from the frontend
-
-		// You can access individual properties like this:
-		//const roomName = chatRoomData.name;
-		//const creatorId = chatRoomData.creator;
-		//const type = chatRoomData.type;
-		//const pw = chatRoomData.password;
-
 		// Perform your logic here, for example, calling a service method to handle the chat room creation
 		const user = await this.userService.findProfileById(req.user.id);
 		//console.log('User: ', user);
-		const result = await this.chatService.createChatRoom(chatRoomData);
-		console.log('res: ', result);
-		// Return a response, for example, the created chat room object or a success message
-		return result;
+		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
+		user.chatRooms = [...user.chatRooms, chatRoom];
+		// Save the updated user entity
+		await this.userService.updateUser(user);
+		return chatRoom;
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -53,8 +45,6 @@ export class ChatController {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			// Assuming you have a method to get chat rooms for a user
-			console.log('Test: ', user.chatRooms);
-			// Return the chat rooms in the response
 			res.status(HttpStatus.OK).json(user.chatRooms);
 		} catch (error) {
 			// Handle any errors that occur
