@@ -412,7 +412,7 @@ export const ChatRoom = () => {
 								alignItems: 'center',
 							}}
 						>
-							<span style={{ flexGrow: 1 }}>{room.name + ' type: ' + room.type}</span>
+							<span style={{ flexGrow: 1 }}>{'(' + room.type + ') ' + room.name}</span>
 							<span>
 								<button onClick={() => handleClearChat(room.id, true)} style={buttonStyle}>
 									Clear Chat
