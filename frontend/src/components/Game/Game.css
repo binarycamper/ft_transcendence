@@ -1,0 +1,113 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	touch-action: none;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+@font-face {
+	font-family: 'Square Deal';
+	src: url(/src/assets/fonts/square-deal.ttf) format('truetype');
+}
+
+.game-container {
+	--ball-width: 2.5%;
+	--canvas-aspect-ratio: 4 / 3;
+	--paddle-gap: 2.5%;
+	--paddle-height: 20%;
+	--paddle-width: 2%;
+	--wall-height: calc(var(--paddle-width) * var(--canvas-aspect-ratio));
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	min-height: 80vh;
+	border-radius: 16px;
+	/* transform: rotate(-90deg); */
+	/* background-color: indigo; */
+}
+
+.game-canvas {
+	position: relative;
+	overflow: hidden;
+	resize: horizontal;
+	/* cursor: none; */
+	aspect-ratio: var(--canvas-aspect-ratio);
+	container-type: size;
+	/* margin-top: 100px; */
+	width: 80%;
+	min-width: 40%;
+	max-width: 100%;
+	border-radius: 8px;
+	background: black;
+}
+
+.paddle {
+	position: absolute;
+	width: var(--paddle-width);
+	height: var(--paddle-height);
+	top: calc(50 * var(--paddle-height) / 2 * 1%);
+	/* transform: translateY(-50%); */
+	background-color: lightgray;
+}
+#paddle-left {
+	left: var(--paddle-gap);
+}
+#paddle-right {
+	right: var(--paddle-gap);
+}
+
+.ball {
+	position: absolute;
+	/* will-change: auto; */
+	/* will-change: left, top; */
+	width: var(--ball-width);
+	height: calc(var(--ball-width) * var(--canvas-aspect-ratio));
+	left: calc(50 * var(--ball-width) / 2 * 1%);
+	top: calc(50 * var(--ball-width) * var(--canvas-aspect-ratio) / 2 * 1%);
+	/* transform: translate(-50%, -50%); */
+	border-radius: 50%;
+	background-color: orange;
+}
+
+.line {
+	position: absolute;
+	width: 100%;
+	height: var(--wall-height);
+	background-color: lightslategray;
+}
+.line.center {
+	width: 2%;
+	height: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	opacity: 0.2;
+}
+.line.top {
+	top: 0%;
+}
+.line.bottom {
+	bottom: 0%;
+}
+
+.score {
+	position: relative;
+	user-select: none;
+	font-family: 'Square Deal', sans-serif;
+	font-size: 120px;
+	font-size: 16cqw;
+	top: 2.5%;
+	opacity: 0.2;
+	color: lightslategray;
+}
+#score-left {
+	position: absolute;
+	left: calc(var(--paddle-gap) + 5.75%);
+}
+#score-right {
+	position: absolute;
+	right: calc(var(--paddle-gap) + 5%);
+}

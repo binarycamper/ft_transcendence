@@ -1,3 +1,5 @@
+import Game from '../components/Game/Game';
+
 export function Play() {
-	return <div>Play</div>;
+	return <Game />;
 }
