@@ -93,7 +93,12 @@ export const ChatRoom = () => {
 	}, []);
 
 	const handleSelectFriend = (friend: Friend) => {
-		setSelectedFriend(friend);
+		if (selectedChatRoom) {
+			setselectedChatRoom(null); // Unselect the chat room if any is selected
+		}
+		setSelectedFriend(friend); // Select the friend
+		// Fetch the chat history for the selected friend
+		fetchChatHistory(friend.id);
 	};
 
 	// Effect for fetching chat history when a friend is selected
@@ -125,32 +130,61 @@ export const ChatRoom = () => {
 
 	useEffect(() => {
 		const handleNewMessage = (message: ChatMessage) => {
+			console.log('received!');
+			// First, handle the case where the message is for a chat with a friend
 			if (
-				(message.senderId === currentUserId && message.receiverId === selectedFriend?.id) ||
-				(message.receiverId === currentUserId && message.senderId === selectedFriend?.id)
+				(selectedFriend && //Here we check if selectedFriend is not null...
+					message.senderId === currentUserId &&
+					message.receiverId === selectedFriend.id) ||
+				(message.receiverId === currentUserId && message.senderId === selectedFriend.id)
 			) {
-				//console.log('chat verlauf: ', message.content);
 				setChatMessages((prevMessages) => [...prevMessages, message]);
+			}
+			// Then, if there is a selected chatroom, check if the message belongs to it
+			else if (
+				selectedChatRoom //&& // Check if selectedChatRoom is not null
+				//message.chatRoomId === selectedChatRoom.id
+			) {
+				console.log('ChatRoomMEssages logic started. Not done yet');
+				// Logic for appending the message to the chatroom's messages goes here
+				//setChatRoomMessages((prevMessages) => [...prevMessages, message]);
+			} else {
+				console.log('ERROR');
 			}
 		};
 
 		socket.on('receiveMessage', handleNewMessage);
+		// If you have a separate event for chat room messages, set up a listener for that as well
+		// socket.on('receiveChatRoomMessage', handleNewMessage);
 
 		return () => {
 			socket.off('receiveMessage', handleNewMessage);
+			// socket.off('receiveChatRoomMessage', handleNewMessage);
 		};
-	}, [socket, currentUserId, selectedFriend]);
+	}, [socket, currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
 
 	const handleSendMessage = () => {
 		if (!newMessage.trim()) return; // Avoid sending empty messages
 
-		const messageToSend = {
-			content: newMessage,
-			receiverId: selectedFriend?.id,
-			// Add any other required fields
-		};
+		if (selectedFriend) {
+			const messageToSend = {
+				content: newMessage,
+				receiverId: selectedFriend.id, // assuming you have an endpoint that handles sending to a friend
+				// ...other required fields
+			};
 
-		socket.emit('sendMessage', messageToSend);
+			// Send the message to the friend
+			socket.emit('sendMessage', messageToSend);
+		} else if (selectedChatRoom) {
+			const messageToSend = {
+				content: newMessage,
+				chatRoomId: selectedChatRoom.id, // assuming you have an endpoint that handles sending to a chat room
+				// ...other required fields
+			};
+			// Send the message to the chat room
+			socket.emit('sendMessageToChatRoom', messageToSend);
+		}
+
 		setNewMessage('');
 	};
 
@@ -258,10 +292,6 @@ export const ChatRoom = () => {
 		}
 	};
 
-	const handleSelectChatRoom = (chatRoom: ChatRoom) => {
-		setselectedChatRoom(chatRoom);
-	};
-
 	// Fetch chat rooms when component mounts
 	useEffect(() => {
 		const fetchChatRooms = async () => {
@@ -282,12 +312,19 @@ export const ChatRoom = () => {
 		fetchChatRooms();
 	}, []);
 
-	// Function to handle chat room selection or navigation
+	const fetchChatRoomHistory = async (chatRoomId: string) => {
+		// Fetch chat history for the selected chat room
+		console.log('ChatROomId: ', chatRoomId);
+		// Ensure that your API endpoint can handle fetching chat room history
+	};
+
 	const handleChatRoomSelect = (chatRoom: ChatRoom) => {
-		// Implement navigation or action to open chat room
-		console.log('Selected chat room:', chatRoom.name);
-		setselectedChatRoom(chatRoom);
-		// Example: navigate(`/chatroom/${chatRoomId}`);
+		if (selectedFriend) {
+			setSelectedFriend(null); // Unselect the friend if any is selected
+		}
+		setselectedChatRoom(chatRoom); // Select the chat room
+		// Fetch the chat history for the selected chat room
+		fetchChatRoomHistory(chatRoom.id);
 	};
 
 	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
