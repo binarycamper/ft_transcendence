@@ -130,7 +130,6 @@ export const ChatRoom = () => {
 
 	useEffect(() => {
 		const handleNewMessage = (message: ChatMessage) => {
-			console.log('received!');
 			// First, handle the case where the message is for a chat with a friend
 			if (
 				(selectedFriend && //Here we check if selectedFriend is not null...
@@ -148,8 +147,6 @@ export const ChatRoom = () => {
 				console.log('ChatRoomMEssages logic started. Not done yet');
 				// Logic for appending the message to the chatroom's messages goes here
 				//setChatRoomMessages((prevMessages) => [...prevMessages, message]);
-			} else {
-				console.log('ERROR');
 			}
 		};
 
@@ -387,7 +384,7 @@ export const ChatRoom = () => {
 							style={{
 								cursor: 'pointer',
 								backgroundColor: selectedChatRoom?.id === room.id ? '#AED581' : 'transparent',
-								color: selectedChatRoom?.id === room.id ? '#263238' : '#FFF', // Ensure the text color is dark for readability
+								color: selectedChatRoom?.id === room.id ? '#263238' : '#FFF',
 								padding: '10px',
 								border: '1px solid #ccc',
 								borderRadius: '4px',
@@ -397,7 +394,18 @@ export const ChatRoom = () => {
 								alignItems: 'center',
 							}}
 						>
-							{room.name + ' type: ' + room.type}
+							<span style={{ flexGrow: 1 }}>{room.name + ' type: ' + room.type}</span>
+							<span>
+								<button onClick={() => handleClearChat(room.id)} style={buttonStyle}>
+									Clear Chat
+								</button>
+								<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
+									Settings
+								</button>
+								<button onClick={() => handleInviteToRoom(room.id)} style={buttonStyle}>
+									Invite
+								</button>
+							</span>
 						</li>
 					))}
 				</ul>
