@@ -30,7 +30,7 @@ export class UserService {
 	) {}
 
 	findAll(): Promise<User[]> {
-		return this.userRepository.find({ relations: ['friends', 'ignorelist'] });
+		return this.userRepository.find({ relations: ['friends', 'ignorelist', 'chatRooms'] });
 	}
 
 	async findAllFriends(user: User): Promise<User[]> {
@@ -63,8 +63,10 @@ export class UserService {
 				'twoFactorAuthenticationSecret',
 				'unconfirmedTwoFactorSecret',
 				'friends',
+				'ignorelist',
+				'chatRooms',
 			],
-			relations: ['friends', 'ignorelist'],
+			relations: ['friends', 'ignorelist', 'chatRooms'],
 		});
 		if (!user) {
 			throw new Error('User not found');

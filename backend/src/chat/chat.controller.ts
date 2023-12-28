@@ -17,28 +17,54 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
+import { UserService } from 'src/user/user.service';
 
 @Controller('chat')
 export class ChatController {
-	constructor(private readonly chatService: ChatService) {}
+	constructor(private readonly chatService: ChatService, private userService: UserService) {}
 
 	//########################CHatRooms#############################
 
+	//TODO: We need add the ChatRoom to the USer entity as entry!
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
-		// chatRoomData now contains the parsed JSON object sent in the request body
-		console.log(chatRoomData); // This will log the chat room data sent from the frontend
-
-		// You can access individual properties like this:
-		const name = chatRoomData.name;
-		const type = chatRoomData.type;
-
 		// Perform your logic here, for example, calling a service method to handle the chat room creation
-		// const result = await this.chatService.createChatRoom(name, type, ...otherData);
+		const user = await this.userService.findProfileById(req.user.id);
+		//console.log('User: ', user);
+		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
+		user.chatRooms = [...user.chatRooms, chatRoom];
+		// Save the updated user entity
+		await this.userService.updateUser(user);
+		return chatRoom;
+	}
 
-		// Return a response, for example, the created chat room object or a success message
-		// return result;
+	@UseGuards(JwtAuthGuard)
+	@Get('mychatrooms')
+	async myChatRooms(@Req() req, @Res() res) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			// Assuming you have a method to get chat rooms for a user
+			res.status(HttpStatus.OK).json(user.chatRooms);
+		} catch (error) {
+			// Handle any errors that occur
+			res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'An error occurred while fetching chat rooms.' });
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('chatroomhistory')
+	async getChatRoomChat(@Req() req, @Query('chatroomid') chatRoomId: string) {
+		try {
+			const userId = req.user.id;
+			const result = await this.chatService.findChatRoomChat(chatRoomId);
+			//console.log('res: ', result);
+			return result;
+		} catch (error) {
+			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	//########################CHatMessages#############################
@@ -125,6 +151,11 @@ export class ChatController {
 	}
 
 	//########################Debug#############################	//TODO: delete before eval
+
+	@Get('allchatrooms')
+	async getChatRooms() {
+		return await this.chatService.getAllChatRooms();
+	}
 
 	// Endpoint to get all pending requests for the logged-in user
 	@Get('allrequests')

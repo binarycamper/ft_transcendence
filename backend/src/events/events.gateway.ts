@@ -109,4 +109,43 @@ export class EventsGateway {
 			console.error('Error in handleMessage:', error.message);
 		}
 	}
+
+	@SubscribeMessage('sendMessageToChatRoom')
+	async handleMessageToChatRoom(
+		@MessageBody() data: { chatRoomId: string; content: string },
+		@ConnectedSocket() client: Socket,
+	) {
+		try {
+			const isAuthenticated = await this.verifyAuthentication(client);
+			if (!isAuthenticated.isAuthenticated) {
+				console.log('Invalid credentials');
+				return;
+			}
+			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
+			const message = await this.chatService.saveChatRoomMessage(
+				data.chatRoomId,
+				isAuthenticated.userId,
+				data.content,
+			);
+
+			//console.log('the new message is: ', message);
+			// Emit the message to the recipient if they're online
+			this.server.to(`user_${data.chatRoomId}`).emit('receiveMessage', {
+				content: message.content,
+				senderId: message.senderId,
+				receiverId: message.receiverId,
+				id: message.id,
+			});
+
+			// Emit the message to the sender, update the chat display
+			this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
+				content: message.content,
+				senderId: message.senderId,
+				receiverId: message.receiverId,
+				id: message.id,
+			});
+		} catch (error) {
+			console.error('Error in handleMessage:', error.message);
+		}
+	}
 }

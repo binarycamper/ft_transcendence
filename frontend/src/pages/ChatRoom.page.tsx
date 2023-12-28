@@ -8,6 +8,12 @@ type Friend = {
 	nickname: string;
 	status: string;
 };
+interface ChatRoom {
+	id: string;
+	name: string;
+	type: string;
+	// Add other properties from ChatRoom entity if needed
+}
 
 type ChatMessage = {
 	id: string;
@@ -43,6 +49,8 @@ export const ChatRoom = () => {
 
 	const [chatRoomName, setChatRoomName] = useState('');
 	const [chatRoomType, setChatRoomType] = useState('public');
+	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+	const [selectedChatRoom, setselectedChatRoom] = useState<ChatRoom | null>(null);
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -57,11 +65,10 @@ export const ChatRoom = () => {
 				setCurrentUserName(data.name);
 				setCurrentUserId(data.id);
 			} catch (error) {
-				//console.log('Not authenticated: ', error);
-				navigate('/login');
+				//console.log('Not authenticated?: ', error);
+				navigate('/');
 			}
 		};
-
 		getCurrentUserId();
 	}, []);
 
@@ -78,7 +85,8 @@ export const ChatRoom = () => {
 				const friendsList: Friend[] = await response.json();
 				setFriends(friendsList);
 			} catch (error) {
-				console.error('Error fetching friends:', error);
+				console.log('fetching friends not possible: ', error);
+				navigate('/');
 			}
 		};
 
@@ -86,7 +94,12 @@ export const ChatRoom = () => {
 	}, []);
 
 	const handleSelectFriend = (friend: Friend) => {
-		setSelectedFriend(friend);
+		if (selectedChatRoom) {
+			setselectedChatRoom(null); // Unselect the chat room if any is selected
+		}
+		setSelectedFriend(friend); // Select the friend
+		setChatMessages([]); // Clear previous chat history
+		fetchChatHistory(friend.id); // Fetch the chat history for the selected friend
 	};
 
 	// Effect for fetching chat history when a friend is selected
@@ -118,32 +131,55 @@ export const ChatRoom = () => {
 
 	useEffect(() => {
 		const handleNewMessage = (message: ChatMessage) => {
+			// First, handle the case where the message is for a chat with a friend
 			if (
-				(message.senderId === currentUserId && message.receiverId === selectedFriend?.id) ||
-				(message.receiverId === currentUserId && message.senderId === selectedFriend?.id)
+				(selectedFriend && //Here we check if selectedFriend is not null...
+					message.senderId === currentUserId &&
+					message.receiverId === selectedFriend.id) ||
+				(message.receiverId === currentUserId && message.senderId === selectedFriend.id)
 			) {
-				//console.log('chat verlauf: ', message.content);
+				setChatMessages((prevMessages) => [...prevMessages, message]);
+			}
+			// Then, if there is a selected chatroom, check if the message belongs to it
+			else if (
+				selectedChatRoom && // Check if selectedChatRoom is not null
+				message.receiverId === selectedChatRoom.id
+			) {
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 		};
 
 		socket.on('receiveMessage', handleNewMessage);
+		// If you have a separate event for chat room messages, set up a listener for that as well
+		// socket.on('receiveChatRoomMessage', handleNewMessage);
 
 		return () => {
 			socket.off('receiveMessage', handleNewMessage);
+			// socket.off('receiveChatRoomMessage', handleNewMessage);
 		};
-	}, [socket, currentUserId, selectedFriend]);
+	}, [socket, currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
 
 	const handleSendMessage = () => {
 		if (!newMessage.trim()) return; // Avoid sending empty messages
 
-		const messageToSend = {
-			content: newMessage,
-			receiverId: selectedFriend?.id,
-			// Add any other required fields
-		};
+		if (selectedFriend) {
+			const messageToSend = {
+				content: newMessage,
+				receiverId: selectedFriend.id, // assuming you have an endpoint that handles sending to a friend
+				// ...other required fields
+			};
 
-		socket.emit('sendMessage', messageToSend);
+			// Send the message to the friend
+			socket.emit('sendMessage', messageToSend);
+		} else if (selectedChatRoom) {
+			const messageToSend = {
+				content: newMessage,
+				chatRoomId: selectedChatRoom.id, // assuming you have an endpoint that handles sending to a chat room
+				// ...other required fields
+			};
+			// Send the message to the chat room
+			socket.emit('sendMessageToChatRoom', messageToSend);
+		}
 		setNewMessage('');
 	};
 
@@ -154,19 +190,25 @@ export const ChatRoom = () => {
 		return 'Unknown'; // Fallback for any mismatch
 	};
 
-	const handleClearChat = async (friendId: string) => {
+	const handleClearChat = async (id: string, isRoom: boolean) => {
+		let url = isRoom
+			? `http://localhost:8080/chat/deleteRoomChat?roomId=${id}`
+			: `http://localhost:8080/chat/deleteChat?friendId=${id}`;
 		const confirmation = window.confirm(
-			'Clearing this chat will also clear it for your friend. Do you want to proceed?',
+			'Clearing this chat will delete all messages. Do you want to proceed?',
 		);
 
 		if (confirmation) {
 			try {
-				await fetch(`http://localhost:8080/chat/deleteChat?friendId=${friendId}`, {
+				await fetch(url, {
 					method: 'DELETE',
 					credentials: 'include',
 				});
-				// Clear chat messages from the state if the selected friend's chat is being cleared
-				if (selectedFriend?.id === friendId) {
+				if (selectedChatRoom?.id === id) {
+					// Clear chat messages from the state if the selected chat room's chat is being cleared
+					setChatMessages([]);
+				} else if (selectedFriend?.id === id) {
+					// Clear chat messages from the state if the selected friend's chat is being cleared
 					setChatMessages([]);
 				}
 			} catch (error) {
@@ -201,37 +243,45 @@ export const ChatRoom = () => {
 	};
 
 	// Function to handle the creation of a new chat room
-	// Function to handle the creation of a new chat room
 	const handleCreateChatRoom = async () => {
 		if (!chatRoomName) {
 			alert('Please enter a name for the chat room.');
 			return;
 		}
 
+		// Prompt for a password, indicating it's optional for public rooms
+		const passwordPrompt =
+			chatRoomType === 'private'
+				? 'Enter a password for the private chat room:'
+				: 'Enter a password for the public chat room (optional):';
+
+		const password = window.prompt(passwordPrompt) || '';
+
 		// Construct chat room data here based on the state
 		const chatRoomData = {
 			name: chatRoomName,
+			ownerId: currentUserId,
 			type: chatRoomType,
-			// You can add additional fields here as needed
+			password: password.trim(), // Trim to ensure no whitespace-only passwords
+			messages: [],
+			users: [],
 		};
 
 		try {
 			// Call your API to create the chat room
 			const response = await fetch('http://localhost:8080/chat/chatroom', {
 				method: 'POST',
-				credentials: 'include', // if you're including credentials like cookies, etc.
+				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify(chatRoomData), // body data type must match "Content-Type" header
+				body: JSON.stringify(chatRoomData),
 			});
 
 			if (response.ok) {
 				const result = await response.json();
 				console.log('Chat room created:', result);
 				// Perform any action after successful chat room creation
-				// ...
-
 				// Reset form fields
 				setChatRoomName('');
 				setChatRoomType('public');
@@ -240,15 +290,59 @@ export const ChatRoom = () => {
 			}
 		} catch (error) {
 			console.error('Error creating chat room:', error);
-			// Handle errors here, such as displaying a user-friendly message
 		}
 	};
 
-	// Function to determine if the form is valid (in this case, if a name has been entered)
-	const isFormValid = () => {
-		return chatRoomName.trim().length > 0;
+	// Fetch chat rooms when component mounts
+	useEffect(() => {
+		const fetchChatRooms = async () => {
+			try {
+				const response = await fetch('http://localhost:8080/chat/mychatrooms', {
+					credentials: 'include',
+				});
+				if (!response.ok) {
+					throw new Error('Failed to fetch chat rooms');
+				}
+				const rooms = await response.json();
+				setChatRooms(rooms);
+			} catch (error) {
+				console.error('Error fetching chat rooms:', error);
+			}
+		};
+
+		fetchChatRooms();
+	}, []);
+
+	const fetchChatRoomHistory = async (chatRoomId: string) => {
+		try {
+			const response = await fetch(
+				`http://localhost:8080/chat/chatroomhistory/?chatroomid=${chatRoomId}`,
+				{
+					method: 'GET',
+					credentials: 'include',
+				},
+			);
+			if (!response.ok) {
+				throw new Error('Failed to fetch chatroom history');
+			}
+			const history = await response.json();
+			console.log('res: ', history);
+			setChatMessages(history);
+		} catch (error) {
+			console.error('Error fetching chatroom history:', error);
+		}
 	};
 
+	const handleChatRoomSelect = (chatRoom: ChatRoom) => {
+		if (selectedFriend) {
+			setSelectedFriend(null); // Unselect the friend if any is selected
+		}
+		setselectedChatRoom(chatRoom); // Select the chat room
+		setChatMessages([]); // Clear previous chat history
+		fetchChatRoomHistory(chatRoom.id); // Fetch the chat history for the selected chat room
+	};
+
+	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
 			<div style={{ marginBottom: '30px', textAlign: 'center' }}>
@@ -297,10 +391,46 @@ export const ChatRoom = () => {
 					Create Chat Room
 				</button>
 			</div>
-
+			{/* Render Chat Rooms */}
+			<div style={{ marginTop: '20px' }}>
+				<h2>My ChatRooms</h2>
+				<ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+					{chatRooms.map((room: ChatRoom) => (
+						<li
+							key={room.id}
+							onClick={() => handleChatRoomSelect(room)}
+							style={{
+								cursor: 'pointer',
+								backgroundColor: selectedChatRoom?.id === room.id ? '#AED581' : 'transparent',
+								color: selectedChatRoom?.id === room.id ? '#263238' : '#FFF',
+								padding: '10px',
+								border: '1px solid #ccc',
+								borderRadius: '4px',
+								marginBottom: '10px',
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'center',
+							}}
+						>
+							<span style={{ flexGrow: 1 }}>{room.name + ' type: ' + room.type}</span>
+							<span>
+								<button onClick={() => handleClearChat(room.id, true)} style={buttonStyle}>
+									Clear Chat
+								</button>
+								<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
+									Settings
+								</button>
+								<button onClick={() => handleInviteToRoom(room.id)} style={buttonStyle}>
+									Invite
+								</button>
+							</span>
+						</li>
+					))}
+				</ul>
+			</div>
 			<h2 style={{ marginTop: '40px', textAlign: 'center' }}>My Friends</h2>
 			<ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-				{friends.map((friend) => (
+				{friends.map((friend: Friend) => (
 					<li
 						key={friend.id}
 						onClick={() => handleSelectFriend(friend)}
@@ -321,7 +451,7 @@ export const ChatRoom = () => {
 							{friend.nickname || friend.name}
 						</span>
 						<span>
-							<button onClick={() => handleClearChat(friend.id)} style={buttonStyle}>
+							<button onClick={() => handleClearChat(friend.id, false)} style={buttonStyle}>
 								Clear Chat
 							</button>
 							<button onClick={() => navigateToFriendProfile(friend.name)} style={buttonStyle}>
@@ -335,12 +465,12 @@ export const ChatRoom = () => {
 				))}
 			</ul>
 
-			{selectedFriend && (
+			{selectedFriend || selectedChatRoom ? (
 				<>
 					<h2 style={{ marginTop: '30px', textAlign: 'center' }}>
-						Chat with {selectedFriend.name}
-						{selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
-						{selectedFriend.status && ` - Status: ${selectedFriend.status}`}
+						Chat with {selectedFriend ? selectedFriend.name : selectedChatRoom.name}
+						{selectedFriend && selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
+						{selectedFriend && selectedFriend.status && ` - Status: ${selectedFriend.status}`}
 					</h2>
 					<div
 						style={{
@@ -395,7 +525,7 @@ export const ChatRoom = () => {
 						</button>
 					</div>
 				</>
-			)}
+			) : null}
 		</div>
 	);
 };

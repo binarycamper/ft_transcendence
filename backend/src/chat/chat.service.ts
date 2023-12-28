@@ -7,6 +7,7 @@ import { FriendRequestDto } from './friendRequest.dto';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
+import { ChatRoom } from './chatRoom.entity';
 
 @Injectable()
 export class ChatService {
@@ -18,6 +19,8 @@ export class ChatService {
 		private userService: UserService,
 		@InjectRepository(ChatMessage)
 		private chatMessageRepository: Repository<ChatMessage>,
+		@InjectRepository(ChatRoom)
+		private chatRoomRepository: Repository<ChatRoom>,
 	) {}
 
 	setServer(server: Server) {
@@ -25,6 +28,64 @@ export class ChatService {
 	}
 
 	//########################CHatRooms#############################
+
+	async createChatRoom(chatRoomData: ChatRoom) {
+		//console.log('chatRoomData: ', chatRoomData);
+		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
+		chatRoom.ownerId = chatRoomData.ownerId;
+		console.log('chatRoom = ', chatRoom);
+		return await this.chatRoomRepository.save(chatRoom);
+	}
+
+	async saveChatRoomMessage(chatRoomId: string, senderId: string, content: string) {
+		const now = new Date();
+		// Assuming ChatMessage is a class that corresponds to your database schema
+		const message = new ChatMessage();
+		message.senderId = senderId;
+		message.receiverId = chatRoomId; // Make sure this is correct - for a chat room, you might not need a receiverId.
+		message.content = content;
+		message.createdAt = now;
+
+		// Save the message to the message repository
+		await this.chatMessageRepository.save(message);
+
+		// Find the chat room
+		const chatRoom = await this.chatRoomRepository.findOne({ where: { id: chatRoomId } });
+
+		// Check if the chat room was found
+		if (chatRoom) {
+			// If chatRoom.messages is not initialized, initialize it or load it
+			if (!chatRoom.messages) {
+				chatRoom.messages = [];
+			}
+
+			// Add the message to the chat room's messages
+			chatRoom.messages.push(message);
+
+			// Save the chat room with the new message
+			await this.chatRoomRepository.save(chatRoom);
+			return message;
+		} else {
+			// Handle the case where the chat room is not found
+			throw new Error('Chat room not found');
+		}
+	}
+
+	async findChatRoomChat(chatRoomId: string): Promise<ChatMessage[]> {
+		try {
+			const chatRoomHistory = await this.chatMessageRepository.find({
+				where: { receiverId: chatRoomId }, // Removed the array, directly using the object
+				order: {
+					createdAt: 'ASC', // Correct, assuming you have a 'createdAt' field
+				},
+			});
+			return chatRoomHistory;
+		} catch (error) {
+			// Handle or log the error appropriately
+			console.error(`Failed to fetch chat history: ${error.message}`);
+			throw new InternalServerErrorException('Failed to fetch chat history');
+		}
+	}
 
 	//########################CHatMessages#############################
 
@@ -203,6 +264,10 @@ export class ChatService {
 	}
 
 	//########################Debug#############################
+
+	async getAllChatRooms(): Promise<ChatRoom[]> {
+		return this.chatRoomRepository.find({});
+	}
 
 	async getAllRequests(): Promise<FriendRequest[]> {
 		return this.friendrequestRepository.find({});

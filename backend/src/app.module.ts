@@ -6,6 +6,8 @@ import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
+import { ChatModule } from './chat/chat.module';
+import { EventsGateway } from './events/events.gateway';
 
 @Module({
 	imports: [
@@ -22,6 +24,7 @@ import { EventsModule } from './events/events.module';
 		}),
 		AuthModule,
 		UserModule,
+		ChatModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
