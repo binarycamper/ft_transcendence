@@ -86,9 +86,9 @@ export default function createPaddle({
 			}
 			const ballDiam = ball.bottom - ball.top;
 			const ballCenter = ball.top + ballDiam / 2;
-			const d = ballCenter - this.top + paddleHeight / 2;
+			const d = ballCenter - (this.top + paddleHeight / 2);
 			const speed = Math.abs(d) < paddleSpeed * delta ? Math.abs(d) : paddleSpeed;
-			this.move(delta * d < 0 ? -speed : speed);
+			this.move((d < 0 ? -speed : speed) * delta);
 		},
 	};
 
@@ -103,8 +103,8 @@ export default function createPaddle({
 	/* auxiliary functions */
 	function computerMoveCenter(delta: number) {
 		const d = paddleCenter - paddlePrototype.top;
-		const speed = Math.abs(d) < paddleSpeed * delta ? Math.abs(d) : paddleSpeed / 10;
-		paddlePrototype.move(delta * d < 0 ? -speed : speed);
+		const speed = Math.abs(d) < paddleSpeed * delta ? Math.abs(d) : paddleSpeed / 2;
+		paddlePrototype.move((d < 0 ? -speed : speed) * delta);
 	}
 
 	paddlePrototype.top = paddleCenter;
