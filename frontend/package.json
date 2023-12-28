@@ -10,25 +10,25 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@mantine/core": "7.2.2",
-		"@mantine/hooks": "7.2.2",
-		"axios": "^1.6.2",
+		"@mantine/core": "7.3.2",
+		"@mantine/hooks": "7.3.2",
+		"axios": "^1.6.3",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-router-dom": "^6.18.0",
+		"react-router-dom": "^6.21.1",
 		"socket.io-client": "^4.7.2"
 	},
 	"devDependencies": {
-		"@types/react": "^18.2.37",
-		"@types/react-dom": "^18.2.15",
+		"@types/react": "^18.2.45",
+		"@types/react-dom": "^18.2.18",
 		"@types/sanitize-html": "^2.9.5",
-		"@typescript-eslint/eslint-plugin": "^6.10.0",
-		"@typescript-eslint/parser": "^6.10.0",
+		"@typescript-eslint/eslint-plugin": "^6.16.0",
+		"@typescript-eslint/parser": "^6.16.0",
 		"@vitejs/plugin-react-swc": "^3.5.0",
-		"eslint": "^8.53.0",
+		"eslint": "^8.56.0",
 		"eslint-plugin-react-hooks": "^4.6.0",
-		"eslint-plugin-react-refresh": "^0.4.4",
-		"typescript": "^5.2.2",
-		"vite": "^5.0.0"
+		"eslint-plugin-react-refresh": "^0.4.5",
+		"typescript": "^5.3.3",
+		"vite": "^5.0.10"
 	}
 }
