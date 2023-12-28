@@ -208,7 +208,7 @@ export function FriendRequest() {
 
 	const openChat = useCallback(() => {
 		if (selectedFriend) {
-			navigate(`chatroom?friendId=${selectedFriend.id}`);
+			navigate(`chatroom`);
 		}
 	}, [selectedFriend, navigate]); // Add dependencies
 
