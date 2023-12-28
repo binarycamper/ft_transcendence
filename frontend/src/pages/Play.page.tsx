@@ -1,6 +1,7 @@
 // Play.tsx
 import { useState, useEffect, useContext } from 'react';
 import { SocketContext } from './context/socketContext';
+import { useNavigate } from 'react-router-dom';
 
 export function Play() {
 	const [inQueue, setInQueue] = useState(localStorage.getItem('inQueue') === 'true');
@@ -9,6 +10,7 @@ export function Play() {
 	);
 	const socket = useContext(SocketContext);
 	const [currentMatch, setCurrentMatch] = useState<MatchDetails | null>(null);
+	const navigate = useNavigate();
 
 	interface MatchDetails {
 		id: string;
@@ -61,6 +63,7 @@ export function Play() {
 		const handleMatchStart = (data: MatchDetails) => {
 			console.log('Match start:', data.id);
 			// Navigieren Sie den Benutzer zum Spiel (je nach Implementierung)
+			navigate('/spiel');
 		};
 
 		const handleRemainInQueue = () => {

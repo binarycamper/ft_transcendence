@@ -14,6 +14,7 @@ import { FriendRequest } from './pages/Request.page';
 import { ChatRoom } from './pages/ChatRoom.page';
 import IgnoreList from './pages/IgnoreList.page';
 import { PublicProfile } from './pages/PublicProfile.page';
+import { Spiel } from './pages/Spiel.page';
 
 const router = createBrowserRouter([
 	{
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
 	{
 		path: '/publicprofile',
 		element: <PublicProfile />,
+	},
+	{
+		path: '/spiel',
+		element: <Spiel />,
 	},
 ]);
 
