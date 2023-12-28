@@ -65,8 +65,8 @@ export const ChatRoom = () => {
 				setCurrentUserName(data.name);
 				setCurrentUserId(data.id);
 			} catch (error) {
-				//console.log('Not authenticated: ', error);
-				navigate('/login');
+				//console.log('Not authenticated?: ', error);
+				navigate('/');
 			}
 		};
 		getCurrentUserId();
@@ -85,7 +85,8 @@ export const ChatRoom = () => {
 				const friendsList: Friend[] = await response.json();
 				setFriends(friendsList);
 			} catch (error) {
-				console.error('Error fetching friends:', error);
+				console.log('fetching friends not possible: ', error);
+				navigate('/');
 			}
 		};
 
@@ -192,19 +193,25 @@ export const ChatRoom = () => {
 		return 'Unknown'; // Fallback for any mismatch
 	};
 
-	const handleClearChat = async (friendId: string) => {
+	const handleClearChat = async (id: string, isRoom: boolean) => {
+		let url = isRoom
+			? `http://localhost:8080/chat/deleteRoomChat?roomId=${id}`
+			: `http://localhost:8080/chat/deleteChat?friendId=${id}`;
 		const confirmation = window.confirm(
-			'Clearing this chat will also clear it for your friend. Do you want to proceed?',
+			'Clearing this chat will remove all messages. Do you want to proceed?',
 		);
 
 		if (confirmation) {
 			try {
-				await fetch(`http://localhost:8080/chat/deleteChat?friendId=${friendId}`, {
+				await fetch(url, {
 					method: 'DELETE',
 					credentials: 'include',
 				});
-				// Clear chat messages from the state if the selected friend's chat is being cleared
-				if (selectedFriend?.id === friendId) {
+				if (selectedChatRoom?.id === id) {
+					// Clear chat messages from the state if the selected chat room's chat is being cleared
+					setChatMessages([]);
+				} else if (selectedFriend?.id === id) {
+					// Clear chat messages from the state if the selected friend's chat is being cleared
 					setChatMessages([]);
 				}
 			} catch (error) {
