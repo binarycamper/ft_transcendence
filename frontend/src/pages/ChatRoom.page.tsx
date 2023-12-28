@@ -98,8 +98,8 @@ export const ChatRoom = () => {
 			setselectedChatRoom(null); // Unselect the chat room if any is selected
 		}
 		setSelectedFriend(friend); // Select the friend
-		// Fetch the chat history for the selected friend
-		fetchChatHistory(friend.id);
+		setChatMessages([]); // Clear previous chat history
+		fetchChatHistory(friend.id); // Fetch the chat history for the selected friend
 	};
 
 	// Effect for fetching chat history when a friend is selected
@@ -142,8 +142,8 @@ export const ChatRoom = () => {
 			}
 			// Then, if there is a selected chatroom, check if the message belongs to it
 			else if (
-				selectedChatRoom //&& // Check if selectedChatRoom is not null
-				//message.chatRoomId === selectedChatRoom.id
+				selectedChatRoom && // Check if selectedChatRoom is not null
+				message.receiverId === selectedChatRoom.id
 			) {
 				console.log('ChatRoomMEssages logic started. Not done yet');
 				// Logic for appending the message to the chatroom's messages goes here
@@ -182,7 +182,6 @@ export const ChatRoom = () => {
 			// Send the message to the chat room
 			socket.emit('sendMessageToChatRoom', messageToSend);
 		}
-
 		setNewMessage('');
 	};
 
@@ -198,7 +197,7 @@ export const ChatRoom = () => {
 			? `http://localhost:8080/chat/deleteRoomChat?roomId=${id}`
 			: `http://localhost:8080/chat/deleteChat?friendId=${id}`;
 		const confirmation = window.confirm(
-			'Clearing this chat will remove all messages. Do you want to proceed?',
+			'Clearing this chat will delete all messages. Do you want to proceed?',
 		);
 
 		if (confirmation) {
@@ -327,8 +326,8 @@ export const ChatRoom = () => {
 			setSelectedFriend(null); // Unselect the friend if any is selected
 		}
 		setselectedChatRoom(chatRoom); // Select the chat room
-		// Fetch the chat history for the selected chat room
-		fetchChatRoomHistory(chatRoom.id);
+		setChatMessages([]); // Clear previous chat history
+		fetchChatRoomHistory(chatRoom.id); // Fetch the chat history for the selected chat room
 	};
 
 	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
@@ -403,7 +402,7 @@ export const ChatRoom = () => {
 						>
 							<span style={{ flexGrow: 1 }}>{room.name + ' type: ' + room.type}</span>
 							<span>
-								<button onClick={() => handleClearChat(room.id)} style={buttonStyle}>
+								<button onClick={() => handleClearChat(room.id, true)} style={buttonStyle}>
 									Clear Chat
 								</button>
 								<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
@@ -419,7 +418,7 @@ export const ChatRoom = () => {
 			</div>
 			<h2 style={{ marginTop: '40px', textAlign: 'center' }}>My Friends</h2>
 			<ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-				{friends.map((friend) => (
+				{friends.map((friend: Friend) => (
 					<li
 						key={friend.id}
 						onClick={() => handleSelectFriend(friend)}
@@ -440,7 +439,7 @@ export const ChatRoom = () => {
 							{friend.nickname || friend.name}
 						</span>
 						<span>
-							<button onClick={() => handleClearChat(friend.id)} style={buttonStyle}>
+							<button onClick={() => handleClearChat(friend.id, false)} style={buttonStyle}>
 								Clear Chat
 							</button>
 							<button onClick={() => navigateToFriendProfile(friend.name)} style={buttonStyle}>
@@ -454,12 +453,12 @@ export const ChatRoom = () => {
 				))}
 			</ul>
 
-			{selectedFriend && (
+			{selectedFriend || selectedChatRoom ? (
 				<>
 					<h2 style={{ marginTop: '30px', textAlign: 'center' }}>
-						Chat with {selectedFriend.name}
-						{selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
-						{selectedFriend.status && ` - Status: ${selectedFriend.status}`}
+						Chat with {selectedFriend ? selectedFriend.name : selectedChatRoom.name}
+						{selectedFriend && selectedFriend.nickname && ` | ${selectedFriend.nickname}`}
+						{selectedFriend && selectedFriend.status && ` - Status: ${selectedFriend.status}`}
 					</h2>
 					<div
 						style={{
@@ -514,7 +513,7 @@ export const ChatRoom = () => {
 						</button>
 					</div>
 				</>
-			)}
+			) : null}
 		</div>
 	);
 };
