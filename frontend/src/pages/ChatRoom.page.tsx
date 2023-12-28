@@ -145,9 +145,7 @@ export const ChatRoom = () => {
 				selectedChatRoom && // Check if selectedChatRoom is not null
 				message.receiverId === selectedChatRoom.id
 			) {
-				console.log('ChatRoomMEssages logic started. Not done yet');
-				// Logic for appending the message to the chatroom's messages goes here
-				//setChatRoomMessages((prevMessages) => [...prevMessages, message]);
+				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 		};
 
@@ -316,9 +314,23 @@ export const ChatRoom = () => {
 	}, []);
 
 	const fetchChatRoomHistory = async (chatRoomId: string) => {
-		// Fetch chat history for the selected chat room
-		console.log('ChatROomId: ', chatRoomId);
-		// Ensure that your API endpoint can handle fetching chat room history
+		try {
+			const response = await fetch(
+				`http://localhost:8080/chat/chatroomhistory/?chatroomid=${chatRoomId}`,
+				{
+					method: 'GET',
+					credentials: 'include',
+				},
+			);
+			if (!response.ok) {
+				throw new Error('Failed to fetch chatroom history');
+			}
+			const history = await response.json();
+			console.log('res: ', history);
+			setChatMessages(history);
+		} catch (error) {
+			console.error('Error fetching chatroom history:', error);
+		}
 	};
 
 	const handleChatRoomSelect = (chatRoom: ChatRoom) => {

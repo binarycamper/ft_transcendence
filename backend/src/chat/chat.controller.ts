@@ -54,6 +54,19 @@ export class ChatController {
 		}
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('chatroomhistory')
+	async getChatRoomChat(@Req() req, @Query('chatroomid') chatRoomId: string) {
+		try {
+			const userId = req.user.id;
+			const result = await this.chatService.findChatRoomChat(chatRoomId);
+			//console.log('res: ', result);
+			return result;
+		} catch (error) {
+			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	//########################CHatMessages#############################
 
 	@UseGuards(JwtAuthGuard)

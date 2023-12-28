@@ -122,11 +122,13 @@ export class EventsGateway {
 				return;
 			}
 			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
-			const message = await this.chatService.saveMessage(
+			const message = await this.chatService.saveChatRoomMessage(
 				data.chatRoomId,
 				isAuthenticated.userId,
 				data.content,
 			);
+
+			//console.log('the new message is: ', message);
 			// Emit the message to the recipient if they're online
 			this.server.to(`user_${data.chatRoomId}`).emit('receiveMessage', {
 				content: message.content,

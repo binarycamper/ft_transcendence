@@ -10,6 +10,7 @@ export class ChatMessage {
 	@Column()
 	senderId: string;
 
+	//receiverId is also Chatroom iD if message is for Chatrooms
 	@Column()
 	receiverId: string;
 
