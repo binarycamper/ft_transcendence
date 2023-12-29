@@ -23,6 +23,7 @@ import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { InviteRoomDto } from './inviteRoom.dto';
+import { ChatRoom } from './chatRoom.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -114,12 +115,24 @@ export class ChatController {
 		console.log('userNameToInvite: ', userNameToInvite);
 
 		try {
+			//check if Username is existing user
 			const user = await this.userService.findProfileByName(userNameToInvite);
 			if (!user) {
-				// User not found
 				throw new NotFoundException('The user you are trying to invite does not exist.');
 			}
 
+			//TODO: Test later when implemented, try invite a user which is already in that chatroom.
+
+			//check if user is already in Chatroom
+			const chatRoom = await this.chatService.getChatRoomById(roomId);
+			if (!chatRoom) {
+				throw new NotFoundException('Chat room not found.');
+			}
+			if (chatRoom.users.some((user) => user.name === userNameToInvite)) {
+				throw new BadRequestException(
+					'The user you are trying to invite is already in the chat room.',
+				);
+			}
 			// Your logic to invite the user to the room goes here...
 
 			// Return a success response if the invitation was sent

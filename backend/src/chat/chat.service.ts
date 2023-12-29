@@ -34,6 +34,13 @@ export class ChatService {
 
 	//########################CHatRooms#############################
 
+	async getChatRoomById(id: string): Promise<ChatRoom> {
+		return this.chatRoomRepository.findOne({
+			where: { id },
+			relations: ['users'],
+		});
+	}
+
 	async findChatRoomByName(chatRoomName: string) {
 		//console.log('chatRoomData: ', chatRoomData);
 		// Check for unique chat room name
