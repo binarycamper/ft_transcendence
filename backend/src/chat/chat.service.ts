@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ForbiddenException,
 	Injectable,
 	InternalServerErrorException,
@@ -34,9 +35,9 @@ export class ChatService {
 
 	//########################CHatRooms#############################
 
-	async getChatRoomById(id: string): Promise<ChatRoom> {
-		return this.chatRoomRepository.findOne({
-			where: { id },
+	async getChatRoomById(roomId: string): Promise<ChatRoom> {
+		return await this.chatRoomRepository.findOne({
+			where: { id: roomId },
 			relations: ['users'],
 		});
 	}
@@ -146,6 +147,28 @@ export class ChatService {
 		}
 
 		// TODO: TEsTs
+	}
+
+	async addUserToChatRoom(roomId: string, userToAdd: User): Promise<ChatRoom> {
+		const chatRoom = await this.chatRoomRepository.findOne({
+			where: { id: roomId },
+			relations: ['users'],
+		});
+
+		if (!chatRoom) {
+			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
+		}
+
+		const isUserAlreadyInRoom = chatRoom.users.some((user) => user.id === userToAdd.id);
+
+		if (isUserAlreadyInRoom) {
+			throw new BadRequestException(`User ${userToAdd.name} is already in the chat room.`);
+		}
+
+		chatRoom.users.push(userToAdd);
+		await this.chatRoomRepository.save(chatRoom);
+
+		return chatRoom;
 	}
 
 	//########################CHatMessages#############################
@@ -327,7 +350,9 @@ export class ChatService {
 	//########################Debug#############################
 
 	async getAllChatRooms(): Promise<ChatRoom[]> {
-		return this.chatRoomRepository.find({});
+		return await this.chatRoomRepository.find({
+			relations: ['messages', 'users'],
+		});
 	}
 
 	async getAllRequests(): Promise<FriendRequest[]> {

@@ -1,5 +1,5 @@
 //chatRoom.dto.ts
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
 
@@ -23,6 +23,7 @@ export class ChatRoom {
 	@OneToMany(() => ChatMessage, (chatMessage) => chatMessage.chatRoom)
 	messages: ChatMessage[];
 
-	@ManyToMany(() => User)
+	@ManyToMany(() => User, (user) => user.chatRooms)
+	@JoinTable()
 	users: User[];
 }

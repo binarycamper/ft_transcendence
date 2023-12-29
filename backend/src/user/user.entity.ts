@@ -61,7 +61,6 @@ export class User {
 	@Column('simple-array', { default: '' })
 	achievements: string[] = [];
 
-	@ManyToMany(() => ChatRoom)
-	@JoinTable()
+	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.users)
 	chatRooms: ChatRoom[];
 }

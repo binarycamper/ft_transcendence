@@ -115,9 +115,9 @@ export class ChatController {
 		console.log('userNameToInvite: ', userNameToInvite);
 
 		try {
-			//check if Username is existing user
-			const user = await this.userService.findProfileByName(userNameToInvite);
-			if (!user) {
+			//check if Username is a existing user
+			const userToInvite = await this.userService.findProfileByName(userNameToInvite);
+			if (!userToInvite) {
 				throw new NotFoundException('The user you are trying to invite does not exist.');
 			}
 
@@ -133,8 +133,8 @@ export class ChatController {
 					'The user you are trying to invite is already in the chat room.',
 				);
 			}
-			// Your logic to invite the user to the room goes here...
-
+			// TODO: Add request system here like the friendrequest does, or similiar...
+			await this.chatService.addUserToChatRoom(roomId, userToInvite);
 			// Return a success response if the invitation was sent
 			return { message: 'Invitation sent successfully.' };
 		} catch (error) {

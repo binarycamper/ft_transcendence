@@ -401,13 +401,13 @@ export const ChatRoom = () => {
 		}
 	};
 
-	const handleInviteSubmit = async (event, roomId: string) => {
+	const handleInviteSubmit = async (event, roomId) => {
 		event.preventDefault();
 		if (!inviteUsername.trim()) {
 			alert('Please enter a username.');
 			return;
 		}
-		// Call your invite function here using roomId and inviteUsername
+
 		try {
 			const response = await fetch(`http://localhost:8080/chat/invitetoroom`, {
 				method: 'POST',
@@ -421,16 +421,29 @@ export const ChatRoom = () => {
 				}),
 			});
 
-			const data = await response.json();
 			if (response.ok) {
 				alert(`User ${inviteUsername} invited to the room successfully.`);
 				setInviteUsername(''); // Clear the input after successful invite
 			} else {
-				alert(`Failed to invite user: ${data.message}`);
+				// Check for specific status codes and display corresponding messages
+				switch (response.status) {
+					case 400: // Bad Request
+						alert('Invalid request. Please check the data you are sending.');
+						break;
+					case 404: // Not Found
+						alert('User not found.');
+						break;
+					case 409: // Conflict
+						alert('The user is already in the chat room.');
+						break;
+					default:
+						alert(`Failed to invite user. Server responded with status code: ${response.status}`);
+						break;
+				}
 			}
 		} catch (error) {
-			alert('Failed to invite user. Please try again.');
 			console.error('Error inviting to room:', error);
+			alert('Failed to invite user. Please try again.');
 		}
 	};
 
