@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from './context/socketContext';
 import { useNavigate } from 'react-router-dom';
 import { Dialog } from '@mantine/core';
+import { HttpStatusCode } from 'axios';
 
 type Friend = {
 	id: string;
@@ -302,10 +303,13 @@ export const ChatRoom = () => {
 				body: JSON.stringify(chatRoomData),
 			});
 
-			if (response.status === 403) {
+			if (response.status === HttpStatusCode.Forbidden) {
 				setChatRoomError('You have reached the maximum number of chat rooms.');
+			} else if (response.status === HttpStatusCode.BadRequest) {
+				setChatRoomError('Chat room name already in use.');
 			} else if (response.ok) {
 				const result = await response.json();
+				window.location.reload();
 				//console.log('Chat room created:', result);
 				setChatRoomError('');
 				// Reset form fields
@@ -392,7 +396,8 @@ export const ChatRoom = () => {
 				console.error('Failed to delete chat room');
 			}
 		} catch (error) {
-			console.error('Error deleting chat room:', error);
+			setChatRoomError('' + error);
+			//console.error(error);
 		}
 	};
 

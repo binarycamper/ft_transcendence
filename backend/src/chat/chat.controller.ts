@@ -38,10 +38,7 @@ export class ChatController {
 
 		// Check the number of chat rooms the user already has
 		const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
-
-		// Define the maximum number of chat rooms allowed
 		const MAX_CHATROOMS = 5;
-
 		// If the user already has the maximum number of chat rooms, throw an error
 		if (chatRoomCount >= MAX_CHATROOMS) {
 			throw new ForbiddenException('You have reached the maximum number of chat rooms.');
