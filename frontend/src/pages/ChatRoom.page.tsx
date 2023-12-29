@@ -88,7 +88,7 @@ export const ChatRoom = () => {
 				const friendsList: Friend[] = await response.json();
 				setFriends(friendsList);
 			} catch (error) {
-				console.log('fetching friends not possible: ', error);
+				//console.log('fetching friends not possible: ', error);
 				navigate('/');
 			}
 		};
@@ -255,14 +255,17 @@ export const ChatRoom = () => {
 
 			const data = await response.json();
 			if (response.ok) {
+				//TODO console log is useless for clients! implement a common user feedback
 				console.log('Invitation sent:', data.message);
 				// Implement any additional logic on successful invitation
 			} else {
+				//TODO console log is useless for clients! implement a common user feedback
 				console.error('Failed to send invitation:', data.message);
 				// Implement error handling logic
 			}
 		} catch (error) {
 			console.error('Error while sending invitation:', error);
+			//TODO console log is useless for clients! implement a common user feedback
 			// Implement error handling logic
 		}
 	};
