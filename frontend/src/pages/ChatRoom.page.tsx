@@ -54,6 +54,7 @@ export const ChatRoom = () => {
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	const [selectedChatRoom, setselectedChatRoom] = useState<ChatRoom | null>(null);
 	const [chatRoomError, setChatRoomError] = useState('');
+	const [inviteUsername, setInviteUsername] = useState('');
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -401,6 +402,39 @@ export const ChatRoom = () => {
 		}
 	};
 
+	const handleInviteSubmit = async (event, roomId: string) => {
+		event.preventDefault();
+		if (!inviteUsername.trim()) {
+			alert('Please enter a username.');
+			return;
+		}
+		// Call your invite function here using roomId and inviteUsername
+		try {
+			const response = await fetch(`http://localhost:8080/chat/inviteToRoom`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					roomId,
+					userNameToInvite: inviteUsername,
+				}),
+			});
+
+			const data = await response.json();
+			if (response.ok) {
+				alert(`User ${inviteUsername} invited to the room successfully.`);
+				setInviteUsername(''); // Clear the input after successful invite
+			} else {
+				alert(`Failed to invite user: ${data.message}`);
+			}
+		} catch (error) {
+			alert('Failed to invite user. Please try again.');
+			console.error('Error inviting to room:', error);
+		}
+	};
+
 	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
@@ -481,7 +515,16 @@ export const ChatRoom = () => {
 									Settings
 								</button>
 								<button onClick={() => handleInviteToRoom(room.id)} style={buttonStyle}>
-									Invite
+									add user to {room.name}
+									<form onSubmit={(e) => handleInviteSubmit(e, room.id)}>
+										<input
+											type="text"
+											placeholder="Enter username to invite"
+											value={inviteUsername}
+											onChange={(e) => setInviteUsername(e.target.value)}
+										/>
+										<button type="submit">Invite</button>
+									</form>
 								</button>
 								<button onClick={() => handleDeleteChatRoom(room.id)} style={buttonStyle}>
 									Delete
@@ -520,9 +563,7 @@ export const ChatRoom = () => {
 							<button onClick={() => navigateToFriendProfile(friend.name)} style={buttonStyle}>
 								Profile
 							</button>
-							<button onClick={() => inviteToPongGame(friend.id)} style={buttonStyle}>
-								Invite to Game
-							</button>
+							<button onClick={() => inviteToPongGame(friend.id)} style={buttonStyle}></button>
 						</span>
 					</li>
 				))}
