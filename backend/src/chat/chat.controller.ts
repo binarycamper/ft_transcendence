@@ -12,6 +12,7 @@ import {
 	Delete,
 	HttpCode,
 	HttpException,
+	ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
@@ -28,17 +29,32 @@ export class ChatController {
 
 	//########################CHatRooms#############################
 
-	//TODO: We need add the ChatRoom to the USer entity as entry!
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
-		// Perform your logic here, for example, calling a service method to handle the chat room creation
-		const user = await this.userService.findProfileById(req.user.id);
-		//console.log('User: ', user);
+		const userId = req.user.id; // Get the user ID from the request
+		const user = await this.userService.findProfileById(userId);
+
+		// Check the number of chat rooms the user already has
+		const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
+
+		// Define the maximum number of chat rooms allowed
+		const MAX_CHATROOMS = 5;
+
+		// If the user already has the maximum number of chat rooms, throw an error
+		if (chatRoomCount >= MAX_CHATROOMS) {
+			throw new ForbiddenException('You have reached the maximum number of chat rooms.');
+		}
+
+		// Since the user has not reached the maximum, create the new chat room
 		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
-		user.chatRooms = [...user.chatRooms, chatRoom];
+
+		// Add the new chat room to the user's chat rooms
+		user.chatRooms.push(chatRoom);
+
 		// Save the updated user entity
 		await this.userService.updateUser(user);
+
 		return chatRoom;
 	}
 

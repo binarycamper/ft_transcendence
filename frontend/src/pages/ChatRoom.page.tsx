@@ -51,6 +51,7 @@ export const ChatRoom = () => {
 	const [chatRoomType, setChatRoomType] = useState('public');
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	const [selectedChatRoom, setselectedChatRoom] = useState<ChatRoom | null>(null);
+	const [chatRoomError, setChatRoomError] = useState('');
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -278,18 +279,22 @@ export const ChatRoom = () => {
 				body: JSON.stringify(chatRoomData),
 			});
 
-			if (response.ok) {
+			if (response.status === 403) {
+				setChatRoomError('You have reached the maximum number of chat rooms.');
+			} else if (response.ok) {
 				const result = await response.json();
-				console.log('Chat room created:', result);
-				// Perform any action after successful chat room creation
+				//console.log('Chat room created:', result);
+				setChatRoomError('');
 				// Reset form fields
 				setChatRoomName('');
 				setChatRoomType('public');
 			} else {
-				throw new Error('Failed to create chat room');
+				setChatRoomError('ChatRoom creation failed');
+				//throw new Error('Failed to create chat room');
 			}
 		} catch (error) {
-			console.error('Error creating chat room:', error);
+			setChatRoomError('ChatRoom creation failed');
+			//console.error('Error creating chat room:', error);
 		}
 	};
 
@@ -390,6 +395,7 @@ export const ChatRoom = () => {
 				>
 					Create Chat Room
 				</button>
+				{chatRoomError && <div style={{ color: 'red', marginTop: '10px' }}>{chatRoomError}</div>}
 			</div>
 			{/* Render Chat Rooms */}
 			<div style={{ marginTop: '20px' }}>
