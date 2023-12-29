@@ -13,6 +13,7 @@ import {
 	HttpCode,
 	HttpException,
 	ForbiddenException,
+	BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
@@ -46,6 +47,10 @@ export class ChatController {
 			throw new ForbiddenException('You have reached the maximum number of chat rooms.');
 		}
 
+		const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);
+		if (existingChatRoom) {
+			throw new BadRequestException('Chat room name already in use.');
+		}
 		// Since the user has not reached the maximum, create the new chat room
 		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
 
@@ -89,8 +94,15 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('clearchatroom')
-	async clearChatRoom(@Query('roomId') roomId: string, @Req() req) {
+	async clearChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
 		return await this.chatService.clearChatRoom(roomId, req.user.id);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@Delete('deletechatroom')
+	async deleteChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
+		return await this.chatService.deleteChatRoom(roomId, req.user.id);
 	}
 
 	//########################CHatMessages#############################

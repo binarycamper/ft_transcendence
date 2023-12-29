@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from './context/socketContext';
 import { useNavigate } from 'react-router-dom';
+import { Dialog } from '@mantine/core';
 
 type Friend = {
 	id: string;
@@ -193,8 +194,9 @@ export const ChatRoom = () => {
 
 	const handleClearChat = async (id: string, isRoom: boolean) => {
 		let url = isRoom
-			? `http://localhost:8080/chat/clearchatroom?roomId=${id}`
+			? `http://localhost:8080/chat/clearchatroom?chatroomId=${id}`
 			: `http://localhost:8080/chat/deletechat?friendId=${id}`;
+		//console.log('url: ', url);
 		const confirmation = window.confirm(
 			'Clearing this chat will delete all messages. Do you want to proceed?',
 		);
@@ -217,6 +219,27 @@ export const ChatRoom = () => {
 			}
 		}
 	};
+
+	//const handleClearChat = async (friendId: string) => {
+	//	const confirmation = window.confirm(
+	//		'Clearing this chat will also clear it for your friend. Do you want to proceed?',
+	//	);
+	//
+	//	if (confirmation) {
+	//		try {
+	//			await fetch(`http://localhost:8080/chat/deleteChat?friendId=${friendId}`, {
+	//				method: 'DELETE',
+	//				credentials: 'include',
+	//			});
+	//			// Clear chat messages from the state if the selected friend's chat is being cleared
+	//			if (selectedFriend?.id === friendId) {
+	//				setChatMessages([]);
+	//			}
+	//		} catch (error) {
+	//			console.error('Error clearing chat:', error);
+	//		}
+	//	}
+	//};
 
 	const navigateToFriendProfile = (friendName: string) => {
 		navigate(`/publicprofile`, { state: { friendName: friendName } });
@@ -347,6 +370,32 @@ export const ChatRoom = () => {
 		fetchChatRoomHistory(chatRoom.id); // Fetch the chat history for the selected chat room
 	};
 
+	const handleDeleteChatRoom = async (chatRoomId: string) => {
+		const confirmation = window.confirm(
+			'Are you sure you want to delete this chat room? This cannot be undone.',
+		);
+		if (!confirmation) return;
+
+		try {
+			const response = await fetch(
+				`http://localhost:8080/chat/deletechatroom?chatroomId=${chatRoomId}`,
+				{
+					method: 'DELETE',
+					credentials: 'include',
+				},
+			);
+
+			if (response.ok) {
+				// Remove the deleted chat room from state
+				setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== chatRoomId));
+			} else {
+				console.error('Failed to delete chat room');
+			}
+		} catch (error) {
+			console.error('Error deleting chat room:', error);
+		}
+	};
+
 	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
@@ -428,6 +477,9 @@ export const ChatRoom = () => {
 								</button>
 								<button onClick={() => handleInviteToRoom(room.id)} style={buttonStyle}>
 									Invite
+								</button>
+								<button onClick={() => handleDeleteChatRoom(room.id)} style={buttonStyle}>
+									Delete
 								</button>
 							</span>
 						</li>

@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+	ForbiddenException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequest } from './friendRequest.entity';
@@ -29,11 +34,20 @@ export class ChatService {
 
 	//########################CHatRooms#############################
 
+	async findChatRoomByName(chatRoomName: string) {
+		//console.log('chatRoomData: ', chatRoomData);
+		// Check for unique chat room name
+		const existingChatRoom = await this.chatRoomRepository.findOne({
+			where: { name: chatRoomName },
+		});
+		return existingChatRoom;
+	}
+
 	async createChatRoom(chatRoomData: ChatRoom) {
 		//console.log('chatRoomData: ', chatRoomData);
 		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
 		chatRoom.ownerId = chatRoomData.ownerId;
-		console.log('chatRoom = ', chatRoom);
+		//console.log('chatRoom = ', chatRoom);
 		return await this.chatRoomRepository.save(chatRoom);
 	}
 
@@ -93,6 +107,38 @@ export class ChatService {
 			where: [{ receiverId: roomId }],
 		});
 		await this.chatMessageRepository.remove(chats);
+	}
+
+	async deleteChatRoom(roomId: string, userId: string) {
+		// First, delete chat messages associated with the chat room
+		await this.chatMessageRepository
+			.createQueryBuilder()
+			.delete()
+			.from(ChatMessage)
+			.where('chatRoomId = :id', { id: roomId })
+			.execute();
+
+		// Then, delete the chat room itself if the user is authorized
+		const deleteResult = await this.chatRoomRepository
+			.createQueryBuilder()
+			.delete()
+			.from(ChatRoom)
+			.where('id = :id', { id: roomId })
+			.andWhere('ownerId = :userId', { userId: userId })
+			.execute();
+
+		// If no chat room was deleted, it could be because it was not found or the user is not the owner
+		if (deleteResult.affected === 0) {
+			const chatRoom = await this.chatRoomRepository.findOne({ where: { id: roomId } });
+			if (!chatRoom) {
+				throw new NotFoundException('Chat room not found');
+			}
+			if (chatRoom.ownerId !== userId) {
+				throw new ForbiddenException('You do not have permission to delete this chat room');
+			}
+		}
+
+		// TODO: TEsTs
 	}
 
 	//########################CHatMessages#############################
