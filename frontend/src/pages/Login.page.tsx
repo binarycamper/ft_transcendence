@@ -1,94 +1,68 @@
-import axios from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
 	Anchor,
 	Button,
-	Center,
 	Checkbox,
+	Container,
+	Group,
 	Paper,
 	PasswordInput,
-	Text,
 	TextInput,
 } from '@mantine/core';
+import handlePasswordReset from '../services/handlePasswordReset';
+import handleSignup from '../services/handleSignup';
+import useLogin from '../hooks/useLogin';
+
+const emptyFieldWarning = 'Please fill out this field';
+const errorMessage = 'Invalid username or password';
 
 export function Login() {
-	const navigate = useNavigate();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-
-	async function handleLogin(email: string, password: string) {
-		try {
-			const response = await fetch('http://localhost:8080/auth/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ email, password }),
-				credentials: 'include',
-			});
-
-			if (response.ok) {
-				const data = await response.json();
-				if (data.require2FA) {
-					navigate('/twofactorsetup', { state: { userId: data.userId } });
-				} else {
-					navigate('/profile');
-				}
-			} else {
-				console.error('Login fehlgeschlagen');
-			}
-		} catch (error) {
-			console.error('Failed to initiate login', error);
-		}
-	}
-
-	async function handleSignup() {
-		try {
-			const response = await axios.get('http://localhost:8080/auth/signup', {
-				withCredentials: true,
-			});
-			window.location.href = response.data.url;
-		} catch (error) {
-			console.error('Failed to initiate signup', error);
-		}
-	}
-
-	const handleLoginClick = () => {
-		handleLogin(email, password);
-	};
+	const { error, setError, handleLogin } = useLogin();
 
 	return (
-		<Center my={200}>
-			<Paper className="signup" radius={0} p={30}>
-				<Paper withBorder shadow="md" p={100} mt={30} mb={50} radius="md">
-					<TextInput
-						label="Email address"
-						placeholder="intra@student.42Heilbronn.de"
-						size="md"
-						value={email}
-						onChange={(event) => setEmail(event.currentTarget.value)}
-					/>
-					<PasswordInput
-						label="Password"
-						placeholder="Your password"
-						mt="md"
-						size="md"
-						value={password}
-						onChange={(event) => setPassword(event.currentTarget.value)}
-					/>
-					<Checkbox label="Keep me logged in" mt="xl" size="md" />
-					<Button fullWidth mt="xl" size="md" onClick={handleLoginClick}>
-						Login
-					</Button>
-					<Text ta="center" mt="md">
-						Don’t have an account?{' '}
-						<Anchor<'a'> fw={700} onClick={handleSignup}>
-							Register
-						</Anchor>
-					</Text>
-				</Paper>
+		<Container my={'20vh'} size={'xs'}>
+			<Paper bg={'#1a1b1e'} p={60} radius="md" shadow="md" withBorder>
+				<TextInput
+					description="User name or email"
+					error={error && (!email ? emptyFieldWarning : true)}
+					onChange={(event) => setEmail(event.currentTarget.value)}
+					onFocus={() => setError(false)}
+					placeholder="<intraname>@student.42heilbronn.de"
+					radius="md"
+					size="lg"
+					value={email}
+				/>
+				<PasswordInput
+					description="Password"
+					error={error && (!password ? emptyFieldWarning : errorMessage)}
+					mt="lg"
+					onChange={(event) => setPassword(event.currentTarget.value)}
+					onFocus={() => setError(false)}
+					radius="md"
+					size="lg"
+					value={password}
+				/>
+				<Button
+					fullWidth
+					mt="xl"
+					onClick={() => handleLogin(email, password)}
+					radius={'md'}
+					size="lg"
+				>
+					SIGN IN
+				</Button>
+				{/* <Checkbox defaultChecked label="Keep me logged in" my="sm" size="sm" variant="outline" /> */}
+				<Group justify="space-between">
+					<Anchor<'a'> mt="xl" onClick={handleSignup} underline="never">
+						Register
+					</Anchor>
+					<Anchor<'a'> mt="xl" onClick={handlePasswordReset} underline="never">
+						Forgot password?
+					</Anchor>
+				</Group>
 			</Paper>
-		</Center>
+		</Container>
 	);
 }
