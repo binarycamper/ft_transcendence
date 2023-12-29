@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from './context/socketContext';
 import { useNavigate } from 'react-router-dom';
-import { Dialog } from '@mantine/core';
 import { HttpStatusCode } from 'axios';
 
 type Friend = {
@@ -410,7 +409,7 @@ export const ChatRoom = () => {
 		}
 		// Call your invite function here using roomId and inviteUsername
 		try {
-			const response = await fetch(`http://localhost:8080/chat/inviteToRoom`, {
+			const response = await fetch(`http://localhost:8080/chat/invitetoroom`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -514,18 +513,19 @@ export const ChatRoom = () => {
 								<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
 									Settings
 								</button>
-								<button onClick={() => handleInviteToRoom(room.id)} style={buttonStyle}>
-									add user to {room.name}
-									<form onSubmit={(e) => handleInviteSubmit(e, room.id)}>
-										<input
-											type="text"
-											placeholder="Enter username to invite"
-											value={inviteUsername}
-											onChange={(e) => setInviteUsername(e.target.value)}
-										/>
-										<button type="submit">Invite</button>
-									</form>
-								</button>
+								<div style={{ ...buttonStyle, pointerEvents: 'none' }}>Add user to {room.name}</div>
+								<form onSubmit={(e) => handleInviteSubmit(e, room.id)}>
+									<input
+										type="text"
+										placeholder="Enter username to invite"
+										value={inviteUsername}
+										onChange={(e) => setInviteUsername(e.target.value)}
+									/>
+									<button type="submit" style={buttonStyle}>
+										Add
+									</button>
+								</form>
+
 								<button onClick={() => handleDeleteChatRoom(room.id)} style={buttonStyle}>
 									Delete
 								</button>

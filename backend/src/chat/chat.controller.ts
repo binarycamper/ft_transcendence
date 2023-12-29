@@ -14,12 +14,15 @@ import {
 	HttpException,
 	ForbiddenException,
 	BadRequestException,
+	NotFoundException,
+	InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
+import { InviteRoomDto } from './inviteRoom.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -100,6 +103,39 @@ export class ChatController {
 	@Delete('deletechatroom')
 	async deleteChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
 		return await this.chatService.deleteChatRoom(roomId, req.user.id);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@Post('invitetoroom')
+	async inviteToRoom(@Body() inviteRoomDto: InviteRoomDto, @Req() req): Promise<any> {
+		const { roomId, userNameToInvite } = inviteRoomDto;
+		console.log('roomId: ', roomId);
+		console.log('userNameToInvite: ', userNameToInvite);
+
+		try {
+			const user = await this.userService.findProfileByName(userNameToInvite);
+			if (!user) {
+				// User not found
+				throw new NotFoundException('The user you are trying to invite does not exist.');
+			}
+
+			// Your logic to invite the user to the room goes here...
+
+			// Return a success response if the invitation was sent
+			return { message: 'Invitation sent successfully.' };
+		} catch (error) {
+			if (error.status === HttpStatus.NOT_FOUND) {
+				// If the error is a NotFoundException, rethrow it
+				console.log('ERROR: ', error);
+				throw error;
+			}
+			// For other errors, log them and throw a generic error
+			console.error('error: ', error);
+			throw new InternalServerErrorException(
+				'An error occurred while inviting the user to the room.',
+			);
+		}
 	}
 
 	//########################CHatMessages#############################

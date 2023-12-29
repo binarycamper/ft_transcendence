@@ -106,9 +106,6 @@ export class UserService {
 			where: { name: friendName },
 			relations: ['friends', 'ignorelist'],
 		});
-		if (!user) {
-			throw new Error('User not found');
-		}
 		return user;
 	}
 
