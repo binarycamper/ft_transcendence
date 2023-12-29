@@ -505,31 +505,42 @@ export const ChatRoom = () => {
 								alignItems: 'center',
 							}}
 						>
-							<span style={{ flexGrow: 1 }}>{'(' + room.type + ') ' + room.name}</span>
-							<span>
-								<button onClick={() => handleClearChat(room.id, true)} style={buttonStyle}>
-									Clear Chat
-								</button>
-								<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
-									Settings
-								</button>
-								<div style={{ ...buttonStyle, pointerEvents: 'none' }}>Add user to {room.name}</div>
-								<form onSubmit={(e) => handleInviteSubmit(e, room.id)}>
+							<div
+								style={{
+									marginBottom: '20px',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'space-between',
+								}}
+							>
+								<div style={{ flexGrow: 1, marginRight: '10px' }}>
+									<span style={{ marginRight: '10px', fontWeight: 'bold' }}>{room.name}</span>
+									<button onClick={() => handleClearChat(room.id, true)} style={buttonStyle}>
+										Clear Chat
+									</button>
+									<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
+										Settings
+									</button>
+									<button onClick={() => handleDeleteChatRoom(room.id)} style={buttonStyle}>
+										Delete
+									</button>
+								</div>
+								<form
+									onSubmit={(e) => handleInviteSubmit(e, room.id)}
+									style={{ display: 'flex', alignItems: 'center' }}
+								>
 									<input
 										type="text"
 										placeholder="Enter username to invite"
 										value={inviteUsername}
 										onChange={(e) => setInviteUsername(e.target.value)}
+										style={{ padding: '5px 10px', marginRight: '10px' }}
 									/>
 									<button type="submit" style={buttonStyle}>
-										Add
+										Add User
 									</button>
 								</form>
-
-								<button onClick={() => handleDeleteChatRoom(room.id)} style={buttonStyle}>
-									Delete
-								</button>
-							</span>
+							</div>
 						</li>
 					))}
 				</ul>
