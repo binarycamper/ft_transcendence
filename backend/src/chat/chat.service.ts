@@ -87,6 +87,14 @@ export class ChatService {
 		}
 	}
 
+	async clearChatRoom(roomId: string, userId: string): Promise<void> {
+		// Find the chat that involves both users
+		const chats = await this.chatMessageRepository.find({
+			where: [{ receiverId: roomId }],
+		});
+		await this.chatMessageRepository.remove(chats);
+	}
+
 	//########################CHatMessages#############################
 
 	async saveMessage(receiverId: string, senderId: string, content: string) {

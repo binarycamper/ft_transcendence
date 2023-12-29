@@ -21,7 +21,10 @@ import { UserService } from 'src/user/user.service';
 
 @Controller('chat')
 export class ChatController {
-	constructor(private readonly chatService: ChatService, private userService: UserService) {}
+	constructor(
+		private readonly chatService: ChatService,
+		private userService: UserService,
+	) {}
 
 	//########################CHatRooms#############################
 
@@ -67,6 +70,13 @@ export class ChatController {
 		}
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@Delete('clearchatroom')
+	async clearChatRoom(@Query('roomId') roomId: string, @Req() req) {
+		return await this.chatService.clearChatRoom(roomId, req.user.id);
+	}
+
 	//########################CHatMessages#############################
 
 	@UseGuards(JwtAuthGuard)
@@ -82,7 +92,7 @@ export class ChatController {
 
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	@Delete('deleteChat')
+	@Delete('deletechat')
 	async deleteMyChats(@Query('friendId') friendId: string, @Req() req) {
 		return await this.chatService.deleteChat(friendId, req.user.id);
 	}

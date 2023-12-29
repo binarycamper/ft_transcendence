@@ -192,8 +192,8 @@ export const ChatRoom = () => {
 
 	const handleClearChat = async (id: string, isRoom: boolean) => {
 		let url = isRoom
-			? `http://localhost:8080/chat/deleteRoomChat?roomId=${id}`
-			: `http://localhost:8080/chat/deleteChat?friendId=${id}`;
+			? `http://localhost:8080/chat/clearchatroom?roomId=${id}`
+			: `http://localhost:8080/chat/deletechat?friendId=${id}`;
 		const confirmation = window.confirm(
 			'Clearing this chat will delete all messages. Do you want to proceed?',
 		);
