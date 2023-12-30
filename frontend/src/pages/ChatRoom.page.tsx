@@ -194,10 +194,14 @@ export const ChatRoom = () => {
 
 		if (confirmation) {
 			try {
-				await fetch(url, {
+				const response = await fetch(url, {
 					method: 'DELETE',
 					credentials: 'include',
 				});
+				if (!response.ok) {
+					const data = await response.json();
+					showNotification(data.message);
+				}
 				if (selectedChatRoom?.id === id) {
 					// Clear chat messages from the state if the selected chat room's chat is being cleared
 					setChatMessages([]);
@@ -358,12 +362,10 @@ export const ChatRoom = () => {
 					credentials: 'include',
 				},
 			);
-			const data = await response.json();
-			if (response.ok) {
+			if (response.status === 204) {
 				// Remove the deleted chat room from state
 				setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== chatRoomId));
-			} else {
-				showNotification(data.message);
+				showNotification('ChatRoom deleted');
 			}
 		} catch (error) {
 			setChatRoomError('' + error);

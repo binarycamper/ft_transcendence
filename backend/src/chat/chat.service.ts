@@ -4,6 +4,7 @@ import {
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
+	UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -112,11 +113,20 @@ export class ChatService {
 	}
 
 	async clearChatRoom(roomId: string, userId: string): Promise<void> {
-		// Find the chat that involves both users
-		const chats = await this.chatMessageRepository.find({
-			where: [{ receiverId: roomId }],
-		});
-		await this.chatMessageRepository.remove(chats);
+		// Find the chat room by ID
+		const chatRoom = await this.getChatRoomById(roomId);
+
+		// Check if the userId is in the list of adminIds for the chat room
+		if (chatRoom.adminIds.includes(userId)) {
+			// User is an admin, so proceed with clearing the chat messages
+			const chats = await this.chatMessageRepository.find({
+				where: { receiverId: roomId },
+			});
+			await this.chatMessageRepository.remove(chats);
+		} else {
+			// User is not an admin, throw an error or handle accordingly
+			throw new UnauthorizedException('User is not authorized to clear the chat room.');
+		}
 	}
 
 	async deleteChatRoom(roomId: string, userId: string) {
@@ -147,8 +157,6 @@ export class ChatService {
 				throw new ForbiddenException('You do not have permission to delete this chat room');
 			}
 		}
-
-		// TODO: TEsTs
 	}
 
 	async addUserToChatRoom(roomId: string, userToAdd: User): Promise<ChatRoom> {
