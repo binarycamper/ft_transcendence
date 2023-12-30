@@ -20,6 +20,9 @@ export class ChatRoom {
 	@Column()
 	ownerId: string;
 
+	@Column('simple-array')
+	adminIds: string[];
+
 	@OneToMany(() => ChatMessage, (chatMessage) => chatMessage.chatRoom)
 	messages: ChatMessage[];
 

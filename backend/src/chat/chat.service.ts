@@ -54,7 +54,7 @@ export class ChatService {
 	async createChatRoom(chatRoomData: ChatRoom) {
 		//console.log('chatRoomData: ', chatRoomData);
 		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
-		chatRoom.ownerId = chatRoomData.ownerId;
+		//chatRoom.ownerId = chatRoomData.ownerId;
 		//console.log('chatRoom = ', chatRoom);
 		return await this.chatRoomRepository.save(chatRoom);
 	}

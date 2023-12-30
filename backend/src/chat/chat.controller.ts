@@ -111,9 +111,8 @@ export class ChatController {
 	@Post('invitetoroom')
 	async inviteToRoom(@Body() inviteRoomDto: InviteRoomDto, @Req() req): Promise<any> {
 		const { roomId, userNameToInvite } = inviteRoomDto;
-		console.log('roomId: ', roomId);
-		console.log('userNameToInvite: ', userNameToInvite);
-
+		//console.log('roomId: ', roomId);
+		//console.log('userNameToInvite: ', userNameToInvite);
 		try {
 			const chatRoom = await this.chatService.getChatRoomById(roomId);
 			if (!chatRoom) {
@@ -123,9 +122,6 @@ export class ChatController {
 			//console.log('OwnerId: ', chatRoom.ownerId);
 			//console.log('userID: ', req.user.id);
 			if (chatRoom.ownerId !== req.user.id) {
-				console.log(
-					"we are here: throw new UnauthorizedException('No permissions to invite users!');",
-				);
 				throw new UnauthorizedException('No permissions to invite users!');
 			}
 			//check if Username is a existing user
