@@ -121,7 +121,7 @@ export class ChatController {
 			//TODO: Except the admins, they can also invite.
 			//console.log('OwnerId: ', chatRoom.ownerId);
 			//console.log('userID: ', req.user.id);
-			if (chatRoom.ownerId !== req.user.id) {
+			if (!chatRoom.adminIds.includes(req.user.id)) {
 				throw new UnauthorizedException('No permissions to invite users!');
 			}
 			//check if Username is a existing user

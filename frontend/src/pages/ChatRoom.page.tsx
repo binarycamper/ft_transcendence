@@ -293,7 +293,7 @@ export const ChatRoom = () => {
 			ownerId: currentUserId,
 			type: chatRoomType,
 			password: password.trim(), // Trim to ensure no whitespace-only passwords
-			adminIds: [],
+			adminIds: [currentUserId],
 			messages: [],
 			users: [],
 		};
@@ -428,7 +428,7 @@ export const ChatRoom = () => {
 			});
 			const data = await response.json();
 			if (response.ok) {
-				showNotification(`User ${inviteUsername} invited to the room successfully.`);
+				showNotification(`User ${inviteUsername} invited to the room successfully.`); //TODO: it is red but can be green because success
 				setInviteUsername('');
 			} else {
 				switch (response.status) {
