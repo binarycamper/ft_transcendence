@@ -13,6 +13,7 @@ interface ChatRoom {
 	id: string;
 	name: string;
 	type: string;
+	ownerId: string;
 	// Add other properties from ChatRoom entity if needed
 }
 
@@ -54,6 +55,7 @@ export const ChatRoom = () => {
 	const [selectedChatRoom, setselectedChatRoom] = useState<ChatRoom | null>(null);
 	const [chatRoomError, setChatRoomError] = useState('');
 	const [inviteUsername, setInviteUsername] = useState('');
+	const [notification, setNotification] = useState('');
 
 	useEffect(() => {
 		const getCurrentUserId = async () => {
@@ -423,31 +425,38 @@ export const ChatRoom = () => {
 					userNameToInvite: inviteUsername,
 				}),
 			});
-
+			const data = await response.json();
 			if (response.ok) {
-				alert(`User ${inviteUsername} invited to the room successfully.`);
-				setInviteUsername(''); // Clear the input after successful invite
+				showNotification(`User ${inviteUsername} invited to the room successfully.`);
+				setInviteUsername('');
 			} else {
-				// Check for specific status codes and display corresponding messages
 				switch (response.status) {
-					case 400: // Bad Request
-						alert('Invalid request. Please check the data you are sending.');
+					case 400:
+						showNotification(data.message);
 						break;
-					case 404: // Not Found
-						alert('User not found.');
+					case 401:
+						showNotification(data.message);
 						break;
-					case 409: // Conflict
-						alert('The user is already in the chat room.');
+					case 404:
+						showNotification(data.message);
+						break;
+					case 409:
+						showNotification(data.message);
 						break;
 					default:
-						alert(`Failed to invite user. Server responded with status code: ${response.status}`);
+						showNotification(data.message);
 						break;
 				}
 			}
 		} catch (error) {
 			console.error('Error inviting to room:', error);
-			alert('Failed to invite user. Please try again.');
+			showNotification('Failed to invite user. Please try again.');
 		}
+	};
+
+	const showNotification = (message: string) => {
+		setNotification(message);
+		setTimeout(() => setNotification(''), 5000); // Clear notification after 5 seconds
 	};
 
 	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
@@ -456,7 +465,8 @@ export const ChatRoom = () => {
 			<div style={{ marginBottom: '30px', textAlign: 'center' }}>
 				Current User: <strong>{currentUserName || 'Loading...'}</strong>
 			</div>
-
+			{/* Notification display */}
+			{notification && <div style={{ color: 'red', marginBottom: '10px' }}>{notification}</div>}
 			<div style={{ marginBottom: '20px' }}>
 				<input
 					type="text"
@@ -541,6 +551,7 @@ export const ChatRoom = () => {
 										Delete
 									</button>
 								</div>
+
 								<form
 									onSubmit={(e) => handleInviteSubmit(e, room.id)}
 									style={{ display: 'flex', alignItems: 'center' }}

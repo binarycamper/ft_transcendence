@@ -16,6 +16,7 @@ import {
 	BadRequestException,
 	NotFoundException,
 	InternalServerErrorException,
+	UnauthorizedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
@@ -107,7 +108,6 @@ export class ChatController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@HttpCode(HttpStatus.NO_CONTENT)
 	@Post('invitetoroom')
 	async inviteToRoom(@Body() inviteRoomDto: InviteRoomDto, @Req() req): Promise<any> {
 		const { roomId, userNameToInvite } = inviteRoomDto;
@@ -115,6 +115,19 @@ export class ChatController {
 		console.log('userNameToInvite: ', userNameToInvite);
 
 		try {
+			const chatRoom = await this.chatService.getChatRoomById(roomId);
+			if (!chatRoom) {
+				throw new NotFoundException('Chat room not found.');
+			}
+			//TODO: Except the admins, they can also invite.
+			//console.log('OwnerId: ', chatRoom.ownerId);
+			//console.log('userID: ', req.user.id);
+			if (chatRoom.ownerId !== req.user.id) {
+				console.log(
+					"we are here: throw new UnauthorizedException('No permissions to invite users!');",
+				);
+				throw new UnauthorizedException('No permissions to invite users!');
+			}
 			//check if Username is a existing user
 			const userToInvite = await this.userService.findProfileByName(userNameToInvite);
 			if (!userToInvite) {
@@ -122,12 +135,7 @@ export class ChatController {
 			}
 
 			//TODO: Test later when implemented, try invite a user which is already in that chatroom.
-
 			//check if user is already in Chatroom
-			const chatRoom = await this.chatService.getChatRoomById(roomId);
-			if (!chatRoom) {
-				throw new NotFoundException('Chat room not found.');
-			}
 			if (chatRoom.users.some((user) => user.name === userNameToInvite)) {
 				throw new BadRequestException(
 					'The user you are trying to invite is already in the chat room.',
@@ -138,15 +146,16 @@ export class ChatController {
 			// Return a success response if the invitation was sent
 			return { message: 'Invitation sent successfully.' };
 		} catch (error) {
-			if (error.status === HttpStatus.NOT_FOUND) {
-				// If the error is a NotFoundException, rethrow it
-				console.log('ERROR: ', error);
+			//console.error('Error inviting to room:', error);
+
+			// Rethrow the error if it's a known HTTP exception
+			if (error instanceof HttpException) {
 				throw error;
 			}
-			// For other errors, log them and throw a generic error
-			console.error('error: ', error);
+
+			// For other types of errors, throw an InternalServerErrorException
 			throw new InternalServerErrorException(
-				'An error occurred while inviting the user to the room.',
+				'An unexpected error occurred while inviting the user to the room.',
 			);
 		}
 	}
