@@ -118,6 +118,12 @@ export class ChatController {
 			if (!chatRoom) {
 				throw new NotFoundException('Chat room not found.');
 			}
+			console.log('User count: ', chatRoom.users.length);
+			//limit users in chatroom
+			if (chatRoom.users.length >= 10) {
+				throw new BadRequestException('Chat room has max users');
+			}
+
 			//TODO: Except the admins, they can also invite.
 			//console.log('OwnerId: ', chatRoom.ownerId);
 			//console.log('userID: ', req.user.id);
@@ -129,7 +135,6 @@ export class ChatController {
 			if (!userToInvite) {
 				throw new NotFoundException('The user you are trying to invite does not exist.');
 			}
-
 			//TODO: Test later when implemented, try invite a user which is already in that chatroom.
 			//check if user is already in Chatroom
 			if (chatRoom.users.some((user) => user.name === userNameToInvite)) {
