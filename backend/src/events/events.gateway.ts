@@ -96,6 +96,7 @@ export class EventsGateway {
 			// Emit the message to the recipient if they're online
 			this.server.to(`user_${data.receiverId}`).emit('receiveMessage', {
 				content: message.content,
+				senderName: message.senderName,
 				senderId: message.senderId,
 				receiverId: message.receiverId,
 				id: message.id,
@@ -232,6 +233,7 @@ export class EventsGateway {
 			this.server.to(`user_${data.chatRoomId}`).emit('receiveMessage', {
 				content: message.content,
 				senderId: message.senderId,
+				senderName: message.senderName,
 				receiverId: message.receiverId,
 				id: message.id,
 			});
@@ -240,6 +242,7 @@ export class EventsGateway {
 			this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
 				content: message.content,
 				senderId: message.senderId,
+				senderName: message.senderName,
 				receiverId: message.receiverId,
 				id: message.id,
 			});
