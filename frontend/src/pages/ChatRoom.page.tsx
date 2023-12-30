@@ -144,7 +144,6 @@ export const ChatRoom = () => {
 					message.receiverId === selectedFriend.id) ||
 				(message.receiverId === currentUserId && message.senderId === selectedFriend.id)
 			) {
-				console.log('WEIRD!1');
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 			// Then, if there is a selected chatroom, check if the message belongs to it
@@ -152,40 +151,33 @@ export const ChatRoom = () => {
 				selectedChatRoom && // Check if selectedChatRoom is not null
 				message.receiverId === selectedChatRoom.id
 			) {
-				console.log('WEIRD!2');
 				setChatMessages((prevMessages) => [...prevMessages, message]);
-			} else console.log('WEIRD!3');
+			} else console.log('New edgecase found! (ChatRoomPage!)');
 		};
 
 		socket.on('receiveMessage', handleNewMessage);
-		// If you have a separate event for chat room messages, set up a listener for that as well
-		//socket.on('sendMessageToChatRoom', handleNewMessage);
-
 		return () => {
 			socket.off('receiveMessage', handleNewMessage);
-			// socket.off('receiveChatRoomMessage', handleNewMessage);
 		};
 	}, [socket, currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
 
 	const handleSendMessage = () => {
-		if (!newMessage.trim()) return; // Avoid sending empty messages
+		if (!newMessage.trim()) return;
 
 		if (selectedFriend) {
 			const messageToSend = {
 				content: newMessage,
-				receiverId: selectedFriend.id, // assuming you have an endpoint that handles sending to a friend
-				// ...other required fields
+				receiverId: selectedFriend.id,
 			};
 
-			// Send the message to the friend
+			// Send the message to the gateway and then to the friend (socket)
 			socket.emit('sendMessage', messageToSend);
 		} else if (selectedChatRoom) {
 			const messageToSend = {
 				content: newMessage,
-				chatRoomId: selectedChatRoom.id, // assuming you have an endpoint that handles sending to a chat room
-				// ...other required fields
+				chatRoomId: selectedChatRoom.id,
 			};
-			// Send the message to the chat room
+			// Send the message to the chat room over gateway socket
 			socket.emit('sendMessageToChatRoom', messageToSend);
 		}
 		setNewMessage('');
@@ -262,7 +254,7 @@ export const ChatRoom = () => {
 
 		const password = window.prompt(passwordPrompt) || '';
 
-		// Construct chat room data here based on the state
+		// Construct chatRoom data here
 		const chatRoomData = {
 			name: chatRoomName,
 			ownerId: currentUserId,
@@ -274,7 +266,6 @@ export const ChatRoom = () => {
 		};
 
 		try {
-			// Call your API to create the chat room
 			const response = await fetch('http://localhost:8080/chat/chatroom', {
 				method: 'POST',
 				credentials: 'include',
@@ -283,13 +274,13 @@ export const ChatRoom = () => {
 				},
 				body: JSON.stringify(chatRoomData),
 			});
+			const result = await response.json();
 
 			if (response.status === HttpStatusCode.Forbidden) {
 				setChatRoomError('You have reached the maximum number of chat rooms.');
 			} else if (response.status === HttpStatusCode.BadRequest) {
 				setChatRoomError('Chat room name already in use.');
 			} else if (response.ok) {
-				const result = await response.json();
 				window.location.reload();
 				//console.log('Chat room created:', result);
 				setChatRoomError('');
@@ -297,12 +288,10 @@ export const ChatRoom = () => {
 				setChatRoomName('');
 				setChatRoomType('public');
 			} else {
-				setChatRoomError('ChatRoom creation failed');
-				//throw new Error('Failed to create chat room');
+				setChatRoomError(result.message);
 			}
 		} catch (error) {
 			setChatRoomError('ChatRoom creation failed');
-			//console.error('Error creating chat room:', error);
 		}
 	};
 
@@ -350,8 +339,8 @@ export const ChatRoom = () => {
 		if (selectedFriend) {
 			setSelectedFriend(null); // Unselect the friend if any is selected
 		}
-		setselectedChatRoom(chatRoom); // Select the chat room
-		setChatMessages([]); // Clear previous chat history
+		setselectedChatRoom(chatRoom);
+		setChatMessages([]);
 		fetchChatRoomHistory(chatRoom.id); // Fetch the chat history for the selected chat room
 	};
 
@@ -433,7 +422,6 @@ export const ChatRoom = () => {
 		setTimeout(() => setNotification(''), 5000); // Clear notification after 5 seconds
 	};
 
-	// Implement ChatRoom creation MaxLimit, like every uSer can create 5 grp channels.
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
 			<div style={{ marginBottom: '30px', textAlign: 'center' }}>
