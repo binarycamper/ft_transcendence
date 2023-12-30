@@ -55,7 +55,6 @@ export class ChatController {
 		}
 		// Since the user has not reached the maximum, create the new chat room
 		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
-
 		// Add the new chat room to the user's chat rooms
 		user.chatRooms.push(chatRoom);
 
@@ -104,7 +103,17 @@ export class ChatController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('deletechatroom')
 	async deleteChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
-		return await this.chatService.deleteChatRoom(roomId, req.user.id);
+		try {
+			await this.chatService.deleteChatRoom(roomId, req.user.id);
+			// Deletion was successful, return no content
+		} catch (error) {
+			// If the chatroom exists but the user is not the owner, throw a Forbidden exception
+			if (error instanceof HttpException) {
+				throw new ForbiddenException('User is not the owner of the chat room.');
+			}
+			// Re-throw the error if it's not a NotOwnerException
+			throw error;
+		}
 	}
 
 	@UseGuards(JwtAuthGuard)

@@ -21,6 +21,7 @@ type ChatMessage = {
 	id: string;
 	content: string;
 	senderId: string;
+	senderName: string;
 	receiverId: string;
 	// Add any other relevant properties
 };
@@ -188,13 +189,6 @@ export const ChatRoom = () => {
 		setNewMessage('');
 	};
 
-	// Function to get the display name for each message
-	const getDisplayName = (senderId: string) => {
-		if (senderId === currentUserId) return currentUserName;
-		if (senderId === selectedFriend?.id) return selectedFriend.nickname || selectedFriend.name;
-		return 'Unknown'; // Fallback for any mismatch
-	};
-
 	const handleClearChat = async (id: string, isRoom: boolean) => {
 		let url = isRoom
 			? `http://localhost:8080/chat/clearchatroom?chatroomId=${id}`
@@ -222,27 +216,6 @@ export const ChatRoom = () => {
 			}
 		}
 	};
-
-	//const handleClearChat = async (friendId: string) => {
-	//	const confirmation = window.confirm(
-	//		'Clearing this chat will also clear it for your friend. Do you want to proceed?',
-	//	);
-	//
-	//	if (confirmation) {
-	//		try {
-	//			await fetch(`http://localhost:8080/chat/deleteChat?friendId=${friendId}`, {
-	//				method: 'DELETE',
-	//				credentials: 'include',
-	//			});
-	//			// Clear chat messages from the state if the selected friend's chat is being cleared
-	//			if (selectedFriend?.id === friendId) {
-	//				setChatMessages([]);
-	//			}
-	//		} catch (error) {
-	//			console.error('Error clearing chat:', error);
-	//		}
-	//	}
-	//};
 
 	const navigateToFriendProfile = (friendName: string) => {
 		navigate(`/publicprofile`, { state: { friendName: friendName } });
@@ -394,26 +367,24 @@ export const ChatRoom = () => {
 					credentials: 'include',
 				},
 			);
-
+			const data = await response.json();
 			if (response.ok) {
 				// Remove the deleted chat room from state
 				setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== chatRoomId));
 			} else {
-				console.error('Failed to delete chat room');
+				showNotification(data.message);
 			}
 		} catch (error) {
 			setChatRoomError('' + error);
-			//console.error(error);
 		}
 	};
 
-	const handleInviteSubmit = async (event, roomId) => {
+	const handleInviteSubmit = async (event, roomId: string) => {
 		event.preventDefault();
 		if (!inviteUsername.trim()) {
 			alert('Please enter a username.');
 			return;
 		}
-
 		try {
 			const response = await fetch(`http://localhost:8080/chat/invitetoroom`, {
 				method: 'POST',
@@ -640,7 +611,7 @@ export const ChatRoom = () => {
 								}}
 							>
 								<p>
-									<strong>{getDisplayName(message.senderId)}</strong>: {message.content}
+									<strong>{message.senderName}</strong>: {message.content}
 								</p>
 							</div>
 						))}

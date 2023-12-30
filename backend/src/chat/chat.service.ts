@@ -60,11 +60,13 @@ export class ChatService {
 	}
 
 	async saveChatRoomMessage(chatRoomId: string, senderId: string, content: string) {
+		const sender = await this.userService.findProfileById(senderId);
 		const now = new Date();
 		// Assuming ChatMessage is a class that corresponds to your database schema
 		const message = new ChatMessage();
 		message.senderId = senderId;
 		message.receiverId = chatRoomId; // Make sure this is correct - for a chat room, you might not need a receiverId.
+		message.senderName = sender.name;
 		message.content = content;
 		message.createdAt = now;
 
@@ -80,10 +82,8 @@ export class ChatService {
 			if (!chatRoom.messages) {
 				chatRoom.messages = [];
 			}
-
 			// Add the message to the chat room's messages
 			chatRoom.messages.push(message);
-
 			// Save the chat room with the new message
 			await this.chatRoomRepository.save(chatRoom);
 			return message;
@@ -97,6 +97,8 @@ export class ChatService {
 		try {
 			const chatRoomHistory = await this.chatMessageRepository.find({
 				where: { receiverId: chatRoomId }, // Removed the array, directly using the object
+				select: ['senderId', 'receiverId', 'senderName', 'content', 'createdAt'],
+				relations: ['chatRoom'],
 				order: {
 					createdAt: 'ASC', // Correct, assuming you have a 'createdAt' field
 				},
@@ -174,10 +176,11 @@ export class ChatService {
 	//########################CHatMessages#############################
 
 	async saveMessage(receiverId: string, senderId: string, content: string) {
+		const sender = await this.userService.findProfileById(senderId);
 		const now = new Date();
 		const message = new ChatMessage();
 		message.senderId = senderId;
-		message.receiverId = receiverId;
+		(message.senderName = sender.name), (message.receiverId = receiverId);
 		message.content = content;
 		message.createdAt = now;
 		await this.chatMessageRepository.save(message);

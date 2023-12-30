@@ -48,11 +48,14 @@ export class UserController {
 		return { id: id, name: name };
 	}
 
-	//get all friends
 	@UseGuards(JwtAuthGuard)
-	@Get('userfriends')
-	async getAllFriends(@Req() req): Promise<User[]> {
-		return this.userService.findAllFriends(req.user);
+	@Get('getname')
+	async getName(@Query('senderid') senderId: string): Promise<{ name: string }> {
+		const user = await this.userService.findProfileById(senderId);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return { name: user.name }; // Replace 'name' with the actual property of your User entity that holds the user name
 	}
 
 	@Get('isProfileComplete')
