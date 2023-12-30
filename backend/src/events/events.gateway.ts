@@ -227,25 +227,20 @@ export class EventsGateway {
 				isAuthenticated.userId,
 				data.content,
 			);
-
 			//console.log('the new message is: ', message);
-			// Emit the message to the recipient if they're online
-			this.server.to(`user_${data.chatRoomId}`).emit('receiveMessage', {
-				content: message.content,
-				senderId: message.senderId,
-				senderName: message.senderName,
-				receiverId: message.receiverId,
-				id: message.id,
-			});
 
-			// Emit the message to the sender, update the chat display
-			this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
-				content: message.content,
-				senderId: message.senderId,
-				senderName: message.senderName,
-				receiverId: message.receiverId,
-				id: message.id,
-			});
+			// Emit the message to all ChatROomUsers if they're online
+			const chatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
+			for (const user of chatRoom.users) {
+				// Emit the message to each user's individual socket room
+				this.server.to(`user_${user.id}`).emit('receiveMessage', {
+					content: message.content,
+					senderId: message.senderId,
+					senderName: message.senderName,
+					receiverId: message.receiverId,
+					id: message.id,
+				});
+			}
 		} catch (error) {
 			console.error('Error in handleMessage:', error.message);
 		}

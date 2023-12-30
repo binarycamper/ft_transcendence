@@ -144,6 +144,7 @@ export const ChatRoom = () => {
 					message.receiverId === selectedFriend.id) ||
 				(message.receiverId === currentUserId && message.senderId === selectedFriend.id)
 			) {
+				console.log('WEIRD!1');
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			}
 			// Then, if there is a selected chatroom, check if the message belongs to it
@@ -151,13 +152,14 @@ export const ChatRoom = () => {
 				selectedChatRoom && // Check if selectedChatRoom is not null
 				message.receiverId === selectedChatRoom.id
 			) {
+				console.log('WEIRD!2');
 				setChatMessages((prevMessages) => [...prevMessages, message]);
-			}
+			} else console.log('WEIRD!3');
 		};
 
 		socket.on('receiveMessage', handleNewMessage);
 		// If you have a separate event for chat room messages, set up a listener for that as well
-		// socket.on('receiveChatRoomMessage', handleNewMessage);
+		//socket.on('sendMessageToChatRoom', handleNewMessage);
 
 		return () => {
 			socket.off('receiveMessage', handleNewMessage);
@@ -337,7 +339,7 @@ export const ChatRoom = () => {
 				throw new Error('Failed to fetch chatroom history');
 			}
 			const history = await response.json();
-			console.log('res: ', history);
+			//console.log('res: ', history);
 			setChatMessages(history);
 		} catch (error) {
 			console.error('Error fetching chatroom history:', error);
