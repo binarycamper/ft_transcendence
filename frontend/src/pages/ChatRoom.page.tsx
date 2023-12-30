@@ -611,7 +611,7 @@ export const ChatRoom = () => {
 								}}
 							>
 								<p>
-									<strong>{message.senderName}</strong>: {message.content}
+									<strong>{message.senderName || 'Me'}</strong>: {message.content}
 								</p>
 							</div>
 						))}

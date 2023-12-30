@@ -97,7 +97,7 @@ export class ChatService {
 		try {
 			const chatRoomHistory = await this.chatMessageRepository.find({
 				where: { receiverId: chatRoomId }, // Removed the array, directly using the object
-				select: ['senderId', 'receiverId', 'senderName', 'content', 'createdAt'],
+				select: ['id', 'senderId', 'receiverId', 'senderName', 'content', 'createdAt'],
 				relations: ['chatRoom'],
 				order: {
 					createdAt: 'ASC', // Correct, assuming you have a 'createdAt' field
