@@ -30,7 +30,8 @@ export const ChatRoomList = () => {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					throw new Error('Failed to fetch current user');
+					setError('Failed to fetch current user');
+					return;
 				}
 				const data = await response.json();
 				setCurrentUser(data);
@@ -51,7 +52,8 @@ export const ChatRoomList = () => {
 					});
 
 					if (!response.ok) {
-						throw new Error('Network response was not ok');
+						setError('Failed to load chat rooms: ');
+						return;
 					}
 
 					let data: ChatRoom[] = await response.json();
