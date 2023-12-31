@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../css/chatroomlist.css';
+import { useNavigate } from 'react-router-dom';
 
 type User = {
 	id: string;
@@ -20,6 +21,7 @@ export const ChatRoomList = () => {
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
+	const [joinError, setJoinError] = useState('');
 
 	useEffect(() => {
 		const getCurrentUser = async () => {
@@ -54,7 +56,7 @@ export const ChatRoomList = () => {
 
 					let data: ChatRoom[] = await response.json();
 
-					console.log('Fetched chat rooms:', data); // Debug log
+					//console.log('Fetched chat rooms:', data); // Debug log
 
 					// Filter out private rooms where the current user is not a member
 					data = data.filter(
@@ -66,7 +68,7 @@ export const ChatRoomList = () => {
 							}),
 					);
 
-					console.log('Filtered chat rooms:', data); // Debug log
+					//console.log('Filtered chat rooms:', data); // Debug log
 
 					setChatRooms(data);
 				} catch (error) {
@@ -81,10 +83,26 @@ export const ChatRoomList = () => {
 	}, [currentUser]);
 
 	const handleJoinRoom = async (roomId: string) => {
-		// Implement the join room functionality here
-		// This is an example and should be adapted to your API's requirements
-		console.log(`Joining room with ID: ${roomId}`);
-		// TODO: Make an API request to join the chat room
+		try {
+			const response = await fetch(`http://localhost:8080/chat/joinroom`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId }),
+			});
+
+			if (response.ok) {
+				//console.log(`Joined room with ID: ${roomId}`);
+				window.location.href = 'http://localhost:5173/chatroom';
+			} else {
+				const errorData = await response.json();
+				setJoinError('Failed to join room: ' + errorData.message);
+			}
+		} catch (error) {
+			setJoinError('An error occurred while attempting to join the room.');
+		}
 	};
 
 	if (loading) {
@@ -97,6 +115,7 @@ export const ChatRoomList = () => {
 
 	return (
 		<div>
+			{joinError && <div className="join-error">{joinError}</div>}
 			<div className="chat-room-list-container">
 				<h1>Chat Rooms</h1>
 				<ul className="chat-room-list">
