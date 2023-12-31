@@ -32,7 +32,7 @@ const router = createBrowserRouter([
 				children: [],
 			},
 			{
-				path: 'friendrequest/chatroom',
+				path: 'chatroom',
 				element: <ChatRoom />,
 			},
 			{

@@ -20,6 +20,7 @@ export default function Header() {
 						<Tabs.List>
 							<Tabs.Tab value="/play">Play</Tabs.Tab>
 							<Tabs.Tab value="/friendrequest">Requests</Tabs.Tab>
+							<Tabs.Tab value="/chatroom">Chatrooms</Tabs.Tab>
 							<Tabs.Tab value="/profile">Profile</Tabs.Tab>
 							<Tabs.Tab value="/friends">FriendList</Tabs.Tab>
 							<Tabs.Tab value="/settings">Settings</Tabs.Tab>
