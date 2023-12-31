@@ -80,6 +80,13 @@ export const ChatRoomList = () => {
 		}
 	}, [currentUser]);
 
+	const handleJoinRoom = async (roomId: string) => {
+		// Implement the join room functionality here
+		// This is an example and should be adapted to your API's requirements
+		console.log(`Joining room with ID: ${roomId}`);
+		// TODO: Make an API request to join the chat room
+	};
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -91,32 +98,34 @@ export const ChatRoomList = () => {
 	return (
 		<div>
 			<div className="chat-room-list-container">
-				<div className="chat-room-list-container">
-					<h1>Chat Rooms</h1>
-					<ul className="chat-room-list">
-						{chatRooms.map((room) => (
-							<li key={room.id} className="chat-room-item">
-								<span className="chat-room-name">{room.name}</span>
-								<div>
-									<span className="chat-room-owner">
-										<span className="owner-label">Owner</span>
-										{room.ownerName}
-									</span>
-									{/* Display users with status */}
-									<div className="chat-room-users">
-										{/* Add a title for members */}
-										<div className="members-title">Members</div>
-										{room.users.map((user) => (
-											<span key={user.id} className={`user-status user ${user.status}`}>
-												{user.name}
-											</span>
-										))}
-									</div>
+				<h1>Chat Rooms</h1>
+				<ul className="chat-room-list">
+					{chatRooms.map((room) => (
+						<li key={room.id} className="chat-room-item">
+							<span className="chat-room-name">{room.name}</span>
+							<div>
+								<span className="chat-room-owner">
+									<span className="owner-label">Owner</span>
+									{room.ownerName}
+								</span>
+								{/* Display users with status */}
+								<div className="chat-room-users">
+									<div className="members-title">Members</div>
+									{room.users.map((user) => (
+										<span key={user.id} className={`user-status user ${user.status}`}>
+											{user.name}
+										</span>
+									))}
 								</div>
-							</li>
-						))}
-					</ul>
-				</div>
+								{!room.users.some((user) => user.id === currentUser?.id) && (
+									<button onClick={() => handleJoinRoom(room.id)} className="join-room-button">
+										Join
+									</button>
+								)}
+							</div>
+						</li>
+					))}
+				</ul>
 			</div>
 			<div className="status-legend">
 				<div className="status-legend-item">

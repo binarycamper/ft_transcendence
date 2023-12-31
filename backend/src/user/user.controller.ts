@@ -356,11 +356,12 @@ export class UserController {
 	async createDebugUser(@Res() res: Response) {
 		const debugUserId = uuidv4();
 		number++;
+		const stringNum = number.toString();
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
-			name: 'DebugUser_' + number.toString(),
-			nickname: 'Debugger_' + number.toString(),
-			email: number.toString() + '@debuguser.com',
+			name: 'DebugUser_' + stringNum,
+			nickname: 'Debugger_' + stringNum,
+			email: stringNum + '@debuguser.com',
 			password: '1',
 			intraId: debugUserId,
 			id: debugUserId,
