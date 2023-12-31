@@ -1,4 +1,4 @@
-import { IsUUID, IsNotEmpty, IsString } from 'class-validator';
+import { IsUUID, IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class InviteRoomDto {
 	@IsUUID()
@@ -7,4 +7,7 @@ export class InviteRoomDto {
 	@IsNotEmpty()
 	@IsString()
 	userNameToInvite: string;
+
+	@IsOptional()
+	password: string;
 }

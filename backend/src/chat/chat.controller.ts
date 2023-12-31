@@ -24,8 +24,8 @@ import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { InviteRoomDto } from './inviteRoom.dto';
-import { ChatRoom } from './chatRoom.entity';
 import { CreateChatRoomDto } from './dto/chatRoom.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Controller('chat')
 export class ChatController {
@@ -192,6 +192,12 @@ export class ChatController {
 			throw new NotFoundException('Chat room not found.');
 		}
 
+		if (chatRoom.type === 'public' && chatRoom.password !== '') {
+			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);
+			if (!isPasswordMatch) {
+				throw new UnauthorizedException('Incorrect password.');
+			}
+		}
 		// Check if the user is already in the chat room
 		if (chatRoom.users.some((user) => user.id === userId)) {
 			throw new BadRequestException('You are already a member of this room.');

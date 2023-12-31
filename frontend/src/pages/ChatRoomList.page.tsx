@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import '../css/chatroomlist.css';
-import { useNavigate } from 'react-router-dom';
 
 type User = {
 	id: string;
@@ -74,7 +73,7 @@ export const ChatRoomList = () => {
 
 					setChatRooms(data);
 				} catch (error) {
-					setError('Failed to load chat rooms: ' + error.message);
+					setError('Failed to load chat rooms: ' + error);
 				} finally {
 					setLoading(false);
 				}
@@ -84,8 +83,12 @@ export const ChatRoomList = () => {
 		}
 	}, [currentUser]);
 
-	const handleJoinRoom = async (roomId: string) => {
+	const handleJoinRoom = async (roomId: string, roomType: string) => {
 		try {
+			let password = '';
+			if (roomType === 'public') {
+				password = prompt('Enter the password for this room:') || '';
+			}
 			const placeholder = 'OOO'; //usernameToInvite = jwt infos , dont need to request
 			const response = await fetch(`http://localhost:8080/chat/joinroom`, {
 				method: 'POST',
@@ -93,7 +96,7 @@ export const ChatRoomList = () => {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ roomId, userNameToInvite: placeholder }),
+				body: JSON.stringify({ roomId, userNameToInvite: placeholder, password }),
 			});
 
 			if (response.ok) {
@@ -140,7 +143,10 @@ export const ChatRoomList = () => {
 									))}
 								</div>
 								{!room.users.some((user) => user.id === currentUser?.id) && (
-									<button onClick={() => handleJoinRoom(room.id)} className="join-room-button">
+									<button
+										onClick={() => handleJoinRoom(room.id, room.type)}
+										className="join-room-button"
+									>
 										Join
 									</button>
 								)}
