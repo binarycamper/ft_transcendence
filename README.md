@@ -4,7 +4,7 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
-• Implement 'Settings' feature for chat rooms (http://localhost:5173/friendrequest/chatroom):
+• Implement 'Settings' feature for chat rooms (http://localhost:5173/chatroom):
 
 - Allow all users to leave the ChatRoom, if the ChatRoom owner decides to leave his CHatroom the Room gets deleted and all references (messages[] && users[]).
 - Allow room owners to assign admin roles.
