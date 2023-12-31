@@ -262,6 +262,7 @@ export const ChatRoom = () => {
 		const chatRoomData = {
 			name: chatRoomName,
 			ownerId: currentUserId,
+			ownerName: 'privat',
 			type: chatRoomType,
 			password: password.trim(), // Trim to ensure no whitespace-only passwords
 			adminIds: [currentUserId],

@@ -15,6 +15,7 @@ import { PublicProfile } from './pages/PublicProfile.page';
 import { Settings } from './pages/Settings.page';
 import { Spiel } from './pages/Spiel.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
+import { ChatRoomList } from './pages/ChatRoomList.page';
 
 const router = createBrowserRouter([
 	{
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
 			{
 				path: 'chatroom',
 				element: <ChatRoom />,
+			},
+			{
+				path: 'chatroomlist',
+				element: <ChatRoomList />,
 			},
 			{
 				path: 'play',

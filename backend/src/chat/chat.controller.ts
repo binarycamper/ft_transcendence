@@ -54,6 +54,7 @@ export class ChatController {
 			throw new BadRequestException('Chat room name already in use.');
 		}
 		// Since the user has not reached the maximum, create the new chat room
+		chatRoomData.ownerName = user.name;
 		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
 		// Add the new chat room to the user's chat rooms
 		user.chatRooms.push(chatRoom);
