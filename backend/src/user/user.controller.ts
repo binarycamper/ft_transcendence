@@ -45,8 +45,6 @@ export class UserController {
 	async getId(@Req() req): Promise<{ id: string; name: string }> {
 		const id = req.user.id;
 		const name = req.user.name;
-		console.log('id: ', id);
-		console.log('name: ', name);
 		return { id: id, name: name };
 	}
 

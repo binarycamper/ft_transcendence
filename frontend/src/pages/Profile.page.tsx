@@ -48,7 +48,7 @@ export function Profile() {
 			<p>Name: {profile.name}</p>
 			<p>Nickname: {profile.nickname}</p>
 			<p>Email: {profile.email}</p>
-			<p>Achievements: {profile.achievements.join(', ')}</p>
+			<p>Achievements: {profile.achievements + ', '}</p>
 			<p>Ladder Level: {profile.ladderLevel}</p>
 			<p>Wins: {profile.gamesWon}</p>
 			<p>Losses: {profile.gamesLost}</p>

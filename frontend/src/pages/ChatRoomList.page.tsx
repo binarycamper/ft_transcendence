@@ -53,11 +53,21 @@ export const ChatRoomList = () => {
 					}
 
 					let data: ChatRoom[] = await response.json();
+
+					console.log('Fetched chat rooms:', data); // Debug log
+
 					// Filter out private rooms where the current user is not a member
 					data = data.filter(
 						(room) =>
-							room.type !== 'private' || room.users.some((user) => user.id === currentUser.id),
+							room.type !== 'private' ||
+							room.users.some((user) => {
+								console.log('Comparing IDs', user.id, currentUser.id); // Debug log
+								return user.id === currentUser.id;
+							}),
 					);
+
+					console.log('Filtered chat rooms:', data); // Debug log
+
 					setChatRooms(data);
 				} catch (error) {
 					setError('Failed to load chat rooms: ' + error.message);
