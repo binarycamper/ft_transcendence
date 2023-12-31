@@ -7,11 +7,11 @@ import { Match } from './matchmaking.entity';
 
 @Injectable()
 export class MatchmakingService {
-	private queue: string[] = [];
+	public queue: string[] = [];
 	private queueEntryTimes: Map<string, Date> = new Map();
 	private matchProposals = new Map<
 		number,
-		{ playerOneAccepted?: boolean; playerTwoAccepted?: boolean }
+		{ playerOneAccepted?: boolean; playerTwoAccepted?: boolean; count: number; completed: boolean }
 	>();
 
 	constructor(
@@ -26,9 +26,14 @@ export class MatchmakingService {
 			throw new Error('User not found');
 		}
 
+		if (this.queue.includes(userId)) {
+			return null;
+		}
+
 		this.queue.push(userId);
 		this.queueEntryTimes.set(userId, new Date());
 		console.log(`User ${userId} added to queue`);
+		console.log(`Current queue: `, this.queue);
 
 		if (this.queue.length >= 2) {
 			return await this.tryCreateMatch();
@@ -58,17 +63,14 @@ export class MatchmakingService {
 		});
 
 		const savedMatch = await this.matchRepository.save(match);
-		console.log(`Creating match between ${playerOneId} and ${playerTwoId}`);
 		this.matchProposals.set(savedMatch.id, {
 			playerOneAccepted: false,
 			playerTwoAccepted: false,
+			count: 0,
+			completed: false,
 		});
-		console.log(`Match proposal created for matchId: ${savedMatch.id}`);
-		console.log(`matchProposals after creating match: `, this.matchProposals);
 		return savedMatch;
 	}
-
-	// In Ihrer MatchmakingService-Klasse
 
 	async checkMatchForUser(userId: string): Promise<{ inMatch: boolean; matchDetails?: Match }> {
 		const activeMatch = await this.matchRepository
@@ -101,31 +103,49 @@ export class MatchmakingService {
 			return { accepted: false };
 		}
 
-		if (proposal.playerOneAccepted && proposal.playerTwoAccepted) {
-			// this.matchProposals.delete(matchId);
-			return { accepted: true };
-		} else {
-			let rematchPlayerId = null;
-			const match = await this.matchRepository.findOne({
-				where: { id: matchId },
-				relations: ['playerOne', 'playerTwo'],
-			});
+		const match = await this.matchRepository.findOne({
+			where: { id: matchId },
+			relations: ['playerOne', 'playerTwo'],
+		});
+		if (!match) {
+			console.error('Match not found for matchId:', matchId);
+			return { accepted: false };
+		}
 
-			if (!match || !match.playerOne || !match.playerTwo) {
-				console.error('Match not found or incomplete for matchId:', matchId);
+		if (proposal.playerOneAccepted === undefined && proposal.playerTwoAccepted === undefined) {
+			// Beide Spieler haben nicht geantwortet
+			this.removeFromQueue(match.playerOne.id);
+			this.removeFromQueue(match.playerTwo.id);
+			this.matchProposals.delete(matchId);
+			await this.deleteMatch(matchId);
+			return { accepted: false };
+		} else {
+			// Wenn einer der Spieler geantwortet hat
+			if (proposal.playerOneAccepted || proposal.playerTwoAccepted) {
+				let stayingPlayerId = proposal.playerOneAccepted ? match.playerOne.id : match.playerTwo.id;
+				let leavingPlayerId = proposal.playerOneAccepted ? match.playerTwo.id : match.playerOne.id;
+				this.removeFromQueue(leavingPlayerId);
+				this.matchProposals.delete(matchId);
+				await this.deleteMatch(matchId);
+				return { accepted: false, rematchPlayerId: stayingPlayerId };
+			} else {
+				// Beide Spieler haben abgelehnt
+				this.removeFromQueue(match.playerOne.id);
+				this.removeFromQueue(match.playerTwo.id);
+				this.matchProposals.delete(matchId);
+				await this.deleteMatch(matchId);
 				return { accepted: false };
 			}
-
-			if (proposal.playerOneAccepted) {
-				rematchPlayerId = match.playerOne.id;
-			} else if (proposal.playerTwoAccepted) {
-				rematchPlayerId = match.playerTwo.id;
-			}
-
-			// this.matchProposals.delete(matchId);
-			// await this.deleteMatch(matchId);
-			return { accepted: false, rematchPlayerId };
 		}
+	}
+
+	async removeFromQueue(userId: string): Promise<void> {
+		console.log(`Removing user ${userId} from queue`);
+		const index = this.queue.indexOf(userId);
+		if (index !== -1) {
+			this.queue.splice(index, 1);
+		}
+		this.queueEntryTimes.delete(userId);
 	}
 
 	async deleteMatch(matchId: number): Promise<void> {
@@ -142,16 +162,12 @@ export class MatchmakingService {
 		playerTwoId?: string;
 		rematchPlayerId?: string;
 	}> {
-		console.log(
-			`Handling match response for matchId: ${matchId}, userId: ${userId}, accept: ${accept}`,
-		);
 		if (!this.matchProposals.has(matchId)) {
 			console.error('Match proposal not found for matchId:', matchId);
 			return { matchStarted: false };
 		}
 
 		const proposal = this.matchProposals.get(matchId);
-		console.log(`Current proposal for matchId ${matchId}: `, proposal);
 
 		const match = await this.matchRepository.findOne({
 			where: { id: matchId },
@@ -162,76 +178,53 @@ export class MatchmakingService {
 			return;
 		}
 
-		console.log(`Before updating: MatchId ${matchId}, proposal: `, proposal);
 		// Aktualisieren Sie das Proposal-Objekt
 		if (match.playerOne.id === userId) {
 			proposal.playerOneAccepted = accept;
 		} else if (match.playerTwo.id === userId) {
 			proposal.playerTwoAccepted = accept;
 		}
-
-		console.log(`After updating: MatchId ${matchId}, proposal: `, proposal);
+		proposal.count = (proposal.count || 0) + 1;
+		proposal.completed = proposal.count === 2;
 
 		this.matchProposals.set(matchId, proposal);
 
-		if (proposal.playerOneAccepted !== undefined && proposal.playerTwoAccepted !== undefined) {
-			if (proposal.playerOneAccepted && proposal.playerTwoAccepted) {
-				// Beide Spieler haben das Match akzeptiert
-				console.log('Both players accepted the match');
-				this.removeFromQueue(match.playerOne.id);
-				this.removeFromQueue(match.playerTwo.id);
-				// console.log(`Before deleting proposal for matchId ${matchId}: `, proposal);
-				// this.matchProposals.delete(matchId);
-				// console.log(`Proposal for matchId ${matchId} deleted`);
-				console.log(`Final response from handleMatchResponse: `, {
-					matchStarted: true,
-					playerOneId: match.playerOne.id,
-					playerTwoId: match.playerTwo.id,
-				});
-				return {
-					matchStarted: true,
-					playerOneId: match.playerOne.id,
-					playerTwoId: match.playerTwo.id,
-				};
-			} else if (!proposal.playerOneAccepted && !proposal.playerTwoAccepted) {
-				// Beide Spieler haben das Match abgelehnt
-				console.log('Both players rejected the match');
-				this.removeFromQueue(match.playerOne.id);
-				this.removeFromQueue(match.playerTwo.id);
-				// console.log(`Before deleting proposal for matchId ${matchId}: `, proposal);
-				// this.matchProposals.delete(matchId);
-				// console.log(`Proposal for matchId ${matchId} deleted`);
-				// await this.deleteMatch(matchId);
-				return { matchStarted: false };
-			} else {
-				// Nur ein Spieler hat akzeptiert, der andere bleibt in der Queue
-				console.log('One player accepted, the other rejected');
-				let acceptedPlayerId = proposal.playerOneAccepted ? match.playerOne.id : match.playerTwo.id;
-				let declinedPlayerId = proposal.playerOneAccepted ? match.playerTwo.id : match.playerOne.id;
-				this.removeFromQueue(declinedPlayerId);
-				// console.log(`Before deleting proposal for matchId ${matchId}: `, proposal);
-				// this.matchProposals.delete(matchId);
-				// console.log(`Proposal for matchId ${matchId} deleted`);
-				// await this.deleteMatch(matchId);
-				console.log(`Final response from handleMatchResponse: `, {
-					matchStarted: true,
-					playerOneId: match.playerOne.id,
-					playerTwoId: match.playerTwo.id,
-					rematchPlayerId: acceptedPlayerId,
-				});
-				return { matchStarted: false, rematchPlayerId: acceptedPlayerId };
+		if (proposal.completed) {
+			if (proposal.playerOneAccepted !== undefined && proposal.playerTwoAccepted !== undefined) {
+				if (proposal.playerOneAccepted && proposal.playerTwoAccepted) {
+					// Beide Spieler haben das Match akzeptiert
+					console.log('Both players accepted the match');
+					console.log(`Final response from handleMatchResponse: `, {
+						matchStarted: true,
+						playerOneId: match.playerOne.id,
+						playerTwoId: match.playerTwo.id,
+					});
+					return {
+						matchStarted: true,
+						playerOneId: match.playerOne.id,
+						playerTwoId: match.playerTwo.id,
+					};
+				} else if (!proposal.playerOneAccepted && !proposal.playerTwoAccepted) {
+					// Beide Spieler haben das Match abgelehnt
+					console.log('Both players rejected the match');
+					return { matchStarted: false };
+				} else {
+					// Nur ein Spieler hat akzeptiert, der andere bleibt in der Queue
+					console.log('One player accepted, the other rejected');
+					let acceptedPlayerId = proposal.playerOneAccepted
+						? match.playerOne.id
+						: match.playerTwo.id;
+
+					console.log(`Final response from handleMatchResponse: `, {
+						matchStarted: false,
+						playerOneId: match.playerOne.id,
+						playerTwoId: match.playerTwo.id,
+					});
+					return { matchStarted: false, rematchPlayerId: acceptedPlayerId };
+				}
 			}
 		}
 		return { matchStarted: false };
-	}
-
-	async removeFromQueue(userId: string): Promise<void> {
-		console.log(`Removing user ${userId} from queue`);
-		const index = this.queue.indexOf(userId);
-		if (index !== -1) {
-			this.queue.splice(index, 1);
-		}
-		this.queueEntryTimes.delete(userId);
 	}
 
 	async getQueueTime(userId: string): Promise<number> {

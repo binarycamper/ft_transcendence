@@ -11,6 +11,7 @@ export function Play() {
 	const socket = useContext(SocketContext);
 	const [currentMatch, setCurrentMatch] = useState<MatchDetails | null>(null);
 	const navigate = useNavigate();
+	const [userId, setUserId] = useState(null);
 
 	interface MatchDetails {
 		id: string;
@@ -21,6 +22,32 @@ export function Play() {
 			name: string;
 		};
 	}
+
+	useEffect(() => {
+		const fetchUserId = async () => {
+			try {
+				const response = await fetch('http://localhost:8080/user/id', {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				});
+
+				if (!response.ok) {
+					throw new Error('Fehler beim Abrufen der Benutzer-ID');
+				}
+
+				const data = await response.json();
+				console.log('User ID:', data.id);
+				setUserId(data.id);
+			} catch (error) {
+				console.log('Fehler:', error);
+			}
+		};
+
+		fetchUserId();
+	}, []);
 
 	useEffect(() => {
 		const handleMatchProposal = (matchDetails: MatchDetails) => {
@@ -35,16 +62,11 @@ export function Play() {
 		};
 	}, [socket]);
 
-	// Funktionen, um auf das Match zu antworten
 	const acceptMatch = () => {
 		if (currentMatch) {
 			console.log('Match accepted:', currentMatch.id);
 			socket.emit('respondToMatch', { matchId: currentMatch.id, accept: true });
 			setCurrentMatch(null);
-			// setInQueue(false); // Status sofort aktualisieren
-			// localStorage.setItem('inQueue', 'false');
-			// setQueueTime(0); // Queue-Zeitzähler zurücksetzen
-			// localStorage.setItem('queueTime', '0');
 		}
 	};
 
@@ -61,6 +83,10 @@ export function Play() {
 
 	useEffect(() => {
 		const handleMatchStart = (data: MatchDetails) => {
+			setInQueue(false); // Status sofort aktualisieren
+			localStorage.setItem('inQueue', 'false');
+			setQueueTime(0); // Queue-Zeitzähler zurücksetzen
+			localStorage.setItem('queueTime', '0');
 			console.log('Match start:', data.id);
 			// Navigieren Sie den Benutzer zum Spiel (je nach Implementierung)
 			navigate('/spiel');
@@ -82,12 +108,54 @@ export function Play() {
 	}, [socket]);
 
 	useEffect(() => {
+		const handleMatchProposalExpired = async () => {
+			const userId = localStorage.getItem('userId');
+			if (!userId) {
+				console.error('Keine userId gefunden');
+				setCurrentMatch(null);
+				setInQueue(false);
+				localStorage.setItem('inQueue', 'false');
+				return;
+			}
+
+			try {
+				const response = await fetch(`http://localhost:8080/matchmaking/user-status/${userId}`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				});
+
+				if (!response.ok) {
+					throw new Error('Fehler beim Abrufen des Benutzerstatus');
+				}
+
+				const data = await response.json();
+				setCurrentMatch(null);
+				setInQueue(data.inQueue);
+				localStorage.setItem('inQueue', data.inQueue ? 'true' : 'false');
+			} catch (error) {
+				console.error('Fehler beim Überprüfen des Queue-Status:', error);
+				setCurrentMatch(null);
+				setInQueue(false);
+				localStorage.setItem('inQueue', 'false');
+			}
+		};
+
+		socket.on('matchProposalExpired', handleMatchProposalExpired);
+		return () => {
+			socket.off('matchProposalExpired', handleMatchProposalExpired);
+		};
+	}, [socket, userId]);
+
+	useEffect(() => {
 		const checkInitialQueueStatus = async () => {
 			const userId = localStorage.getItem('userId');
 			if (!userId) return;
 
 			try {
-				const response = await fetch(`/matchmaking/user-status/${userId}`, {
+				const response = await fetch(`http://localhost:8080/matchmaking/user-status/${userId}`, {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -116,7 +184,7 @@ export function Play() {
 	}, []);
 
 	useEffect(() => {
-		let interval: NodeJS.Timeout | null = null;
+		let interval = 0;
 		if (inQueue) {
 			interval = setInterval(() => {
 				setQueueTime((prevTime) => {
@@ -139,7 +207,7 @@ export function Play() {
 				const userId = localStorage.getItem('userId');
 				if (userId) {
 					// Überprüfen, ob ein Match gefunden wurde
-					const response = await fetch(`/matchmaking/match/${userId}`, {
+					const response = await fetch(`http://localhost:8080/matchmaking/match/${userId}`, {
 						method: 'GET',
 						headers: {
 							'Content-Type': 'application/json',
@@ -150,11 +218,10 @@ export function Play() {
 					if (matchStatus.inMatch) {
 						console.log('Match gefunden:', matchStatus.matchDetails);
 						clearInterval(intervalId);
-						// Weitere Aktionen, wenn ein Match gefunden wurde
 					}
 				}
 			}
-		}, 5000); // Überprüfen alle 5 Sekunden
+		}, 5000);
 
 		return () => clearInterval(intervalId);
 	}, [inQueue]);
@@ -195,7 +262,7 @@ export function Play() {
 			{inQueue && <p>Time in Queue: {queueTime} seconds</p>}
 			{currentMatch && (
 				<div>
-					<p>Match vorgeschlagen gegen {currentMatch.playerTwo.name}</p>
+					<p>Match vorgeschlagen!</p>
 					<button onClick={acceptMatch}>Annehmen</button>
 					<button onClick={rejectMatch}>Ablehnen</button>
 				</div>

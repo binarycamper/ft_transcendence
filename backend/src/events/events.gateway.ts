@@ -145,16 +145,14 @@ export class EventsGateway {
 			);
 			if (!accepted) {
 				// Benachrichtigung an die Clients senden
-				this.server
-					.to(`user_${match.playerOne.id}`)
-					.emit('matchRejected', { message: 'Match was not accepted.' });
-				this.server
-					.to(`user_${match.playerTwo.id}`)
-					.emit('matchRejected', { message: 'Match was not accepted.' });
+				this.server.to(`user_${match.playerOne.id}`).emit('matchProposalExpired');
+				this.server.to(`user_${match.playerTwo.id}`).emit('matchProposalExpired');
 
 				// Spieler, der ein Rematch benötigt, wieder in die Queue einreihen
 				if (rematchPlayerId) {
+					// await this.matchmakingService.removeFromQueue(rematchPlayerId);
 					await this.matchmakingService.addToQueue(rematchPlayerId);
+					console.log('queue after response times end: ', this.matchmakingService.queue);
 				}
 			}
 		}, matchAcceptanceTimeout);
@@ -175,7 +173,7 @@ export class EventsGateway {
 				userId,
 				data.accept,
 			);
-			console.log('response: ', response.matchStarted);
+			console.log('response: ', response);
 			if (response.matchStarted) {
 				// Navigiere beide Spieler zum Spiel
 				console.log('Match started, navigating players to game');
