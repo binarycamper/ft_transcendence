@@ -20,33 +20,6 @@ export default function useQue() {
 	const socket = useContext(SocketContext);
 	const [currentMatch, setCurrentMatch] = useState<MatchDetails | null>(null);
 	const navigate = useNavigate();
-	const [userId, setUserId] = useState(null);
-
-	useEffect(() => {
-		const fetchUserId = async () => {
-			try {
-				const response = await fetch('http://localhost:8080/user/id', {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include',
-				});
-
-				if (!response.ok) {
-					throw new Error('Fehler beim Abrufen der Benutzer-ID');
-				}
-
-				const data = await response.json();
-				console.log('User ID:', data.id);
-				setUserId(data.id);
-			} catch (error) {
-				console.log('Fehler:', error);
-			}
-		};
-
-		fetchUserId();
-	}, []);
 
 	useEffect(() => {
 		const handleMatchProposal = (matchDetails: MatchDetails) => {
@@ -107,16 +80,20 @@ export default function useQue() {
 
 	useEffect(() => {
 		const handleMatchProposalExpired = async () => {
-			const userId = localStorage.getItem('userId');
-			if (!userId) {
-				console.error('Keine userId gefunden');
-				setCurrentMatch(null);
-				setInQueue(false);
-				localStorage.setItem('inQueue', 'false');
-				return;
-			}
-
 			try {
+				const responseId = await fetch(`http://localhost:8080/user/id`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				});
+				if (!responseId.ok) {
+					throw new Error('Error when retrieving the user id');
+				}
+				const dataId = await responseId.json();
+				const userId = dataId.id;
+
 				const response = await fetch(`http://localhost:8080/matchmaking/user-status/${userId}`, {
 					method: 'GET',
 					headers: {
@@ -126,7 +103,7 @@ export default function useQue() {
 				});
 
 				if (!response.ok) {
-					throw new Error('Fehler beim Abrufen des Benutzerstatus');
+					throw new Error('Error when retrieving the user status');
 				}
 
 				const data = await response.json();
@@ -134,7 +111,7 @@ export default function useQue() {
 				setInQueue(data.inQueue);
 				localStorage.setItem('inQueue', data.inQueue ? 'true' : 'false');
 			} catch (error) {
-				console.error('Fehler beim Überprüfen des Queue-Status:', error);
+				console.error('Error when checking the queue status:', error);
 				setCurrentMatch(null);
 				setInQueue(false);
 				localStorage.setItem('inQueue', 'false');
@@ -145,14 +122,24 @@ export default function useQue() {
 		return () => {
 			socket.off('matchProposalExpired', handleMatchProposalExpired);
 		};
-	}, [socket, userId]);
+	}, [socket]);
 
 	useEffect(() => {
 		const checkInitialQueueStatus = async () => {
-			const userId = localStorage.getItem('userId');
-			if (!userId) return;
-
 			try {
+				const responseId = await fetch(`http://localhost:8080/user/id`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				});
+				if (!responseId.ok) {
+					throw new Error('Error when retrieving the user id');
+				}
+				const dataId = await responseId.json();
+				const userId = dataId.id;
+
 				const response = await fetch(`http://localhost:8080/matchmaking/user-status/${userId}`, {
 					method: 'GET',
 					headers: {
@@ -162,19 +149,20 @@ export default function useQue() {
 				});
 
 				if (!response.ok) {
-					throw new Error('Fehler beim Abrufen des Queue-Status');
+					throw new Error('Error when retrieving the queue status');
 				}
 
 				const { inQueue, matchStatus } = await response.json();
 				if (inQueue) {
 					setInQueue(true);
-					// Hier setzen wir nicht mehr die Zeit neu, da wir sie aus dem localStorage holen
 				} else if (matchStatus.inMatch) {
 					// Logik für den Fall, dass bereits ein Match gefunden wurde
 					console.log('Match gefunden:', matchStatus.matchDetails);
 				}
 			} catch (error) {
-				console.error('Fehler:', error);
+				setCurrentMatch(null);
+				setInQueue(false);
+				localStorage.setItem('inQueue', 'false');
 			}
 		};
 
@@ -202,21 +190,38 @@ export default function useQue() {
 	useEffect(() => {
 		const intervalId = setInterval(async () => {
 			if (inQueue) {
-				const userId = localStorage.getItem('userId');
-				if (userId) {
-					// Überprüfen, ob ein Match gefunden wurde
-					const response = await fetch(`http://localhost:8080/matchmaking/match/${userId}`, {
+				try {
+					const responseId = await fetch('http://localhost:8080/user/id', {
 						method: 'GET',
-						headers: {
-							'Content-Type': 'application/json',
-						},
+						headers: { 'Content-Type': 'application/json' },
 						credentials: 'include',
 					});
-					const matchStatus = await response.json();
+
+					if (!responseId.ok) {
+						throw new Error('Error when retrieving the user ID');
+					}
+
+					const dataId = await responseId.json();
+					const userId = dataId.id;
+
+					const responseMatch = await fetch(`http://localhost:8080/matchmaking/match/${userId}`, {
+						method: 'GET',
+						headers: { 'Content-Type': 'application/json' },
+						credentials: 'include',
+					});
+
+					if (!responseMatch.ok) {
+						throw new Error('Error when retrieving the queue status');
+					}
+
+					const matchStatus = await responseMatch.json();
 					if (matchStatus.inMatch) {
-						console.log('Match gefunden:', matchStatus.matchDetails);
+						console.log('Match found:', matchStatus.matchDetails);
 						clearInterval(intervalId);
 					}
+				} catch (error) {
+					console.error('Error:', error);
+					clearInterval(intervalId);
 				}
 			}
 		}, 5000);
@@ -238,19 +243,17 @@ export default function useQue() {
 		setInQueue(false);
 		localStorage.removeItem('inQueue');
 		localStorage.setItem('queueTime', '0');
+		setQueueTime(0);
 		socket.emit('leaveQueue');
 	};
 
-	useEffect(() => {
-		socket.on('leftQueue', () => {
-			setInQueue(false);
-			setQueueTime(0);
-		});
-
-		return () => {
-			socket.off('leftQueue');
-		};
-	}, [socket]);
-
-	return { acceptMatch, currentMatch, inQueue, joinQueue, leaveQueue, queueTime, rejectMatch };
+	return {
+		acceptMatch,
+		currentMatch,
+		inQueue,
+		joinQueue,
+		leaveQueue,
+		queueTime,
+		rejectMatch,
+	};
 }

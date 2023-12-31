@@ -202,7 +202,6 @@ export class EventsGateway {
 			}
 
 			await this.matchmakingService.removeFromQueue(isAuthenticated.userId);
-			client.emit('leftQueue', { message: 'You have left the matchmaking queue.' });
 		} catch (error) {
 			console.error('Error in handleLeaveQueue:', error.message);
 		}
