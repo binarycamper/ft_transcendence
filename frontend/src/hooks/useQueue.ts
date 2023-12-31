@@ -81,20 +81,7 @@ export default function useQue() {
 	useEffect(() => {
 		const handleMatchProposalExpired = async () => {
 			try {
-				const responseId = await fetch(`http://localhost:8080/user/id`, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include',
-				});
-				if (!responseId.ok) {
-					throw new Error('Error when retrieving the user id');
-				}
-				const dataId = await responseId.json();
-				const userId = dataId.id;
-
-				const response = await fetch(`http://localhost:8080/matchmaking/user-status/${userId}`, {
+				const response = await fetch(`http://localhost:8080/matchmaking/user-status`, {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -127,20 +114,7 @@ export default function useQue() {
 	useEffect(() => {
 		const checkInitialQueueStatus = async () => {
 			try {
-				const responseId = await fetch(`http://localhost:8080/user/id`, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include',
-				});
-				if (!responseId.ok) {
-					throw new Error('Error when retrieving the user id');
-				}
-				const dataId = await responseId.json();
-				const userId = dataId.id;
-
-				const response = await fetch(`http://localhost:8080/matchmaking/user-status/${userId}`, {
+				const response = await fetch(`http://localhost:8080/matchmaking/user-status`, {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -191,20 +165,7 @@ export default function useQue() {
 		const intervalId = setInterval(async () => {
 			if (inQueue) {
 				try {
-					const responseId = await fetch('http://localhost:8080/user/id', {
-						method: 'GET',
-						headers: { 'Content-Type': 'application/json' },
-						credentials: 'include',
-					});
-
-					if (!responseId.ok) {
-						throw new Error('Error when retrieving the user ID');
-					}
-
-					const dataId = await responseId.json();
-					const userId = dataId.id;
-
-					const responseMatch = await fetch(`http://localhost:8080/matchmaking/match/${userId}`, {
+					const responseMatch = await fetch(`http://localhost:8080/matchmaking/match`, {
 						method: 'GET',
 						headers: { 'Content-Type': 'application/json' },
 						credentials: 'include',
@@ -242,7 +203,7 @@ export default function useQue() {
 		console.log('Leaving queue...');
 		setInQueue(false);
 		localStorage.removeItem('inQueue');
-		localStorage.setItem('queueTime', '0');
+		localStorage.removeItem('queueTime');
 		setQueueTime(0);
 		socket.emit('leaveQueue');
 	};

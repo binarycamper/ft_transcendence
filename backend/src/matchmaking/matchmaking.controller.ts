@@ -1,6 +1,6 @@
 // matchmaking.controller.ts
 
-import { Controller, Post, Get, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -8,31 +8,35 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 export class MatchmakingController {
 	constructor(private matchmakingService: MatchmakingService) {}
 
-	@Get('status/:userId')
+	@Get('status')
 	@UseGuards(JwtAuthGuard)
-	async getMatchmakingStatus(@Param('userId') userId: string) {
+	async getMatchmakingStatus(@Req() req) {
+		const userId = req.user.id;
 		const match = await this.matchmakingService.checkMatchForUser(userId);
 		return match ? { matchFound: true, matchDetails: match } : { matchFound: false };
 	}
 
-	@Get('queue-time/:userId')
+	@Get('queue-time')
 	@UseGuards(JwtAuthGuard)
-	async getQueueTime(@Param('userId') userId: string) {
+	async getQueueTime(@Req() req) {
+		const userId = req.user.id;
 		const timeInQueue = await this.matchmakingService.getQueueTime(userId);
 		return { timeInQueue };
 	}
 
-	@Get('user-status/:userId')
+	@Get('user-status')
 	@UseGuards(JwtAuthGuard)
-	async getUserStatus(@Param('userId') userId: string) {
+	async getUserStatus(@Req() req) {
+		const userId = req.user.id;
 		const inQueue = await this.matchmakingService.isInQueue(userId);
 		const matchStatus = await this.matchmakingService.checkMatchForUser(userId);
 		return { inQueue, matchStatus };
 	}
 
-	@Get('match/:userId')
+	@Get('match')
 	@UseGuards(JwtAuthGuard)
-	async getMatchForUser(@Param('userId') userId: string) {
+	async getMatchForUser(@Req() req) {
+		const userId = req.user.id;
 		const matchStatus = await this.matchmakingService.checkMatchForUser(userId);
 		return matchStatus;
 	}

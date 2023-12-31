@@ -112,6 +112,13 @@ export class MatchmakingService {
 			return { accepted: false };
 		}
 
+		if (proposal.completed) {
+			this.removeFromQueue(match.playerOne.id);
+			this.removeFromQueue(match.playerTwo.id);
+			this.matchProposals.delete(matchId);
+			return { accepted: true };
+		}
+
 		if (proposal.playerOneAccepted === undefined && proposal.playerTwoAccepted === undefined) {
 			// Beide Spieler haben nicht geantwortet
 			this.removeFromQueue(match.playerOne.id);
@@ -144,6 +151,7 @@ export class MatchmakingService {
 		const index = this.queue.indexOf(userId);
 		if (index !== -1) {
 			this.queue.splice(index, 1);
+			this.queueEntryTimes.delete(userId);
 		}
 		this.queueEntryTimes.delete(userId);
 	}
@@ -178,7 +186,6 @@ export class MatchmakingService {
 			return;
 		}
 
-		// Aktualisieren Sie das Proposal-Objekt
 		if (match.playerOne.id === userId) {
 			proposal.playerOneAccepted = accept;
 		} else if (match.playerTwo.id === userId) {
