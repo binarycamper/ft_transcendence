@@ -35,6 +35,12 @@ export class ChatController {
 
 	//########################CHatRooms#############################
 
+	//@UseGuards(JwtAuthGuard) //TODO: uncomment before eval!
+	@Get('allchatrooms')
+	async getChatRooms() {
+		return await this.chatService.getAllChatRooms();
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
@@ -255,11 +261,6 @@ export class ChatController {
 	}
 
 	//########################Debug#############################	//TODO: delete before eval
-
-	@Get('allchatrooms')
-	async getChatRooms() {
-		return await this.chatService.getAllChatRooms();
-	}
 
 	// Endpoint to get all pending requests for the logged-in user
 	@Get('allrequests')
