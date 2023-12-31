@@ -179,8 +179,9 @@ export class ChatController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('joinroom')
-	async joinChatRoom(@Req() req, @Body('roomId') roomId: string): Promise<any> {
+	async joinChatRoom(@Req() req, @Body() inviteRoomDto: InviteRoomDto): Promise<any> {
 		const userId = req.user.id;
+		const roomId = inviteRoomDto.roomId;
 		// Get the chat room details
 		const chatRoom = await this.chatService.getChatRoomById(roomId);
 		if (!chatRoom) {

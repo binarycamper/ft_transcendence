@@ -84,13 +84,14 @@ export const ChatRoomList = () => {
 
 	const handleJoinRoom = async (roomId: string) => {
 		try {
+			const placeholder = 'OOO'; //usernameToInvite = jwt infos , dont need to request
 			const response = await fetch(`http://localhost:8080/chat/joinroom`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ roomId }),
+				body: JSON.stringify({ roomId, userNameToInvite: placeholder }),
 			});
 
 			if (response.ok) {
