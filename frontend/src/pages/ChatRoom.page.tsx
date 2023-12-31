@@ -65,14 +65,15 @@ export const ChatRoom = () => {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					throw new Error('Failed to fetch current user ID');
+					showNotification('not authenticated...');
+					return;
 				}
 				const data = await response.json();
 				setCurrentUserName(data.name);
 				setCurrentUserId(data.id);
 			} catch (error) {
-				//console.log('Not authenticated?: ', error);
-				navigate('/');
+				showNotification('not authenticated... :' + error);
+				return;
 			}
 		};
 		getCurrentUserId();
@@ -86,13 +87,14 @@ export const ChatRoom = () => {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					throw new Error('Failed to fetch friends');
+					showNotification('cant load Friendlist');
+					return;
 				}
 				const friendsList: Friend[] = await response.json();
 				setFriends(friendsList);
 			} catch (error) {
-				//console.log('fetching friends not possible: ', error);
-				navigate('/');
+				showNotification('cant load Friendlist: ' + error);
+				return;
 			}
 		};
 
@@ -125,13 +127,15 @@ export const ChatRoom = () => {
 				},
 			);
 			if (!response.ok) {
-				throw new Error('Failed to fetch chat history');
+				showNotification('Failed to fetch chat history ');
+				return;
 			}
 			const history = await response.json();
 			//console.log('res: ', history);
 			setChatMessages(history);
 		} catch (error) {
-			console.error('Error fetching chat history:', error);
+			showNotification('Failed to fetch chat history ');
+			return;
 		}
 	};
 
@@ -152,7 +156,10 @@ export const ChatRoom = () => {
 				message.receiverId === selectedChatRoom.id
 			) {
 				setChatMessages((prevMessages) => [...prevMessages, message]);
-			} else console.log('New edgecase found! (ChatRoomPage!)');
+			} else {
+				showNotification('pls select a friend or room');
+				return;
+			}
 		};
 
 		socket.on('receiveMessage', handleNewMessage);
@@ -210,7 +217,8 @@ export const ChatRoom = () => {
 					setChatMessages([]);
 				}
 			} catch (error) {
-				console.error('Error clearing chat:', error);
+				showNotification('Error clearing chat: ' + error);
+				return;
 			}
 		}
 	};
@@ -237,9 +245,8 @@ export const ChatRoom = () => {
 				// Implement error handling logic
 			}
 		} catch (error) {
-			console.error('Error while sending invitation:', error);
-			//TODO console log is useless for clients! implement a common user feedback
-			// Implement error handling logic
+			showNotification('Error while sending invitation: ' + error);
+			return;
 		}
 	};
 
@@ -262,6 +269,7 @@ export const ChatRoom = () => {
 		const chatRoomData = {
 			name: chatRoomName,
 			ownerId: currentUserId,
+			ownerName: 'privat',
 			type: chatRoomType,
 			password: password.trim(), // Trim to ensure no whitespace-only passwords
 			adminIds: [currentUserId],
@@ -307,12 +315,13 @@ export const ChatRoom = () => {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					throw new Error('Failed to fetch chat rooms');
+					showNotification('cant load chatrooms...');
+					return;
 				}
 				const rooms = await response.json();
 				setChatRooms(rooms);
 			} catch (error) {
-				console.error('Error fetching chat rooms:', error);
+				showNotification('cant load chatrooms...');
 			}
 		};
 
@@ -329,13 +338,15 @@ export const ChatRoom = () => {
 				},
 			);
 			if (!response.ok) {
-				throw new Error('Failed to fetch chatroom history');
+				showNotification('chatroom history loading...');
+				return;
 			}
 			const history = await response.json();
 			//console.log('res: ', history);
 			setChatMessages(history);
 		} catch (error) {
-			console.error('Error fetching chatroom history:', error);
+			showNotification('Error fetching chatroom history: ' + error);
+			return;
 		}
 	};
 
@@ -414,8 +425,8 @@ export const ChatRoom = () => {
 				}
 			}
 		} catch (error) {
-			console.error('Error inviting to room:', error);
 			showNotification('Failed to invite user. Please try again.');
+			return;
 		}
 	};
 

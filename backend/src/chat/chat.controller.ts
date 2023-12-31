@@ -35,6 +35,12 @@ export class ChatController {
 
 	//########################CHatRooms#############################
 
+	//@UseGuards(JwtAuthGuard) //TODO: uncomment before eval!
+	@Get('allchatrooms')
+	async getChatRooms() {
+		return await this.chatService.getAllChatRooms();
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData, @Req() req) {
@@ -54,6 +60,7 @@ export class ChatController {
 			throw new BadRequestException('Chat room name already in use.');
 		}
 		// Since the user has not reached the maximum, create the new chat room
+		chatRoomData.ownerName = user.name;
 		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
 		// Add the new chat room to the user's chat rooms
 		user.chatRooms.push(chatRoom);
@@ -127,7 +134,7 @@ export class ChatController {
 			if (!chatRoom) {
 				throw new NotFoundException('Chat room not found.');
 			}
-			console.log('User count: ', chatRoom.users.length);
+			//console.log('User count: ', chatRoom.users.length);
 			//limit users in chatroom
 			if (chatRoom.users.length >= 10) {
 				throw new BadRequestException('Chat room has max users');
@@ -167,6 +174,47 @@ export class ChatController {
 			throw new InternalServerErrorException(
 				'An unexpected error occurred while inviting the user to the room.',
 			);
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('joinroom')
+	async joinChatRoom(@Req() req, @Body() inviteRoomDto: InviteRoomDto): Promise<any> {
+		const userId = req.user.id;
+		const roomId = inviteRoomDto.roomId;
+		// Get the chat room details
+		const chatRoom = await this.chatService.getChatRoomById(roomId);
+		if (!chatRoom) {
+			throw new NotFoundException('Chat room not found.');
+		}
+
+		// Check if the user is already in the chat room
+		if (chatRoom.users.some((user) => user.id === userId)) {
+			throw new BadRequestException('You are already a member of this room.');
+		}
+
+		if (chatRoom.users.length >= 10) {
+			throw new BadRequestException('Chat room has max users');
+		}
+		// Check if the chat room is private and if the user is an admin or invited
+		if (
+			chatRoom.type === 'private' &&
+			!chatRoom.adminIds.includes(userId) &&
+			!chatRoom.users.some((user) => user.id === userId)
+		) {
+			throw new ForbiddenException('You do not have permission to join this room.');
+		}
+
+		// Add the user to the room
+		try {
+			const userToAdd = await this.userService.findProfileById(userId);
+			// Add the user to the room
+			await this.chatService.addUserToChatRoom(roomId, userToAdd);
+			return { message: 'Joined the room successfully.' };
+		} catch (error) {
+			// Log the error and throw an appropriate exception
+			console.error('Error while adding user to chat room:', error);
+			throw new InternalServerErrorException('An error occurred while joining the room.');
 		}
 	}
 
@@ -254,11 +302,6 @@ export class ChatController {
 	}
 
 	//########################Debug#############################	//TODO: delete before eval
-
-	@Get('allchatrooms')
-	async getChatRooms() {
-		return await this.chatService.getAllChatRooms();
-	}
 
 	// Endpoint to get all pending requests for the logged-in user
 	@Get('allrequests')

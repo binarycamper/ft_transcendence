@@ -20,6 +20,9 @@ export class ChatRoom {
 	@Column()
 	ownerId: string;
 
+	@Column()
+	ownerName: string;
+
 	@Column('simple-array')
 	adminIds: string[];
 

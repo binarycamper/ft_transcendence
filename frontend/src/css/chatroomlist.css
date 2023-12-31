@@ -1,0 +1,152 @@
+/* ChatRoomList.css */
+.chat-room-list-container {
+	padding: 20px;
+	color: #f0f0f0;
+	background-color: #333;
+	border-radius: 8px;
+	max-width: 600px;
+	margin: 30px auto;
+}
+
+.chat-room-list {
+	list-style: none;
+	padding-left: 0;
+}
+
+.chat-room-item {
+	background-color: #424242;
+	margin-bottom: 10px;
+	padding: 10px;
+	border-radius: 4px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	transition: background-color 0.3s;
+}
+
+.chat-room-item:hover {
+	background-color: #535353;
+}
+
+.chat-room-name {
+	font-weight: bold;
+	color: #1e88e5;
+}
+
+.chat-room-owner {
+	display: inline-block;
+	background-color: #1976d2;
+	color: #fff;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 0.8em;
+	margin-left: 10px;
+	vertical-align: middle;
+}
+
+.join-room-button {
+	background-color: #4caf50; /* A nice shade of green */
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+	border-radius: 4px;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.24), 0 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.join-room-button:hover {
+	background-color: #45a049; /* A darker shade of green for the hover effect */
+}
+
+.owner-label {
+	background-color: #388e3c;
+	padding: 1px 6px;
+	border-radius: 8px;
+	font-size: 0.7em;
+	font-weight: bold;
+	margin-right: 6px;
+}
+
+.chat-room-users {
+	list-style: none;
+	padding-left: 0;
+}
+
+.user-status {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 0.8em;
+	margin-left: 10px;
+	vertical-align: middle;
+	color: #fff;
+}
+
+.user.online {
+	background-color: #388e3c;
+}
+
+.user.offline {
+	background-color: #d32f2f;
+}
+
+.user.away {
+	background-color: #fbc02d;
+}
+
+.user.ingame {
+	background-color: #0d47a1;
+}
+
+.user.unknown {
+	background-color: #757575;
+}
+
+.members-title {
+	font-size: 0.9em;
+	color: #bbb;
+	margin-top: 10px;
+	margin-bottom: 5px;
+	font-weight: bold;
+}
+
+.status-legend {
+	position: fixed;
+	top: 50%;
+	right: 20px;
+	transform: translateY(-50%);
+	background-color: #424242;
+	padding: 10px;
+	border-radius: 8px;
+	color: #fff;
+	font-size: 0.7em;
+	z-index: 10;
+}
+
+.status-legend-item {
+	display: flex;
+	align-items: center;
+	margin-bottom: 5px;
+}
+
+.status-legend-color {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	margin-right: 5px;
+}
+
+.join-error {
+	color: red;
+	background-color: #ffdada; /* light red background */
+	padding: 10px;
+	border-radius: 5px;
+	margin-bottom: 15px;
+	text-align: center;
+}
