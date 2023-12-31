@@ -25,6 +25,7 @@ import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { InviteRoomDto } from './inviteRoom.dto';
 import { ChatRoom } from './chatRoom.entity';
+import { CreateChatRoomDto } from './dto/chatRoom.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -41,9 +42,10 @@ export class ChatController {
 		return await this.chatService.getAllChatRooms();
 	}
 
+	//TODO: create DTO for that Body()!
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
-	async createChatRoom(@Body() chatRoomData, @Req() req) {
+	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req) {
 		const userId = req.user.id; // Get the user ID from the request
 		const user = await this.userService.findProfileById(userId);
 
@@ -52,7 +54,9 @@ export class ChatController {
 		const MAX_CHATROOMS = 5;
 		// If the user already has the maximum number of chat rooms, throw an error
 		if (chatRoomCount >= MAX_CHATROOMS) {
-			throw new ForbiddenException('You have reached the maximum number of chat rooms.');
+			throw new ForbiddenException(
+				'You have reached the maximum number of chat rooms. You can still join other rooms in the ChatRoomlist',
+			);
 		}
 
 		const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);

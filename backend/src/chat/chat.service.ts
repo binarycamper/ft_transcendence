@@ -15,6 +15,8 @@ import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
 import { ChatRoom } from './chatRoom.entity';
+import { CreateChatRoomDto } from './dto/chatRoom.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class ChatService {
@@ -52,8 +54,12 @@ export class ChatService {
 		return existingChatRoom;
 	}
 
-	async createChatRoom(chatRoomData: ChatRoom) {
+	async createChatRoom(chatRoomData: CreateChatRoomDto) {
 		//console.log('chatRoomData: ', chatRoomData);
+		if (chatRoomData.type === 'public' && chatRoomData.password) {
+			const hashedPassword = await bcrypt.hash(chatRoomData.password, 10);
+			chatRoomData.password = hashedPassword;
+		}
 		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
 		//chatRoom.ownerId = chatRoomData.ownerId;
 		//console.log('chatRoom = ', chatRoom);

@@ -257,13 +257,12 @@ export const ChatRoom = () => {
 			return;
 		}
 
-		// Prompt for a password, indicating it's optional for public rooms
-		const passwordPrompt =
-			chatRoomType === 'private'
-				? 'Enter a password for the private chat room:'
-				: 'Enter a password for the public chat room (optional):';
-
-		const password = window.prompt(passwordPrompt) || '';
+		// Prompt for a password, optional for public rooms
+		let password = '';
+		if (chatRoomType === 'public') {
+			password =
+				(await window.prompt('Enter a password for the public chat room (optional):')) || '';
+		}
 
 		// Construct chatRoom data here
 		const chatRoomData = {
@@ -377,9 +376,9 @@ export const ChatRoom = () => {
 				// Remove the deleted chat room from state
 				setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== chatRoomId));
 				showNotification('ChatRoom deleted');
-			}
+			} else setChatRoomError('You cannot delete that chatroom');
 		} catch (error) {
-			setChatRoomError('' + error);
+			setChatRoomError('You cannot delete that chatroom: ' + error);
 		}
 	};
 
