@@ -9,5 +9,6 @@ export class InviteRoomDto {
 	userNameToInvite: string;
 
 	@IsOptional()
+	@IsString()
 	password: string;
 }

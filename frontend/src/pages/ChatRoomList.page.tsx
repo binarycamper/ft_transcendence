@@ -11,6 +11,7 @@ type ChatRoom = {
 	id: string;
 	name: string;
 	ownerName: string;
+	ownerId: string;
 	users: User[];
 	type: string;
 };
@@ -111,6 +112,37 @@ export const ChatRoomList = () => {
 		}
 	};
 
+	const handleKickUser = async (roomId: string, userId: string) => {
+		try {
+			const response = await fetch(`http://localhost:8080/chat/kickuser`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId, userId }),
+			});
+
+			if (response.ok) {
+				console.log(`User with ID: ${userId} kicked from room: ${roomId}`);
+				setChatRooms((prevRooms) =>
+					prevRooms.map((room) => {
+						if (room.id === roomId) {
+							return { ...room, users: room.users.filter((user) => user.id !== userId) };
+						}
+						return room;
+					}),
+				);
+			} else {
+				setJoinError('Failed to kick user');
+				return;
+			}
+		} catch (error) {
+			setJoinError('Error while attempting to kick user: ' + error);
+			return;
+		}
+	};
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -139,6 +171,14 @@ export const ChatRoomList = () => {
 									{room.users.map((user) => (
 										<span key={user.id} className={`user-status user ${user.status}`}>
 											{user.name}
+											{room.ownerName === currentUser?.name && user.id !== currentUser?.id && (
+												<button
+													className="kick-user-button"
+													onClick={() => handleKickUser(room.id, user.id)}
+												>
+													x
+												</button>
+											)}
 										</span>
 									))}
 								</div>
