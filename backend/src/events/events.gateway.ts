@@ -12,6 +12,7 @@ import { EventsService } from './events.service';
 import { ChatService } from 'src/chat/chat.service';
 import { MatchmakingService } from 'src/matchmaking/matchmaking.service';
 import { Match } from '../matchmaking/matchmaking.entity';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({
 	cors: {
@@ -29,6 +30,7 @@ export class EventsGateway {
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 		private matchmakingService: MatchmakingService,
+		private userService: UserService,
 	) {}
 
 	async verifyAuthentication(
@@ -228,18 +230,34 @@ export class EventsGateway {
 
 			// Emit the message to all ChatROomUsers if they're online
 			const chatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
+			//console.log('chatroom users: ', chatRoom.users);
+			const currUser = await this.userService.findProfileById(isAuthenticated.userId);
 			for (const user of chatRoom.users) {
-				// Emit the message to each user's individual socket room
-				this.server.to(`user_${user.id}`).emit('receiveMessage', {
-					content: message.content,
-					senderId: message.senderId,
-					senderName: message.senderName,
-					receiverId: message.receiverId,
-					id: message.id,
-				});
+				const recipient = await this.userService.findProfileById(user.id);
+				if (recipient.ignorelist.some((ignoredUser) => ignoredUser.id === currUser.id)) {
+					// Check if the ignorelist includes the current user's ID
+					console.log('User is ignored!');
+					// If the sender is on the recipient's ignore list, censor the message
+					this.server.to(`user_${user.id}`).emit('receiveMessage', {
+						content: '[Message Hidden]',
+						senderId: message.senderId,
+						senderName: 'Ignored User',
+						receiverId: message.receiverId,
+						id: message.id,
+					});
+				} else {
+					// Emit the message to each user's individual socket room
+					this.server.to(`user_${user.id}`).emit('receiveMessage', {
+						content: message.content,
+						senderId: message.senderId,
+						senderName: message.senderName,
+						receiverId: message.receiverId,
+						id: message.id,
+					});
+				}
 			}
 		} catch (error) {
-			console.error('Error in handleMessage:', error.message);
+			console.error('Error in handleMessage:', error.message); //TODO: del before eval.
 		}
 	}
 }

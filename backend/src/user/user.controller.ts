@@ -48,6 +48,7 @@ export class UserController {
 		return { id: id, name: name };
 	}
 
+	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Get('getname')
 	async getName(@Query('senderid') senderId: string): Promise<{ name: string }> {
@@ -112,6 +113,7 @@ export class UserController {
 		return result;
 	}
 
+	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Delete('delete')
 	async deleteUser(
@@ -167,6 +169,7 @@ export class UserController {
 		}
 	}
 
+	//TODO: Need dto here for Query
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
@@ -234,6 +237,7 @@ export class UserController {
 		}
 	}
 
+	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Delete('friends')
 	async removeFriend(@Query('friendid') friendId: string, @Req() req, @Res() res) {
@@ -250,6 +254,7 @@ export class UserController {
 		}
 	}
 
+	//TODO: Need dto here for Body
 	@UseGuards(JwtAuthGuard)
 	@Post('addFriend')
 	async addFriend(@Req() req, @Body('friendName') friendName: string, @Res() res: Response) {
@@ -268,6 +273,7 @@ export class UserController {
 		}
 	}
 
+	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Post('blockUser')
 	async blockUser(@Req() req, @Query('userName') userToBlockName: string, @Res() res: Response) {

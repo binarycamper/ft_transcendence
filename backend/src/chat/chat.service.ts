@@ -435,7 +435,7 @@ export class ChatService {
 
 	async getAllChatRooms(): Promise<ChatRoom[]> {
 		return await this.chatRoomRepository.find({
-			relations: ['messages', 'users'],
+			relations: ['messages', 'users', 'mutes'],
 		});
 	}
 
