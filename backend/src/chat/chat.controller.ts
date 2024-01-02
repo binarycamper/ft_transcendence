@@ -242,7 +242,7 @@ export class ChatController {
 	@Post('kickuser')
 	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req) {
 		try {
-			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId);
+			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId, req.user.id);
 			return { message: 'User successfully kicked' };
 		} catch (error) {
 			if (error instanceof NotFoundException) {

@@ -187,7 +187,7 @@ export class ChatService {
 		return chatRoom;
 	}
 
-	async kickUserFromRoom(roomId: string, userId: string) {
+	async kickUserFromRoom(roomId: string, userIdToKick: string, requesterId: string): Promise<any> {
 		const chatRoom = await this.chatRoomRepository.findOne({
 			where: { id: roomId },
 			relations: ['users'],
@@ -197,9 +197,31 @@ export class ChatService {
 			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
 		}
 
-		chatRoom.users = chatRoom.users.filter((user) => user.id !== userId);
+		// Verify if the requester is the owner or an admin of the room
+		const isOwner = chatRoom.ownerId === requesterId;
+		const isAdmin = chatRoom.adminIds.includes(requesterId) && !isOwner;
+
+		// If requester is not the owner or an admin, throw an unauthorized exception
+		if (!isOwner && !isAdmin) {
+			throw new UnauthorizedException('You do not have permission to kick users from this room.');
+		}
+
+		// If the user to kick is an admin and the requester is not the owner, throw an unauthorized exception
+		if (chatRoom.adminIds.includes(userIdToKick) && !isOwner) {
+			throw new UnauthorizedException('Admins can only be kicked by the room owner.');
+		}
+
+		// Remove the user from the chat room's user list
+		chatRoom.users = chatRoom.users.filter((user) => user.id !== userIdToKick);
+
+		// If the user to kick is an admin, remove them from the admin list as well
+		if (chatRoom.adminIds.includes(userIdToKick)) {
+			chatRoom.adminIds = chatRoom.adminIds.filter((adminId) => adminId !== userIdToKick);
+		}
+
 		await this.chatRoomRepository.save(chatRoom);
-		return chatRoom;
+
+		return { message: `User with ID ${userIdToKick} has been kicked from room ${roomId}` };
 	}
 
 	async upgradeToAdmin(roomId: string, userId: string): Promise<any> {

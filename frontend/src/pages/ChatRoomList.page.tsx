@@ -194,25 +194,25 @@ export const ChatRoomList = () => {
 									{room.users.map((user) => (
 										<span key={user.id} className={`user-status user ${user.status}`}>
 											{user.name}
-											{room.ownerName === currentUser?.name &&
-												user.id !== room.ownerId &&
-												!room.adminIds.includes(user.id) && ( // Check if the user is not the owner and not an admin
-													<>
-														{user.id !== currentUser?.id && (
-															<button
-																className="kick-user-button"
-																onClick={() => handleKickUser(room.id, user.id)}
-															>
-																x
-															</button>
-														)}
-														<button
-															className="make-admin-button"
-															onClick={() => handleMakeAdmin(room.id, user.id)}
-														>
-															Set Admin
-														</button>
-													</>
+											{((room.ownerId === currentUser?.id ||
+												room.adminIds.includes(currentUser?.id)) && // Current user is owner or admin
+												!room.adminIds.includes(user.id)) || // Target user is not an admin
+											(room.ownerId === currentUser?.id && room.adminIds.includes(user.id)) ? ( // Current user is owner and target user is admin
+												<button
+													className="kick-user-button"
+													onClick={() => handleKickUser(room.id, user.id)}
+												>
+													x
+												</button>
+											) : null}
+											{room.ownerId === currentUser?.id &&
+												!room.adminIds.includes(user.id) && ( // Check if the current user is the owner and target user is not an admin
+													<button
+														className="make-admin-button"
+														onClick={() => handleMakeAdmin(room.id, user.id)}
+													>
+														Set Admin
+													</button>
 												)}
 										</span>
 									))}
