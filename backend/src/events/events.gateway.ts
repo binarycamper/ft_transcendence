@@ -235,8 +235,7 @@ export class EventsGateway {
 			for (const user of chatRoom.users) {
 				const recipient = await this.userService.findProfileById(user.id);
 				if (recipient.ignorelist.some((ignoredUser) => ignoredUser.id === currUser.id)) {
-					// Check if the ignorelist includes the current user's ID
-					console.log('User is ignored!');
+					//console.log('User is ignored!');
 					// If the sender is on the recipient's ignore list, censor the message
 					this.server.to(`user_${user.id}`).emit('receiveMessage', {
 						content: '[Message Hidden]',

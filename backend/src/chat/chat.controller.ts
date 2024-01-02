@@ -97,9 +97,25 @@ export class ChatController {
 	async getChatRoomChat(@Req() req, @Query('chatroomid') chatRoomId: string) {
 		try {
 			const userId = req.user.id;
-			const result = await this.chatService.findChatRoomChat(chatRoomId);
-			//console.log('res: ', result);
-			return result;
+			const user = await this.userService.findProfileById(userId);
+			const chatRoom = await this.chatService.getChatRoomById(chatRoomId);
+
+			// Ensure the user is a member of the chat room
+			if (!chatRoom.users.some((u) => u.id === userId)) {
+				throw new ForbiddenException('User is not a member of this chat room.');
+			}
+
+			const chatHistory = await this.chatService.findChatRoomChat(chatRoomId);
+
+			// Censor messages from ignored users
+			const censoredHistory = chatHistory.map((message) => {
+				if (user.ignorelist.some((ignoredUser) => ignoredUser.id === message.senderId)) {
+					return { ...message, content: '[Message Hidden]', senderName: '[Ignored User]' };
+				}
+				return message;
+			});
+
+			return censoredHistory;
 		} catch (error) {
 			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
