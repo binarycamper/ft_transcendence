@@ -199,7 +199,7 @@ export class ChatController {
 		}
 
 		if (chatRoom.type === 'private') {
-			throw new UnauthorizedException('ChatRoom is private!');
+			throw new UnauthorizedException('ChatRoom is private, you will need an invite.');
 		}
 		if (chatRoom.type === 'public' && chatRoom.password !== '') {
 			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);

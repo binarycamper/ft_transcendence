@@ -188,34 +188,56 @@ export const ChatRoomList = () => {
 									<span className="owner-label">Owner</span>
 									{room.ownerName}
 								</span>
-								{/* Display users with status */}
+								{/* Display admins */}
+								<div className="chat-room-admins">
+									<div className="admins-title">Admins</div>
+									{room.users
+										.filter((user) => room.adminIds.includes(user.id))
+										.map((admin) => (
+											<span key={admin.id} className={`user-status user ${admin.status}`}>
+												{admin.name}
+												{room.ownerId === currentUser?.id &&
+													admin.id !== currentUser?.id && ( // Only owner can kick admins and cannot kick self
+														<button
+															className="kick-user-button"
+															onClick={() => handleKickUser(room.id, admin.id)}
+														>
+															x
+														</button>
+													)}
+											</span>
+										))}
+								</div>
+								{/* Display regular members */}
 								<div className="chat-room-users">
 									<div className="members-title">Members</div>
-									{room.users.map((user) => (
-										<span key={user.id} className={`user-status user ${user.status}`}>
-											{user.name}
-											{((room.ownerId === currentUser?.id ||
-												room.adminIds.includes(currentUser?.id)) && // Current user is owner or admin
-												!room.adminIds.includes(user.id)) || // Target user is not an admin
-											(room.ownerId === currentUser?.id && room.adminIds.includes(user.id)) ? ( // Current user is owner and target user is admin
-												<button
-													className="kick-user-button"
-													onClick={() => handleKickUser(room.id, user.id)}
-												>
-													x
-												</button>
-											) : null}
-											{room.ownerId === currentUser?.id &&
-												!room.adminIds.includes(user.id) && ( // Check if the current user is the owner and target user is not an admin
-													<button
-														className="make-admin-button"
-														onClick={() => handleMakeAdmin(room.id, user.id)}
-													>
-														Set Admin
-													</button>
+									{room.users
+										.filter((user) => !room.adminIds.includes(user.id))
+										.map((user) => (
+											<span key={user.id} className={`user-status user ${user.status}`}>
+												{user.name}
+												{(room.ownerId === currentUser?.id ||
+													(room.adminIds.includes(currentUser?.id) &&
+														!room.adminIds.includes(user.id))) && ( // Owner and admins can kick non-admins, admins cannot kick themselves
+													<>
+														<button
+															className="kick-user-button"
+															onClick={() => handleKickUser(room.id, user.id)}
+														>
+															x
+														</button>
+														{room.ownerId === currentUser?.id && ( // Only owner can set admins
+															<button
+																className="make-admin-button"
+																onClick={() => handleMakeAdmin(room.id, user.id)}
+															>
+																Set Admin
+															</button>
+														)}
+													</>
 												)}
-										</span>
-									))}
+											</span>
+										))}
 								</div>
 								{!room.users.some((user) => user.id === currentUser?.id) && (
 									<button
