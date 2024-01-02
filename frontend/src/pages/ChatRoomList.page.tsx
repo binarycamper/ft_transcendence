@@ -14,6 +14,7 @@ type ChatRoom = {
 	ownerId: string;
 	users: User[];
 	type: string;
+	adminIds: string[];
 };
 
 export const ChatRoomList = () => {
@@ -143,6 +144,28 @@ export const ChatRoomList = () => {
 		}
 	};
 
+	const handleMakeAdmin = async (roomId: string, userId: string) => {
+		try {
+			const response = await fetch(`http://localhost:8080/chat/upgradeToAdmin`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId, userId }),
+			});
+
+			if (response.ok) {
+				window.location.href = 'http://localhost:5173/chatroomlist';
+			} else {
+				const errorData = await response.json();
+				setJoinError('Failed to make user admin: ' + errorData.message);
+			}
+		} catch (error) {
+			setJoinError('Error while attempting to make user admin: ' + error);
+		}
+	};
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -171,14 +194,26 @@ export const ChatRoomList = () => {
 									{room.users.map((user) => (
 										<span key={user.id} className={`user-status user ${user.status}`}>
 											{user.name}
-											{room.ownerName === currentUser?.name && user.id !== currentUser?.id && (
-												<button
-													className="kick-user-button"
-													onClick={() => handleKickUser(room.id, user.id)}
-												>
-													x
-												</button>
-											)}
+											{room.ownerName === currentUser?.name &&
+												user.id !== room.ownerId &&
+												!room.adminIds.includes(user.id) && ( // Check if the user is not the owner and not an admin
+													<>
+														{user.id !== currentUser?.id && (
+															<button
+																className="kick-user-button"
+																onClick={() => handleKickUser(room.id, user.id)}
+															>
+																x
+															</button>
+														)}
+														<button
+															className="make-admin-button"
+															onClick={() => handleMakeAdmin(room.id, user.id)}
+														>
+															Set Admin
+														</button>
+													</>
+												)}
 										</span>
 									))}
 								</div>

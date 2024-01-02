@@ -26,7 +26,7 @@ import { UserService } from 'src/user/user.service';
 import { InviteRoomDto } from './inviteRoom.dto';
 import { CreateChatRoomDto } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
-import { KickUserDTO } from './dto/kickUser.dto';
+import { RoomIdUserIdDTO } from './dto/roomIdUserId.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -240,7 +240,7 @@ export class ChatController {
 	//kick a user in a chatroom, if you are owner. //TODO: kick as admin normal members.
 	@UseGuards(JwtAuthGuard)
 	@Post('kickuser')
-	async kickUser(@Body() kickUserDto: KickUserDTO, @Req() req) {
+	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req) {
 		try {
 			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId);
 			return { message: 'User successfully kicked' };
@@ -250,6 +250,30 @@ export class ChatController {
 			}
 			throw new HttpException(
 				'Failed to kick user due to an unexpected error',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('upgradeToAdmin')
+	async upgradeToAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
+		try {
+			await this.chatService.upgradeToAdmin(roomIdUserIdDto.roomId, roomIdUserIdDto.userId);
+			return { message: 'User successfully upgraded to admin' };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new HttpException(`Chat room not found: ${error.message}`, HttpStatus.NOT_FOUND);
+			} else if (error instanceof UnauthorizedException) {
+				throw new HttpException(`Unauthorized: ${error.message}`, HttpStatus.UNAUTHORIZED);
+			} else if (error instanceof BadRequestException) {
+				throw new HttpException(`Bad request: ${error.message}`, HttpStatus.BAD_REQUEST);
+			}
+			// Log the error for internal monitoring
+			console.error('Internal Server Error:', error);
+
+			throw new HttpException(
+				'Internal Server Error: Failed to upgrade user due to an unexpected error',
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}

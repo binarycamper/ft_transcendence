@@ -2,7 +2,7 @@
 
 import { IsString, IsNotEmpty, IsOptional, IsArray, IsUUID } from 'class-validator';
 
-export class KickUserDTO {
+export class RoomIdUserIdDTO {
 	@IsString()
 	@IsNotEmpty()
 	@IsUUID()

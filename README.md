@@ -4,16 +4,6 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
-• Implement 'Settings' feature for chat rooms (http://localhost:5173/chatroom):
-
-- Allow all users to leave the ChatRoom, if the ChatRoom owner decides to leave his CHatroom the Room gets deleted and all references (messages[] && users[]).
-- Allow room owners to assign admin roles.
-- Enable admins to manage room membership and settings.
-- Ensure intuitive UI for inviting, kicking, and assigning admins within chatrooms.
-- Better create a new site for that because ChatroomPage is so fat
-
----
-
 • The user should be able to invite other users to play a Pong game through the chat interface. (ChatRoom.page /chat/invite Backend Response)
 
 ```
@@ -45,6 +35,13 @@ Insert error logs here
 ## jjesberg
 
 ```
+- Allow all users to leave the ChatRoom, if the ChatRoom owner decides to leave his CHatroom the Room gets deleted and all references (messages[] && users[]).
+- Allow room owners to assign admin roles.
+- Enable admins to manage room membership and settings.
+- Ensure intuitive UI for inviting, kicking, and assigning admins within chatrooms.
+- Better create a new site for that because ChatroomPage is so fat
+
+---
 
 - The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
 

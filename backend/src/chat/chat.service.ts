@@ -202,6 +202,31 @@ export class ChatService {
 		return chatRoom;
 	}
 
+	async upgradeToAdmin(roomId: string, userId: string): Promise<any> {
+		//console.log('roomId: ', roomId);
+		//console.log('userId: ', userId);
+
+		const chatRoom = await this.chatRoomRepository.findOne({
+			where: { id: roomId },
+			relations: ['users'],
+		});
+
+		if (!chatRoom) {
+			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
+		}
+		//console.log('chatRoom: ', chatRoom);
+
+		// Check if the user is already an admin
+		if (chatRoom.adminIds.includes(userId)) {
+			throw new BadRequestException(`User with ID ${userId} is already an admin.`);
+		}
+		// Add the user to the admin list
+		chatRoom.adminIds.push(userId);
+		await this.chatRoomRepository.save(chatRoom);
+
+		return { message: `User with ID ${userId} has been upgraded to admin in room ${roomId}` };
+	}
+
 	//########################CHatMessages#############################
 
 	async saveMessage(receiverId: string, senderId: string, content: string) {
