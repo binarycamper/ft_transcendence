@@ -231,15 +231,14 @@ export class ChatController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('kickuser')
-	async kickUser(@Body('roomId') roomId: string, @Body('userId') userId: string, @Req() req) {
+	async kickUser(@Body() kickUserDto: KickUserDTO, @Req() req) {
 		try {
-			await this.chatService.kickUserFromRoom(roomId, userId);
+			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId);
 			return { message: 'User successfully kicked' };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
 			}
-			// Generic error response for other types of errors
 			throw new HttpException(
 				'Failed to kick user due to an unexpected error',
 				HttpStatus.INTERNAL_SERVER_ERROR,
