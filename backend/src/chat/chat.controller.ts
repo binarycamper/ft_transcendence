@@ -282,10 +282,7 @@ export class ChatController {
 	@Post('revokeadmin')
 	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
 		try {
-			// Retrieve the chat room from the database
 			const chatRoom = await this.chatService.getChatRoomById(roomIdUserIdDto.roomId);
-
-			// Check if the chat room exists
 			if (!chatRoom) {
 				throw new NotFoundException(`Chat room with ID ${roomIdUserIdDto.roomId} not found.`);
 			}
@@ -299,17 +296,10 @@ export class ChatController {
 			if (!chatRoom.adminIds.includes(roomIdUserIdDto.userId)) {
 				throw new BadRequestException(`User with ID ${roomIdUserIdDto.userId} is not an admin.`);
 			}
-
-			// Remove the user from the admin list
 			chatRoom.adminIds = chatRoom.adminIds.filter((adminId) => adminId !== roomIdUserIdDto.userId);
-
-			// Save the updated chat room entity
 			await this.chatService.updateChatRoom(chatRoom);
-
-			// Return a success response
 			return { message: `Admin rights revoked from user with ID ${roomIdUserIdDto.userId}.` };
 		} catch (error) {
-			// Handle any other errors appropriately
 			throw new InternalServerErrorException(error.message);
 		}
 	}
