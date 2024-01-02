@@ -358,6 +358,10 @@ export const ChatRoom = () => {
 		fetchChatRoomHistory(chatRoom.id); // Fetch the chat history for the selected chat room
 	};
 
+	const handleRoomSettings = async () => {
+		window.location.href = 'http://localhost:5173/chatroomlist';
+	};
+
 	const handleDeleteChatRoom = async (chatRoomId: string) => {
 		const confirmation = window.confirm(
 			'Are you sure you want to delete this chat room? This cannot be undone.',
