@@ -35,21 +35,7 @@ Insert error logs here
 ## jjesberg
 
 ```
-- Allow all users to leave the ChatRoom, if the ChatRoom owner decides to leave his CHatroom the Room gets deleted and all references (messages[] && users[]).
-- Allow room owners to assign admin roles.
-- Enable admins to manage room membership and settings.
-- Ensure intuitive UI for inviting, kicking, and assigning admins within chatrooms.
-- Better create a new site for that because ChatroomPage is so fat
-
----
-
-- The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
-
-- The user who has created a new channel is automatically set as the channel owner until they leave it.
-
 ◦ The channel owner can set a password required to access the channel, change it, and also remove it.
-
-◦ The channel owner is a channel administrator. They can set other users as administrators.
 
 ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 
@@ -103,6 +89,9 @@ customization options
 
 - The user should be able to block other users. This way, they will see no more messages from the account they blocked.
 - Chat between friends (The user should be able to send direct messages to other users.)
--
+- Allow all users to leave the ChatRoom, if the ChatRoom owner decides to leave his CHatroom the Room gets deleted and all references (messages[] && users[]).
+- The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
+  ◦ The channel owner is a channel administrator. They can set other users as administrators.
+- The user who has created a new channel is automatically set as the channel owner until they leave it.
 
 #### 5. Game
