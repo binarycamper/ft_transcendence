@@ -198,6 +198,9 @@ export class ChatController {
 			throw new NotFoundException('Chat room not found.');
 		}
 
+		if (chatRoom.type === 'private') {
+			throw new UnauthorizedException('ChatRoom is private!');
+		}
 		if (chatRoom.type === 'public' && chatRoom.password !== '') {
 			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);
 			if (!isPasswordMatch) {
