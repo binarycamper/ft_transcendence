@@ -134,12 +134,12 @@ export const ChatRoomList = () => {
 					}),
 				);
 			} else {
-				setJoinError('Failed to kick user');
-				return;
+				const errorData = await response.json();
+				const errorMessage = errorData.message || 'Failed to kick user';
+				setJoinError(errorMessage);
 			}
 		} catch (error) {
 			setJoinError('Error while attempting to kick user: ' + error);
-			return;
 		}
 	};
 
