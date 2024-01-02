@@ -120,9 +120,8 @@ export class ChatController {
 	async deleteChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
 		try {
 			await this.chatService.deleteChatRoom(roomId, req.user.id);
-			// Deletion was successful, return no content
 		} catch (error) {
-			// If the chatroom exists but the user is not the owner, throw a Forbidden exception
+			// If the chatroom exists but the user is not the owner: Forbidden exception
 			if (error instanceof HttpException) {
 				throw new ForbiddenException('User is not the owner of the chat room.');
 			}

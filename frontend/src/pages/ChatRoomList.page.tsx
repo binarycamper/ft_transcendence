@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../css/chatroomlist.css';
+import { HttpStatusCode } from 'axios';
 
 type User = {
 	id: string;
@@ -113,8 +114,32 @@ export const ChatRoomList = () => {
 		}
 	};
 
-	const handleKickUser = async (roomId: string, userId: string) => {
+	const handleKickUser = async (roomId: string, userId: string, ownerId: string) => {
 		try {
+			if (userId === currentUser?.id && userId === ownerId) {
+				const isConfirmed = window.confirm('Are you sure you want to delete this chat room?');
+				if (!isConfirmed) return;
+
+				const deleteResponse = await fetch(
+					`http://localhost:8080/chat/deletechatroom?chatroomId=${roomId}`,
+					{
+						method: 'DELETE',
+						credentials: 'include',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					},
+				);
+
+				if (deleteResponse.status === HttpStatusCode.NoContent) {
+					setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId));
+				} else {
+					const errorData = await deleteResponse.json();
+					setJoinError(errorData.message || 'Failed to delete chat room');
+				}
+				return;
+			}
+
 			const response = await fetch(`http://localhost:8080/chat/kickuser`, {
 				method: 'POST',
 				credentials: 'include',
@@ -200,14 +225,23 @@ export const ChatRoomList = () => {
 													admin.id !== currentUser?.id && ( // Only owner can kick admins and cannot kick self
 														<button
 															className="kick-user-button"
-															onClick={() => handleKickUser(room.id, admin.id)}
+															onClick={() => handleKickUser(room.id, admin.id, room.ownerId)}
 														>
 															x
 														</button>
 													)}
+												{admin.id === currentUser?.id && ( // Users can kick themselves
+													<button
+														className="kick-user-button"
+														onClick={() => handleKickUser(room.id, admin.id, room.ownerId)}
+													>
+														x
+													</button>
+												)}
 											</span>
 										))}
 								</div>
+
 								{/* Display regular members */}
 								<div className="chat-room-users">
 									<div className="members-title">Members</div>
@@ -218,24 +252,31 @@ export const ChatRoomList = () => {
 												{user.name}
 												{(room.ownerId === currentUser?.id ||
 													(room.adminIds.includes(currentUser?.id) &&
-														!room.adminIds.includes(user.id))) && ( // Owner and admins can kick non-admins, admins cannot kick themselves
-													<>
-														<button
-															className="kick-user-button"
-															onClick={() => handleKickUser(room.id, user.id)}
-														>
-															x
-														</button>
-														{room.ownerId === currentUser?.id && ( // Only owner can set admins
-															<button
-																className="make-admin-button"
-																onClick={() => handleMakeAdmin(room.id, user.id)}
-															>
-																Set Admin
-															</button>
-														)}
-													</>
+														user.id !== currentUser?.id)) && ( // Owner and admins can kick non-admins, but not themselves
+													<button
+														className="kick-user-button"
+														onClick={() => handleKickUser(room.id, user.id, room.ownerId)}
+													>
+														x
+													</button>
 												)}
+												{user.id === currentUser?.id && ( // Users can kick themselves
+													<button
+														className="kick-user-button"
+														onClick={() => handleKickUser(room.id, user.id, room.ownerId)}
+													>
+														x
+													</button>
+												)}
+												{room.ownerId === currentUser?.id &&
+													!room.adminIds.includes(user.id) && ( // Only owner can set admins
+														<button
+															className="make-admin-button"
+															onClick={() => handleMakeAdmin(room.id, user.id)}
+														>
+															Set Admin
+														</button>
+													)}
 											</span>
 										))}
 								</div>
