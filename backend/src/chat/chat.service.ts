@@ -249,6 +249,11 @@ export class ChatService {
 		return { message: `User with ID ${userId} has been upgraded to admin in room ${roomId}` };
 	}
 
+	async updateChatRoom(chatRoom: ChatRoom): Promise<ChatRoom> {
+		await this.chatRoomRepository.save(chatRoom);
+		return chatRoom;
+	}
+
 	//########################CHatMessages#############################
 
 	async saveMessage(receiverId: string, senderId: string, content: string) {

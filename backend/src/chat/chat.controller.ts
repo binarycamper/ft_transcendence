@@ -278,6 +278,42 @@ export class ChatController {
 		}
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Post('revokeadmin')
+	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
+		try {
+			// Retrieve the chat room from the database
+			const chatRoom = await this.chatService.getChatRoomById(roomIdUserIdDto.roomId);
+
+			// Check if the chat room exists
+			if (!chatRoom) {
+				throw new NotFoundException(`Chat room with ID ${roomIdUserIdDto.roomId} not found.`);
+			}
+
+			// Check if the requesting user is the owner of the chat room
+			if (chatRoom.ownerId !== req.user.id) {
+				throw new ForbiddenException('Only the owner can revoke admin rights.');
+			}
+
+			// Check if the user is actually an admin of the chat room
+			if (!chatRoom.adminIds.includes(roomIdUserIdDto.userId)) {
+				throw new BadRequestException(`User with ID ${roomIdUserIdDto.userId} is not an admin.`);
+			}
+
+			// Remove the user from the admin list
+			chatRoom.adminIds = chatRoom.adminIds.filter((adminId) => adminId !== roomIdUserIdDto.userId);
+
+			// Save the updated chat room entity
+			await this.chatService.updateChatRoom(chatRoom);
+
+			// Return a success response
+			return { message: `Admin rights revoked from user with ID ${roomIdUserIdDto.userId}.` };
+		} catch (error) {
+			// Handle any other errors appropriately
+			throw new InternalServerErrorException(error.message);
+		}
+	}
+
 	//########################CHatMessages#############################
 
 	//delivers chathistory between two friends, or between chatroom and memebers.

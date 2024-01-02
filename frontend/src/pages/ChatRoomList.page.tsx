@@ -191,6 +191,44 @@ export const ChatRoomList = () => {
 		}
 	};
 
+	const handleRevokeAdmin = async (roomId: string, userId: string) => {
+		if (!window.confirm("Are you sure you want to revoke this user's admin status?")) {
+			return;
+		}
+
+		try {
+			const response = await fetch(`http://localhost:8080/chat/revokeadmin`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId, userId }),
+			});
+
+			if (response.ok) {
+				// Update the chatRooms state to reflect the change
+				setChatRooms((prevRooms) =>
+					prevRooms.map((room) => {
+						if (room.id === roomId) {
+							// Remove the userId from the adminIds array
+							return {
+								...room,
+								adminIds: room.adminIds.filter((adminId) => adminId !== userId),
+							};
+						}
+						return room;
+					}),
+				);
+			} else {
+				const errorData = await response.json();
+				setJoinError('Failed to revoke admin status: ' + errorData.message);
+			}
+		} catch (error) {
+			setJoinError('Error while attempting to revoke admin status: ' + error);
+		}
+	};
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -221,16 +259,23 @@ export const ChatRoomList = () => {
 										.map((admin) => (
 											<span key={admin.id} className={`user-status user ${admin.status}`}>
 												{admin.name}
-												{room.ownerId === currentUser?.id &&
-													admin.id !== currentUser?.id && ( // Only owner can kick admins and cannot kick self
+												{room.ownerId === currentUser?.id && admin.id !== currentUser?.id && (
+													<>
 														<button
 															className="kick-user-button"
 															onClick={() => handleKickUser(room.id, admin.id, room.ownerId)}
 														>
 															x
 														</button>
-													)}
-												{admin.id === currentUser?.id && ( // Users can kick themselves
+														<button
+															className="revoke-admin-button"
+															onClick={() => handleRevokeAdmin(room.id, admin.id)} // Add the onClick event for handleRevokeAdmin here
+														>
+															Revoke Admin
+														</button>
+													</>
+												)}
+												{admin.id === currentUser?.id && (
 													<button
 														className="kick-user-button"
 														onClick={() => handleKickUser(room.id, admin.id, room.ownerId)}
