@@ -26,6 +26,7 @@ import { UserService } from 'src/user/user.service';
 import { InviteRoomDto } from './inviteRoom.dto';
 import { CreateChatRoomDto } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
+import { KickUserDTO } from './dto/kickUser.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -225,6 +226,24 @@ export class ChatController {
 			// Log the error and throw an appropriate exception
 			console.error('Error while adding user to chat room:', error);
 			throw new InternalServerErrorException('An error occurred while joining the room.');
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('kickuser')
+	async kickUser(@Body('roomId') roomId: string, @Body('userId') userId: string, @Req() req) {
+		try {
+			await this.chatService.kickUserFromRoom(roomId, userId);
+			return { message: 'User successfully kicked' };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+			}
+			// Generic error response for other types of errors
+			throw new HttpException(
+				'Failed to kick user due to an unexpected error',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		}
 	}
 

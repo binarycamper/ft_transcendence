@@ -187,6 +187,21 @@ export class ChatService {
 		return chatRoom;
 	}
 
+	async kickUserFromRoom(roomId: string, userId: string) {
+		const chatRoom = await this.chatRoomRepository.findOne({
+			where: { id: roomId },
+			relations: ['users'],
+		});
+
+		if (!chatRoom) {
+			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
+		}
+
+		chatRoom.users = chatRoom.users.filter((user) => user.id !== userId);
+		await this.chatRoomRepository.save(chatRoom);
+		return chatRoom;
+	}
+
 	//########################CHatMessages#############################
 
 	async saveMessage(receiverId: string, senderId: string, content: string) {
