@@ -43,7 +43,7 @@ export class ChatController {
 		return await this.chatService.getAllChatRooms();
 	}
 
-	//TODO: create DTO for that Body()!
+	//create a new Chatroom
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req) {
@@ -76,12 +76,12 @@ export class ChatController {
 		return chatRoom;
 	}
 
+	//get all Chatrooms of that user
 	@UseGuards(JwtAuthGuard)
 	@Get('mychatrooms')
 	async myChatRooms(@Req() req, @Res() res) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
-			// Assuming you have a method to get chat rooms for a user
 			res.status(HttpStatus.OK).json(user.chatRooms);
 		} catch (error) {
 			// Handle any errors that occur
@@ -91,6 +91,7 @@ export class ChatController {
 		}
 	}
 
+	//delivers the Chathistory of a chatroom.
 	@UseGuards(JwtAuthGuard)
 	@Get('chatroomhistory')
 	async getChatRoomChat(@Req() req, @Query('chatroomid') chatRoomId: string) {
@@ -104,6 +105,7 @@ export class ChatController {
 		}
 	}
 
+	//clears Chathistory in the Chatroom.
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('clearchatroom')
@@ -111,6 +113,7 @@ export class ChatController {
 		return await this.chatService.clearChatRoom(roomId, req.user.id);
 	}
 
+	//delete your ChatROom (only owner)
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('deletechatroom')
@@ -128,6 +131,7 @@ export class ChatController {
 		}
 	}
 
+	//adds a player to a chatroom.
 	@UseGuards(JwtAuthGuard)
 	@Post('invitetoroom')
 	async inviteToRoom(@Body() inviteRoomDto: InviteRoomDto, @Req() req): Promise<any> {
@@ -145,18 +149,18 @@ export class ChatController {
 				throw new BadRequestException('Chat room has max users');
 			}
 
-			//TODO: Except the admins, they can also invite.
 			//console.log('OwnerId: ', chatRoom.ownerId);
 			//console.log('userID: ', req.user.id);
 			if (!chatRoom.adminIds.includes(req.user.id)) {
 				throw new UnauthorizedException('No permissions to invite users!');
 			}
+
 			//check if Username is a existing user
 			const userToInvite = await this.userService.findProfileByName(userNameToInvite);
 			if (!userToInvite) {
 				throw new NotFoundException('The user you are trying to invite does not exist.');
 			}
-			//TODO: Test later when implemented, try invite a user which is already in that chatroom.
+
 			//check if user is already in Chatroom
 			if (chatRoom.users.some((user) => user.name === userNameToInvite)) {
 				throw new BadRequestException(
@@ -182,6 +186,7 @@ export class ChatController {
 		}
 	}
 
+	//join a public chatroom + pw if set
 	@UseGuards(JwtAuthGuard)
 	@Post('joinroom')
 	async joinChatRoom(@Req() req, @Body() inviteRoomDto: InviteRoomDto): Promise<any> {
@@ -229,6 +234,7 @@ export class ChatController {
 		}
 	}
 
+	//kick a user in a chatroom, if you are owner. //TODO: kick as admin normal members.
 	@UseGuards(JwtAuthGuard)
 	@Post('kickuser')
 	async kickUser(@Body() kickUserDto: KickUserDTO, @Req() req) {
@@ -248,6 +254,7 @@ export class ChatController {
 
 	//########################CHatMessages#############################
 
+	//delivers chathistory between two friends, or between chatroom and memebers.
 	@UseGuards(JwtAuthGuard)
 	@Get('history')
 	async getFriendChat(@Req() req, @Query('friendId') friendId: string) {
@@ -259,6 +266,7 @@ export class ChatController {
 		}
 	}
 
+	//deletes chat between two friends.
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('deletechat')

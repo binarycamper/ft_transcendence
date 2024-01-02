@@ -124,7 +124,7 @@ export const ChatRoomList = () => {
 			});
 
 			if (response.ok) {
-				console.log(`User with ID: ${userId} kicked from room: ${roomId}`);
+				//console.log(`User with ID: ${userId} kicked from room: ${roomId}`);
 				setChatRooms((prevRooms) =>
 					prevRooms.map((room) => {
 						if (room.id === roomId) {
