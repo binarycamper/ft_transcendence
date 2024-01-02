@@ -1,6 +1,9 @@
 // chat-room.dto.ts
 
 import { IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import { Mute } from '../mute.entity';
+import { User } from 'src/user/user.entity';
+import { ChatMessage } from '../chat.entity';
 
 export class CreateChatRoomDto {
 	@IsString()
@@ -29,9 +32,13 @@ export class CreateChatRoomDto {
 
 	@IsArray()
 	@IsOptional()
-	messages: any[]; // Define the type based on your message structure
+	mutes: Mute[];
 
 	@IsArray()
 	@IsOptional()
-	users: any[]; // Define the type based on your user structure
+	messages: ChatMessage[]; // Define the type based on your message structure
+
+	@IsArray()
+	@IsOptional()
+	users: User[]; // Define the type based on your user structure
 }

@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
+import { Mute } from './mute.entity';
 
 @Entity()
 export class ChatRoom {
@@ -12,10 +13,10 @@ export class ChatRoom {
 	name: string;
 
 	@Column()
-	type: string; // 'public', 'private', 'protected'
+	type: string; // 'public', 'private'
 
 	@Column({ nullable: true })
-	password: string; // For password-protected rooms
+	password: string;
 
 	@Column()
 	ownerId: string;
@@ -25,6 +26,9 @@ export class ChatRoom {
 
 	@Column('simple-array')
 	adminIds: string[];
+
+	@OneToMany(() => Mute, (mute) => mute.chatRoom)
+	mutes: Mute[];
 
 	@OneToMany(() => ChatMessage, (chatMessage) => chatMessage.chatRoom)
 	messages: ChatMessage[];

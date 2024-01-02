@@ -274,6 +274,7 @@ export const ChatRoom = () => {
 			adminIds: [currentUserId],
 			messages: [],
 			users: [],
+			mutes: [],
 		};
 
 		try {
