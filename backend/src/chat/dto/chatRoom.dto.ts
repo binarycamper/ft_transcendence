@@ -94,3 +94,15 @@ export class FriendRequestDto {
 	@IsNotEmpty()
 	readonly content: string;
 }
+
+export class ClearChatRoomDto {
+	@IsNotEmpty()
+	@IsString()
+	@IsUUID()
+	chatroomId: string;
+}
+/*
+deleteChatRoom: Could use a DTO to validate roomId.
+getChatRoomChat: While it uses the @Query decorator to get the chatRoomId, it could benefit from a DTO for potential expansion or additional query parameters in the future.
+kickUser: This function could benefit from a DTO to encapsulate the roomId and userId in a single object for validation.
+changePassword*/

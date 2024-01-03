@@ -24,6 +24,7 @@ import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import {
 	ChangePasswordDto,
+	ClearChatRoomDto,
 	CreateChatRoomDto,
 	FriendRequestDto,
 	InviteRoomDto,
@@ -128,8 +129,8 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('clearchatroom')
-	async clearChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
-		return await this.chatService.clearChatRoom(roomId, req.user.id);
+	async clearChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req) {
+		return await this.chatService.clearChatRoom(clearChatRoomDto.chatroomId, req.user.id);
 	}
 
 	//delete your ChatROom (only owner)
