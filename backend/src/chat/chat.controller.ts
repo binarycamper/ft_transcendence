@@ -323,8 +323,8 @@ export class ChatController {
 		}
 	}
 
+	//change password of chatroom as owner
 	@UseGuards(JwtAuthGuard)
-	@Post('changepassword')
 	@Post('changepassword')
 	async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
 		const userId = req.user.id;

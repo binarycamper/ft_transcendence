@@ -53,7 +53,7 @@ export class ChatService {
 		return existingChatRoom;
 	}
 
-	async createChatRoom(chatRoomData: CreateChatRoomDto) {
+	async createChatRoom(chatRoomData: CreateChatRoomDto): Promise<ChatRoom> {
 		//console.log('chatRoomData: ', chatRoomData);
 		if (chatRoomData.type === 'public' && chatRoomData.password) {
 			const hashedPassword = await bcrypt.hash(chatRoomData.password, 10);
@@ -65,7 +65,11 @@ export class ChatService {
 		return await this.chatRoomRepository.save(chatRoom);
 	}
 
-	async saveChatRoomMessage(chatRoomId: string, senderId: string, content: string) {
+	async saveChatRoomMessage(
+		chatRoomId: string,
+		senderId: string,
+		content: string,
+	): Promise<ChatMessage> {
 		const sender = await this.userService.findProfileById(senderId);
 		const now = new Date();
 		// Assuming ChatMessage is a class that corresponds to your database schema

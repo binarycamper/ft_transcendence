@@ -35,8 +35,6 @@ Insert error logs here
 ## jjesberg
 
 ```
-◦ The channel owner can set a password required to access the channel, change it, and also remove it.
-
 ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 
 - Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it.
@@ -93,5 +91,6 @@ customization options
 - The user should be able to create channels (chat rooms) that can be either public, or private, or protected by a password.
   ◦ The channel owner is a channel administrator. They can set other users as administrators.
 - The user who has created a new channel is automatically set as the channel owner until they leave it.
+  ◦ The channel owner can set a password required to access the channel, change it, and also remove it.
 
 #### 5. Game
