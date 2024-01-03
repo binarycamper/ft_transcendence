@@ -28,7 +28,13 @@ import { StatusGuard } from 'src/auth/guards/status.guard';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
-import { CompleteProfileDto, DeleteUserDto, EditNicknameDto, GetUserNameDto } from './dto/user.dto';
+import {
+	CompleteProfileDto,
+	DeleteUserDto,
+	EditNicknameDto,
+	GetImageDto,
+	RemoveFriendDto,
+} from './dto/user.dto';
 import { NotFoundError } from 'rxjs';
 
 const uploadPath = '/usr/src/app/uploads/';
@@ -172,9 +178,9 @@ export class UserController {
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
-	async getImage(@Query('filename') filename: string, @Res() res: Response) {
+	async getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
 		// Construct the full file path
-		const fullPath = uploadPath + filename;
+		const fullPath = uploadPath + getImageDto.filename;
 		//console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
@@ -239,12 +245,12 @@ export class UserController {
 	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Delete('friends')
-	async removeFriend(@Query('friendid') friendId: string, @Req() req, @Res() res) {
+	async removeFriend(@Query() removeFriendDto: RemoveFriendDto, @Req() req, @Res() res) {
 		try {
-			await this.userService.removeFriend(req.user.id, friendId);
+			await this.userService.removeFriend(req.user.id, removeFriendDto.friendid);
 			return res.status(HttpStatus.NO_CONTENT).send();
 		} catch (error) {
-			console.error('Error removing friend:', error.message);
+			//console.error('Error removing friend:', error.message);
 			const status =
 				error instanceof NotFoundException
 					? HttpStatus.NOT_FOUND
@@ -264,7 +270,6 @@ export class UserController {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
 
-			// You can choose to return the updated user or just a success message
 			res.status(HttpStatus.OK).json({ message: 'Friend added successfully' });
 		} catch (error) {
 			console.error('Error adding friend:', error);

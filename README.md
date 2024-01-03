@@ -58,6 +58,7 @@ database: PostgreSQL
 ## rmeuth
 
 ```
+render image doesnt work in profile.
 frontend: create basic webpage layout
 frontend: create game (pong)
 customization options

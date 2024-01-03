@@ -35,12 +35,21 @@ export class DeleteUserDto {
 	readonly confirm: boolean;
 }
 
+export class GetImageDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly filename: string;
+}
+
+export class RemoveFriendDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly friendid: string;
+}
+
 /*
 In your NestJS UserController, you should consider using Data Transfer Objects (DTOs) in methods where you are receiving data from the client (via @Body, @Query, @Param, etc.). DTOs are helpful for validation, transformation, and ensuring that the data you receive is in the correct shape and type. Here's a list of the methods in your controller where you should ideally use DTOs:
 
-    deleteUser: This method receives a confirm query parameter. A DTO could be used to validate this boolean value.
-
-    getImage: This method receives a filename via @Query. A DTO can be used to encapsulate and validate this parameter.
 
     editNickName: You are correctly using EditNicknameDto here.
 
