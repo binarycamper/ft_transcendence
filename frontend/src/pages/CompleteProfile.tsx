@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
+import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
+import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
 export function CompleteProfile() {
 	const [password, setPassword] = useState('');
 	const [passwordError, setPasswordError] = useState('');
+	const [passwordWarning, setPasswordWarning] = useState<Array<string>>([]);
 	const [isProfileComplete, setIsProfileComplete] = useState(false);
 	const [setup2FA, setSetup2FA] = useState(false);
 	const [info, setinfo] = useState('');
 
 	const navigate = useNavigate();
-
-	const validatePassword = (password: string) => {
+  
+  /*
+  const validatePassword = (password: string) => {
 		const minLength = 8;
 		const hasUpperCase = /[A-Z]/.test(password);
 		const hasLowerCase = /[a-z]/.test(password);
@@ -36,6 +41,30 @@ export function CompleteProfile() {
 		console.log('ERRORORR: ', errorMessage);
 		return errorMessage;
 	};
+  */
+	const validatePassword = (password: string) => {
+    const options = {
+      translations: zxcvbnEnPackage.translations,
+      graphs: zxcvbnCommonPackage.adjacencyGraphs,
+      dictionary: {
+        ...zxcvbnCommonPackage.dictionary,
+        ...zxcvbnEnPackage.dictionary,
+      },
+    };
+    zxcvbnOptions.setOptions(options);
+    const result = zxcvbn(password);
+    if (result.feedback.warning) {
+      setPasswordError(result.feedback.warning);
+    } else {
+      setPasswordError('');
+    }
+    if (result.feedback.suggestions) {
+      setPasswordWarning(result.feedback.suggestions);
+    } else {
+      setPasswordWarning([]);
+    }
+    return true;
+	};
 
 	useEffect(() => {
 		const checkProfileStatus = async () => {
@@ -60,11 +89,9 @@ export function CompleteProfile() {
 		event.preventDefault();
 
 		//TOdo: Validate the password
-		/*const msg = validatePassword(password);
-		if (msg !== '') {
-			setPasswordError(msg);
-			return;
-		}*/
+		if ( !validatePassword(password)) {
+      return;
+    }
 		// Clear the previous password error
 		setPasswordError('');
 
@@ -120,7 +147,32 @@ export function CompleteProfile() {
 								onChange={(e) => setPassword(e.target.value)}
 								required
 							/>
-							{passwordError && <p>{passwordError}</p>}
+							{passwordError && 
+                  <div 
+                  style={{
+                    background: '#FF7171',
+                    border: 'solid #FF0000',
+                    borderRadius: '25px',
+                    padding: '12.5px',
+                    margin: '5px',
+								  }}
+                  >
+                  <p >{passwordError}</p>
+                  </div>
+              }
+							{passwordWarning && passwordWarning.map((warning) =>
+                  <div
+                  style={{
+                    background: '#FF7171',
+                    border: 'solid #FF0000',
+                    borderRadius: '25px',
+                    padding: '12.5px',
+                    margin: '5px',
+								  }}
+                  >
+                  <p >{warning}</p>
+                  </div>
+                )}
 						</div>
 						<div>
 							<input
