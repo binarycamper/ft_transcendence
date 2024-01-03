@@ -150,3 +150,32 @@
 	margin-bottom: 15px;
 	text-align: center;
 }
+
+.change-password-button {
+	padding: 6px 12px;
+	background-color: #6772e5; /* Soft shade of blue */
+	color: white;
+	border: 1px solid #556cd6; /* Slightly darker border */
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: normal; /* No bold */
+	text-transform: none; /* Normal casing */
+	font-size: 0.75rem; /* Slightly smaller font */
+	transition: background-color 0.3s ease, transform 0.1s ease;
+	margin-left: 8px; /* Spacing from the owner label */
+	align-self: center; /* Vertically align with the owner label */
+}
+
+.change-password-button:hover,
+.change-password-button:focus {
+	background-color: #556cd6; /* Darker shade for interaction */
+	transform: translateY(-2px); /* Slight lift effect */
+	outline: none; /* No browser default outline */
+	box-shadow: 0 0 0 2px rgba(103, 114, 229, 0.5); /* Custom focus outline */
+}
+
+.change-password-button .icon {
+	display: inline-block; /* Allows vertical alignment with text */
+	margin-right: 4px; /* Spacing before the text */
+	vertical-align: middle; /* Align icon with text */
+}

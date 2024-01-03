@@ -67,7 +67,7 @@ export const ChatRoomList = () => {
 						(room) =>
 							room.type !== 'private' ||
 							room.users.some((user) => {
-								console.log('Comparing IDs', user.id, currentUser.id); // Debug log
+								//console.log('Comparing IDs', user.id, currentUser.id); // Debug log
 								return user.id === currentUser.id;
 							}),
 					);
@@ -229,6 +229,43 @@ export const ChatRoomList = () => {
 		}
 	};
 
+	const handleChangePassword = async (roomId: string) => {
+		const oldPassword = prompt('Enter the current password for the chat room:');
+		if (oldPassword === null) {
+			return; // User cancelled the prompt
+		}
+
+		const newPassword = prompt(
+			'Enter new password for the chat room (leave blank for no password):',
+		);
+		// Note: If the user enters nothing and confirms, newPassword will be an empty string
+
+		try {
+			const response = await fetch(`http://localhost:8080/chat/changepassword`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId, oldPassword, newPassword }),
+			});
+
+			if (response.ok) {
+				if (newPassword === '') {
+					alert('Password removed successfully');
+				} else {
+					alert('Password updated successfully');
+				}
+				// Additional logic on success
+			} else {
+				const errorData = await response.json();
+				alert('Failed to update password: ' + errorData.message);
+			}
+		} catch (error) {
+			alert('Error while attempting to update password: ' + error);
+		}
+	};
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -251,6 +288,15 @@ export const ChatRoomList = () => {
 									<span className="owner-label">Owner</span>
 									{room.ownerName}
 								</span>
+								{room.ownerId === currentUser?.id && (
+									<button
+										className="change-password-button"
+										onClick={() => handleChangePassword(room.id)}
+									>
+										<span className="icon">🔒</span>
+										Change Password
+									</button>
+								)}
 								{/* Display admins */}
 								<div className="chat-room-admins">
 									<div className="admins-title">Admins</div>
