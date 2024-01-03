@@ -137,9 +137,9 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('deletechatroom')
-	async deleteChatRoom(@Query('chatroomId') roomId: string, @Req() req) {
+	async deleteChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req) {
 		try {
-			await this.chatService.deleteChatRoom(roomId, req.user.id);
+			await this.chatService.deleteChatRoom(clearChatRoomDto.chatroomId, req.user.id);
 		} catch (error) {
 			// If the chatroom exists but the user is not the owner: Forbidden exception
 			if (error instanceof HttpException) {

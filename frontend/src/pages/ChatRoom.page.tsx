@@ -380,6 +380,7 @@ export const ChatRoom = () => {
 			if (response.status === 204) {
 				// Remove the deleted chat room from state
 				setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== chatRoomId));
+				window.location.href = 'http://localhost:5173/chatroom';
 				showNotification('ChatRoom deleted');
 			} else setChatRoomError('You cannot delete that chatroom');
 		} catch (error) {
