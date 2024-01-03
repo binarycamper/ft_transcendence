@@ -1,6 +1,6 @@
 // chat-room.dto.ts
 
-import { IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray, IsUUID } from 'class-validator';
 import { Mute } from '../mute.entity';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from '../chat.entity';
@@ -41,4 +41,56 @@ export class CreateChatRoomDto {
 	@IsArray()
 	@IsOptional()
 	users: User[]; // Define the type based on your user structure
+}
+
+export class ChangePasswordDto {
+	@IsNotEmpty()
+	@IsString()
+	roomId: string;
+
+	@IsNotEmpty()
+	@IsString()
+	oldPassword: string;
+
+	@IsString()
+	@IsOptional()
+	newPassword?: string;
+}
+export class RoomIdUserIdDTO {
+	@IsString()
+	@IsNotEmpty()
+	@IsUUID()
+	roomId: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@IsUUID()
+	userId: string;
+}
+
+export class InviteRoomDto {
+	@IsUUID()
+	roomId: string;
+
+	@IsNotEmpty()
+	@IsString()
+	userNameToInvite: string;
+
+	@IsOptional()
+	@IsString()
+	password: string;
+}
+
+export class FriendRequestDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly recipient: string;
+
+	@IsString()
+	@IsNotEmpty()
+	readonly messageType: 'friend_request' | 'system_message';
+
+	@IsString()
+	@IsNotEmpty()
+	readonly content: string;
 }

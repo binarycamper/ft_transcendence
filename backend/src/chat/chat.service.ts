@@ -10,17 +10,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequest } from './friendRequest.entity';
 import { Server } from 'socket.io';
-import { FriendRequestDto } from './friendRequest.dto';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
 import { ChatRoom } from './chatRoom.entity';
-import { CreateChatRoomDto } from './dto/chatRoom.dto';
+import { CreateChatRoomDto, FriendRequestDto } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class ChatService {
-	private server: Server; // This should be injected or set from outside, probably from your WebSocket gateway
+	private server: Server;
 
 	constructor(
 		@InjectRepository(FriendRequest)

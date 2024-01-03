@@ -20,13 +20,16 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
-import { FriendRequestDto } from './friendRequest.dto';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
-import { InviteRoomDto } from './inviteRoom.dto';
-import { CreateChatRoomDto } from './dto/chatRoom.dto';
+import {
+	ChangePasswordDto,
+	CreateChatRoomDto,
+	FriendRequestDto,
+	InviteRoomDto,
+	RoomIdUserIdDTO,
+} from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
-import { RoomIdUserIdDTO } from './dto/roomIdUserId.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -318,6 +321,43 @@ export class ChatController {
 		} catch (error) {
 			throw new InternalServerErrorException(error.message);
 		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('changepassword')
+	@Post('changepassword')
+	async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
+		const userId = req.user.id;
+		const { roomId, oldPassword, newPassword } = changePasswordDto;
+
+		//TODO: Write seperate function to get Room credits and exclude pw in getChatRoomById
+		const chatRoom = await this.chatService.getChatRoomById(roomId);
+		if (!chatRoom) {
+			throw new NotFoundException('Chat room not found.');
+		}
+
+		// Ensure the requesting user is the owner of the chat room
+		if (chatRoom.ownerId !== userId) {
+			throw new ForbiddenException('Only the owner can change the password of the chat room.');
+		}
+
+		// Check if the old password matches
+		const isMatch = chatRoom.password
+			? await bcrypt.compare(oldPassword, chatRoom.password)
+			: false;
+		if (!isMatch) {
+			throw new BadRequestException('Old password does not match.');
+		}
+
+		// Update the password or remove it
+		if (newPassword !== '') {
+			const hashedPassword = await bcrypt.hash(newPassword, 10);
+			chatRoom.password = hashedPassword;
+		} else {
+			chatRoom.password = '';
+		}
+		await this.chatService.updateChatRoom(chatRoom);
+		return { message: 'Password has been updated successfully.' };
 	}
 
 	//########################CHatMessages#############################

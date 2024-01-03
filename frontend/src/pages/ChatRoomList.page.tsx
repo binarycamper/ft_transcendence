@@ -315,7 +315,7 @@ export const ChatRoomList = () => {
 														</button>
 														<button
 															className="revoke-admin-button"
-															onClick={() => handleRevokeAdmin(room.id, admin.id)} // Add the onClick event for handleRevokeAdmin here
+															onClick={() => handleRevokeAdmin(room.id, admin.id)}
 														>
 															Revoke Admin
 														</button>
@@ -343,7 +343,7 @@ export const ChatRoomList = () => {
 												{user.name}
 												{(room.ownerId === currentUser?.id ||
 													(room.adminIds.includes(currentUser?.id) &&
-														user.id !== currentUser?.id)) && ( // Owner and admins can kick non-admins, but not themselves
+														user.id !== currentUser?.id)) && ( // Owner and admins can kick non-admins
 													<button
 														className="kick-user-button"
 														onClick={() => handleKickUser(room.id, user.id, room.ownerId)}
