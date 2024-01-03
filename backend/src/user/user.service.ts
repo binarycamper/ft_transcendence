@@ -124,9 +124,6 @@ export class UserService {
 			where: { name: name },
 			select: ['id', 'email', 'name', 'nickname', 'status', 'imageUrl', 'image'],
 		});
-		if (!user) {
-			throw new Error('User not found (findUserbyName)');
-		}
 		return user;
 	}
 

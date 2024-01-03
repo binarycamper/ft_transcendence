@@ -28,8 +28,7 @@ import { StatusGuard } from 'src/auth/guards/status.guard';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
-import { EditNicknameDto } from './dto/userName.dto';
-import { CompleteProfileDto } from './dto/completeProfile.dto';
+import { CompleteProfileDto, EditNicknameDto } from './dto/user.dto';
 import { NotFoundError } from 'rxjs';
 
 const uploadPath = '/usr/src/app/uploads/';
@@ -279,6 +278,14 @@ export class UserController {
 	async blockUser(@Req() req, @Query('userName') userToBlockName: string, @Res() res: Response) {
 		const user = req.user;
 		const userToBlock = await this.userService.findUserbyName(userToBlockName);
+		if (!userToBlock) {
+			res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
+			return;
+		}
+		if (userToBlock.id === user.id) {
+			res.status(HttpStatus.BAD_REQUEST).json({ message: 'You cannot block yourself.' });
+			return;
+		}
 		try {
 			const updatedUser = await this.userService.ignoreUser(user, userToBlock.name);
 			await this.userService.removeFriend(user.id, userToBlock.id);

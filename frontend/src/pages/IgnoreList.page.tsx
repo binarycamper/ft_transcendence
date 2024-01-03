@@ -9,6 +9,7 @@ const IgnoreList = () => {
 	const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [userNameToBlock, setUserNameToBlock] = useState('');
+	const [info, setinfo] = useState('');
 
 	const fetchBlockedUsers = async () => {
 		setIsLoading(true);
@@ -73,16 +74,19 @@ const IgnoreList = () => {
 				setUserNameToBlock('');
 				fetchBlockedUsers();
 			} else {
-				console.error('Failed to block user:', data.message);
+				setinfo(data.message);
+				//console.error('Failed to block user:', data.message);
 			}
-		} catch (error) {
-			console.error('Error while blocking user:', error);
+		} catch (error: any) {
+			setinfo(error);
+			//console.error('Error while blocking user:', error);
 		}
 	};
 
 	return (
 		<div>
 			<h1>Blocked Users:</h1>
+			{info && <p style={{ color: 'yellow' }}>{info}</p>}
 			<div>
 				<input
 					type="text"
