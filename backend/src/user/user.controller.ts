@@ -154,24 +154,24 @@ export class UserController {
 		if (!file || file.size === 0) {
 			throw new BadRequestException('No file uploaded or file is empty.');
 		}
-
 		if (!(await this.isValidImage(file.buffer))) {
 			throw new BadRequestException('Invalid image file.');
 		}
-
 		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 		if (file.size > MAX_FILE_SIZE) {
 			throw new BadRequestException('File size exceeds the maximum limit of 1MB.');
 		}
-
 		const allowedMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png']);
 		if (!allowedMimeTypes.has(file.mimetype)) {
 			throw new BadRequestException('Invalid file type. Only jpeg/jpg/png files are allowed.');
 		}
-
-		await this.userService.saveUserImage(req.user.id, file);
-
-		return { message: 'Image uploaded successfully' };
+		try {
+			await this.userService.saveUserImage(req.user.id, file);
+			return { message: 'Image uploaded successfully' };
+		} catch (error) {
+			//this.logger.error(`Error uploading user image: ${error.message}`, error.stack);
+			throw new InternalServerErrorException('Could not upload image. Please try again later.');
+		}
 	}
 
 	private async isValidImage(fileBuffer: Buffer): Promise<boolean> {
@@ -190,7 +190,7 @@ export class UserController {
 	async getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
 		// Construct the full file path
 		const fullPath = uploadPath + getImageDto.filename;
-		//console.log('FilePath= ', fullPath);
+		console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
 		if (fs.existsSync(fullPath)) {
