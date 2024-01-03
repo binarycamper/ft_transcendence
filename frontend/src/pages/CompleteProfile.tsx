@@ -91,7 +91,9 @@ export function CompleteProfile() {
 				}
 			} else {
 				// Assuming that 'message' is an array of objects and you want to display 'isStrongPassword' constraint
-				const messages = data.message.map((item) => item.constraints.isStrongPassword).join(' ');
+				const messages = data.message
+					.map((item: any) => item.constraints.isStrongPassword)
+					.join(' ');
 				setinfo(messages || 'An error occurred');
 			}
 		} catch (error) {

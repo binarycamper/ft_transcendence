@@ -78,6 +78,7 @@ export class EventsGateway {
 		}
 	}
 
+	//TODO: DTO here pls
 	@SubscribeMessage('sendMessage')
 	async handleMessage(
 		@MessageBody() data: { receiverId: string; content: string },
@@ -160,6 +161,7 @@ export class EventsGateway {
 		}, matchAcceptanceTimeout);
 	}
 
+	//TODO: DTO here pls
 	@SubscribeMessage('respondToMatch')
 	async respondToMatch(
 		@MessageBody() data: { matchId: number; accept: boolean },
@@ -209,6 +211,7 @@ export class EventsGateway {
 		}
 	}
 
+	//TODO: DTO here pls
 	@SubscribeMessage('sendMessageToChatRoom')
 	async handleMessageToChatRoom(
 		@MessageBody() data: { chatRoomId: string; content: string },

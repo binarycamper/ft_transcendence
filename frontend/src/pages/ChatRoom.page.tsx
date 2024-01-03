@@ -411,7 +411,9 @@ export const ChatRoom = () => {
 				showNotification(`User ${inviteUsername} invited to the room successfully.`); //TODO: it is red but can be green because success
 				setInviteUsername('');
 			} else {
-				switch (response.status) {
+				switch (
+					response.status // :D
+				) {
 					case 400:
 						showNotification(data.message);
 						break;

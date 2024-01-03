@@ -1,3 +1,4 @@
+import { IsEmail } from 'class-validator';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
 
@@ -13,6 +14,7 @@ export class User {
 	nickname: string;
 
 	@Column({ unique: true, nullable: true, length: 100 })
+	@IsEmail()
 	email: string;
 
 	@Column({ select: false }) // Exclude password field by default

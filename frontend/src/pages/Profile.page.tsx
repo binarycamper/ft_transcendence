@@ -236,7 +236,7 @@ export function Profile() {
 					credentials: 'include',
 				},
 			);
-			console.log('response: ');
+			//console.log('response: ', response);
 			if (response.status === 303) {
 				const res = await fetch(`http://localhost:8080/user/id`, {
 					method: 'GET',
