@@ -18,6 +18,7 @@ import {
 	ValidationPipe,
 	UnauthorizedException,
 	NotFoundException,
+	InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -32,7 +33,6 @@ import {
 	AddFriendDto,
 	BlockUserDto,
 	CompleteProfileDto,
-	DeleteUserDto,
 	EditNicknameDto,
 	GetImageDto,
 	GetPublicProfileDto,
@@ -91,7 +91,6 @@ export class UserController {
 				status: HttpStatus.UNAUTHORIZED,
 				error:
 					'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
-				location: '/login',
 			});
 		}
 		const isProfileComplete = await this.userService.isProfilecreated(userId);
@@ -124,17 +123,25 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Delete('delete')
-	async deleteUser(
-		@Req() req,
-		@Query() deleteUserDto: DeleteUserDto,
-	): Promise<{ message: string }> {
-		if (!deleteUserDto.confirm) {
-			throw new BadRequestException('Confirmation required to delete account');
+	async deleteUser(@Req() req): Promise<{ message: string }> {
+		try {
+			await this.userService.deleteUserById(req.user.id, req.user.image);
+			req.res.clearCookie('token', { sameSite: 'none', secure: true });
+			return { message: 'User deleted successfully' };
+		} catch (error) {
+			//	this.logger.error(`Error deleting user: ${error.message}`, error.stack);
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException('User not found');
+			} else if (error.response && error.status) {
+				// If error is an instance of HttpException, rethrow it
+				throw new HttpException(error.response, error.status);
+			} else {
+				// For all other errors, consider them as internal server errors
+				throw new InternalServerErrorException(
+					'An unexpected error occurred while deleting the user',
+				);
+			}
 		}
-
-		await this.userService.deleteUserById(req.user.id, req.user.image);
-		req.res.clearCookie('token', { sameSite: 'none', secure: true });
-		return { message: 'User deleted successfully' };
 	}
 
 	@UseGuards(JwtAuthGuard)

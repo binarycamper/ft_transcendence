@@ -6,6 +6,8 @@ export function CompleteProfile() {
 	const [passwordError, setPasswordError] = useState('');
 	const [isProfileComplete, setIsProfileComplete] = useState(false);
 	const [setup2FA, setSetup2FA] = useState(false);
+	const [info, setinfo] = useState('');
+
 	const navigate = useNavigate();
 
 	const validatePassword = (password: string) => {
@@ -46,8 +48,9 @@ export function CompleteProfile() {
 				if (data.isComplete) {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
-			} catch (error) {
-				console.error('Error checking profile status:', error);
+			} catch (error: any) {
+				setinfo(error);
+				//console.error('Error checking profile status:', error);
 			}
 		};
 		checkProfileStatus();
@@ -87,11 +90,13 @@ export function CompleteProfile() {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
 			} else {
-				const data = await response.json();
-				if (data.message) console.log('Password update failed: ', data.message);
+				// Assuming that 'message' is an array of objects and you want to display 'isStrongPassword' constraint
+				const messages = data.message.map((item) => item.constraints.isStrongPassword).join(' ');
+				setinfo(messages || 'An error occurred');
 			}
 		} catch (error) {
-			console.error('Network error:', error);
+			console.log('test 2');
+			setinfo('failed setting pw');
 		}
 	};
 
@@ -102,6 +107,7 @@ export function CompleteProfile() {
 			) : (
 				<div>
 					<h1>Complete Your Profile</h1>
+					{info && <p className="error-message">{info}</p>}
 					<form onSubmit={handleSubmit}>
 						<div>
 							<label htmlFor="password">Password:</label>
@@ -112,7 +118,7 @@ export function CompleteProfile() {
 								onChange={(e) => setPassword(e.target.value)}
 								required
 							/>
-							{passwordError && <p >{passwordError}</p>}
+							{passwordError && <p>{passwordError}</p>}
 						</div>
 						<div>
 							<input

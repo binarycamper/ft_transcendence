@@ -29,12 +29,6 @@ export class GetUserNameDto {
 	readonly senderid: string;
 }
 
-export class DeleteUserDto {
-	@IsBoolean()
-	@IsNotEmpty()
-	readonly confirm: boolean;
-}
-
 export class GetImageDto {
 	@IsString()
 	@IsNotEmpty()

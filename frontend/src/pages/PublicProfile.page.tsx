@@ -56,10 +56,6 @@ export const PublicProfile = () => {
 		fetchFriendProfile();
 	}, []);
 
-	const navigateToFriendProfile = (friendName: string) => {
-		navigate(`/publicprofile/${friendName}`);
-	};
-
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}
