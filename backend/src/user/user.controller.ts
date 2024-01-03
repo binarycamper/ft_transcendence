@@ -29,11 +29,15 @@ import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import {
+	AddFriendDto,
+	BlockUserDto,
 	CompleteProfileDto,
 	DeleteUserDto,
 	EditNicknameDto,
 	GetImageDto,
+	GetPublicProfileDto,
 	RemoveFriendDto,
+	UnblockUserDto,
 } from './dto/user.dto';
 import { NotFoundError } from 'rxjs';
 
@@ -118,7 +122,6 @@ export class UserController {
 		return result;
 	}
 
-	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Delete('delete')
 	async deleteUser(
@@ -174,7 +177,6 @@ export class UserController {
 		}
 	}
 
-	//TODO: Need dto here for Query
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
@@ -242,7 +244,6 @@ export class UserController {
 		}
 	}
 
-	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Delete('friends')
 	async removeFriend(@Query() removeFriendDto: RemoveFriendDto, @Req() req, @Res() res) {
@@ -259,13 +260,12 @@ export class UserController {
 		}
 	}
 
-	//TODO: Need dto here for Body
 	@UseGuards(JwtAuthGuard)
 	@Post('addFriend')
-	async addFriend(@Req() req, @Body('friendName') friendName: string, @Res() res: Response) {
+	async addFriend(@Req() req, @Body() addFriendDto: AddFriendDto, @Res() res: Response) {
 		const user = req.user;
 		try {
-			const updatedUser = await this.userService.addFriend(user, friendName);
+			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
 			if (!updatedUser) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
@@ -277,12 +277,11 @@ export class UserController {
 		}
 	}
 
-	//TODO: Need dto here for Query
 	@UseGuards(JwtAuthGuard)
 	@Post('blockUser')
-	async blockUser(@Req() req, @Query('userName') userToBlockName: string, @Res() res: Response) {
+	async blockUser(@Req() req, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
 		const user = req.user;
-		const userToBlock = await this.userService.findUserbyName(userToBlockName);
+		const userToBlock = await this.userService.findUserbyName(blockUserDto.userName);
 		if (!userToBlock) {
 			res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			return;
@@ -327,9 +326,9 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('unblockUser')
-	async unblockUser(@Req() req, @Query('userid') userIdToBlock: string, @Res() res: Response) {
+	async unblockUser(@Req() req, @Query() unblockUserDto: UnblockUserDto, @Res() res: Response) {
 		const user = req.user;
-		const userToBlock = await this.userService.findProfileById(userIdToBlock);
+		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
 			const updatedUser = await this.userService.removeUserInIgnoreList(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
@@ -348,11 +347,8 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('publicprofile')
-	async getPublicProfile(@Query('friendname') friendname: string, @Req() req) {
-		// Access the user's ID from the request object
-
-		const friendProfile = await this.userService.findProfileByName(friendname);
-
+	async getPublicProfile(@Query() getPublicProfileDto: GetPublicProfileDto) {
+		const friendProfile = await this.userService.findProfileByName(getPublicProfileDto.friendname);
 		// Exclude password and other sensitive fields from the result
 		const {
 			password,

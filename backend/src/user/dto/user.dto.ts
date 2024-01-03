@@ -47,20 +47,26 @@ export class RemoveFriendDto {
 	readonly friendid: string;
 }
 
-/*
-In your NestJS UserController, you should consider using Data Transfer Objects (DTOs) in methods where you are receiving data from the client (via @Body, @Query, @Param, etc.). DTOs are helpful for validation, transformation, and ensuring that the data you receive is in the correct shape and type. Here's a list of the methods in your controller where you should ideally use DTOs:
+export class AddFriendDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly friendName: string;
+}
 
+export class BlockUserDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly userName: string;
+}
 
-    editNickName: You are correctly using EditNicknameDto here.
+export class UnblockUserDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly userid: string;
+}
 
-    removeFriend: This method receives a friendid via @Query. A DTO can be used here for validation and encapsulation.
-
-    addFriend: While you're receiving friendName via @Body, it's directly taken as a string. Instead, a DTO should be used to encapsulate this data.
-
-    blockUser: This method receives userName via @Query. A DTO would be appropriate here to validate and encapsulate the query parameters.
-
-    unblockUser: Here, userid is received via @Query. A DTO should be used for validation and encapsulation.
-
-    getPublicProfile: The method receives friendname via @Query. Using a DTO here would be beneficial for validation purposes.
-
-*/
+export class GetPublicProfileDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly friendname: string;
+}
