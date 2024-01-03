@@ -28,7 +28,7 @@ import { StatusGuard } from 'src/auth/guards/status.guard';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
-import { CompleteProfileDto, EditNicknameDto } from './dto/user.dto';
+import { CompleteProfileDto, DeleteUserDto, EditNicknameDto, GetUserNameDto } from './dto/user.dto';
 import { NotFoundError } from 'rxjs';
 
 const uploadPath = '/usr/src/app/uploads/';
@@ -47,16 +47,16 @@ export class UserController {
 		return { id: id, name: name };
 	}
 
-	//TODO: Need dto here for Query
-	@UseGuards(JwtAuthGuard)
+	//TODO: Need dto here for Query  //INFO: Not used i think so delete if nobody miss it
+	/*@UseGuards(JwtAuthGuard)
 	@Get('getname')
-	async getName(@Query('senderid') senderId: string): Promise<{ name: string }> {
-		const user = await this.userService.findProfileById(senderId);
+	async getName(@Query() getUserNameDto: GetUserNameDto): Promise<{ name: string }> {
+		const user = await this.userService.findProfileById(getUserNameDto.senderid);
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		return { name: user.name }; // Replace 'name' with the actual property of your User entity that holds the user name
-	}
+		return { name: user.name };
+	}*/
 
 	@Get('isProfileComplete')
 	@UseGuards(JwtAuthGuard)
@@ -117,9 +117,9 @@ export class UserController {
 	@Delete('delete')
 	async deleteUser(
 		@Req() req,
-		@Query('confirm') confirmDeletion: boolean,
+		@Query() deleteUserDto: DeleteUserDto,
 	): Promise<{ message: string }> {
-		if (!confirmDeletion) {
+		if (!deleteUserDto.confirm) {
 			throw new BadRequestException('Confirmation required to delete account');
 		}
 
