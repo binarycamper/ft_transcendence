@@ -331,7 +331,7 @@ export const ChatRoom = () => {
 	const fetchChatRoomHistory = async (chatRoomId: string) => {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/chat/chatroomhistory/?chatroomid=${chatRoomId}`,
+				`http://localhost:8080/chat/chatroomhistory/?chatroomId=${chatRoomId}`,
 				{
 					method: 'GET',
 					credentials: 'include',

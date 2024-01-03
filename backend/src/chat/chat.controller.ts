@@ -98,18 +98,18 @@ export class ChatController {
 	//delivers the Chathistory of a chatroom.
 	@UseGuards(JwtAuthGuard)
 	@Get('chatroomhistory')
-	async getChatRoomChat(@Req() req, @Query('chatroomid') chatRoomId: string) {
+	async getChatRoomChat(@Req() req, @Query() clearChatRoomDto: ClearChatRoomDto) {
 		try {
 			const userId = req.user.id;
 			const user = await this.userService.findProfileById(userId);
-			const chatRoom = await this.chatService.getChatRoomById(chatRoomId);
+			const chatRoom = await this.chatService.getChatRoomById(clearChatRoomDto.chatroomId);
 
 			// Ensure the user is a member of the chat room
 			if (!chatRoom.users.some((u) => u.id === userId)) {
 				throw new ForbiddenException('User is not a member of this chat room.');
 			}
 
-			const chatHistory = await this.chatService.findChatRoomChat(chatRoomId);
+			const chatHistory = await this.chatService.findChatRoomChat(clearChatRoomDto.chatroomId);
 
 			// Censor messages from ignored users
 			const censoredHistory = chatHistory.map((message) => {
