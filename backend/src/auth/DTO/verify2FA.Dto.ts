@@ -9,3 +9,7 @@ export class Verify2FADto {
 	@IsNotEmpty()
 	readonly userId: string; // Die Benutzer-ID
 }
+
+export class Toggle2FADto {
+	readonly enable2FA: string;
+}

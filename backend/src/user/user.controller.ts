@@ -57,17 +57,6 @@ export class UserController {
 		return { id: id, name: name };
 	}
 
-	//TODO: Need dto here for Query  //INFO: Not used i think so delete if nobody miss it
-	/*@UseGuards(JwtAuthGuard)
-	@Get('getname')
-	async getName(@Query() getUserNameDto: GetUserNameDto): Promise<{ name: string }> {
-		const user = await this.userService.findProfileById(getUserNameDto.senderid);
-		if (!user) {
-			throw new NotFoundException('User not found');
-		}
-		return { name: user.name };
-	}*/
-
 	@Get('isProfileComplete')
 	@UseGuards(JwtAuthGuard)
 	async isProfileComplete(@Req() req): Promise<{ isComplete: boolean }> {
