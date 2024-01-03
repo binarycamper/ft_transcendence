@@ -524,7 +524,7 @@ export const ChatRoom = () => {
 									<button onClick={() => handleClearChat(room.id, true)} style={buttonStyle}>
 										Clear Chat
 									</button>
-									<button onClick={() => handleRoomSettings(room.id)} style={buttonStyle}>
+									<button onClick={() => handleRoomSettings()} style={buttonStyle}>
 										Settings
 									</button>
 									<button onClick={() => handleDeleteChatRoom(room.id)} style={buttonStyle}>

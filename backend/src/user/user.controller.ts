@@ -190,12 +190,13 @@ export class UserController {
 	async getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
 		// Construct the full file path
 		const fullPath = uploadPath + getImageDto.filename;
-		console.log('FilePath= ', fullPath);
+		//console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
 		if (fs.existsSync(fullPath)) {
 			return res.status(HttpStatus.OK).sendFile(fullPath);
 		} else {
+			//console.log('ERROR cant find path: ', fullPath);
 			return res.status(HttpStatus.NOT_FOUND).send('File not found');
 		}
 	}
