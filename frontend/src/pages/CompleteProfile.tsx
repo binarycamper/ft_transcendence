@@ -163,8 +163,8 @@ export function CompleteProfile() {
 							{passwordWarning && passwordWarning.map((warning) =>
                   <div
                   style={{
-                    background: '#FF7171',
-                    border: 'solid #FF0000',
+                    background: '#FFB46B',
+                    border: 'solid #FF7F00',
                     borderRadius: '25px',
                     padding: '12.5px',
                     margin: '5px',
