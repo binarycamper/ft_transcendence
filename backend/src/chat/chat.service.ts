@@ -209,7 +209,7 @@ export class ChatService {
 		}
 
 		// If the user to kick is an admin and the requester is not the owner, throw an unauthorized exception
-		if (chatRoom.adminIds.includes(userIdToKick) && !isOwner) {
+		if (chatRoom.adminIds.includes(userIdToKick) && !isOwner && requesterId !== userIdToKick) {
 			throw new UnauthorizedException('Admins can only be kicked by the room owner.');
 		}
 

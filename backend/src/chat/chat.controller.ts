@@ -266,11 +266,16 @@ export class ChatController {
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+			} else if (error instanceof UnauthorizedException) {
+				throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+			} else {
+				// Log the error for debugging
+				console.error('Failed to kick user:', error);
+				throw new HttpException(
+					'Failed to kick user due to an unexpected error',
+					HttpStatus.INTERNAL_SERVER_ERROR,
+				);
 			}
-			throw new HttpException(
-				'Failed to kick user due to an unexpected error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
 		}
 	}
 
