@@ -51,33 +51,52 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req) {
-		const userId = req.user.id; // Get the user ID from the request
-		const user = await this.userService.findProfileById(userId);
+		try {
+			const userId = req.user.id; // Get the user ID from the request
+			const user = await this.userService.findProfileById(userId);
 
-		// Check the number of chat rooms the user already has
-		const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
-		const MAX_CHATROOMS = 5;
-		// If the user already has the maximum number of chat rooms, throw an error
-		if (chatRoomCount >= MAX_CHATROOMS) {
-			throw new ForbiddenException(
-				'You have reached the maximum number of chat rooms. You can still join other rooms in the ChatRoomlist',
+			// Check the number of chat rooms the user already has
+			const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
+			const MAX_CHATROOMS = 5;
+			// If the user already has the maximum number of chat rooms, throw an error
+			if (chatRoomCount >= MAX_CHATROOMS) {
+				throw new ForbiddenException(
+					'You have reached the maximum number of chat rooms. You can still join other rooms in the ChatRoomlist',
+				);
+			}
+
+			const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);
+			if (existingChatRoom) {
+				throw new BadRequestException('Chat room name already in use.');
+			}
+
+			// Since the user has not reached the maximum, create the new chat room
+			chatRoomData.ownerName = user.name;
+			const chatRoom = await this.chatService.createChatRoom(chatRoomData);
+
+			// Add the new chat room to the user's chat rooms
+			user.chatRooms.push(chatRoom);
+
+			// Save the updated user entity
+			await this.userService.updateUser(user);
+
+			return chatRoom;
+		} catch (error) {
+			// Here, handle specific types of errors as needed
+			if (error instanceof ForbiddenException) {
+				// Specific handling for ForbiddenException
+				throw new HttpException(error.message, HttpStatus.FORBIDDEN);
+			} else if (error instanceof BadRequestException) {
+				// Specific handling for BadRequestException
+				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+			}
+			// For other types of errors
+			console.error('Failed to create chat room:', error);
+			throw new HttpException(
+				'Internal Server Error: Failed to create chat room due to an unexpected error',
+				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
-
-		const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);
-		if (existingChatRoom) {
-			throw new BadRequestException('Chat room name already in use.');
-		}
-		// Since the user has not reached the maximum, create the new chat room
-		chatRoomData.ownerName = user.name;
-		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
-		// Add the new chat room to the user's chat rooms
-		user.chatRooms.push(chatRoom);
-
-		// Save the updated user entity
-		await this.userService.updateUser(user);
-
-		return chatRoom;
 	}
 
 	//get all Chatrooms of that user

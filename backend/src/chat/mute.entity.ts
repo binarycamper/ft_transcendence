@@ -1,6 +1,5 @@
 // Mute.entity.ts
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
-import { User } from 'src/user/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 
 @Entity()
