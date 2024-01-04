@@ -22,7 +22,7 @@ export default function useLogin() {
 			setError(false);
 			const data = await response.json();
 			if (data.require2FA) {
-				navigate('/twofactorsetup', { state: { userId: data.userId } });
+				navigate('/twofactorsetup');
 			} else {
 				navigate('/profile');
 			}

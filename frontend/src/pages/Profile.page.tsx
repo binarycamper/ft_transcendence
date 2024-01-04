@@ -18,6 +18,7 @@ export function Profile() {
 		profile,
 		setNewNickname,
 		toggleImage,
+		has2FA,
 	} = useProfile();
 
 	if (!profile) {
@@ -65,7 +66,7 @@ export function Profile() {
 			<button onClick={changeNickname}>Change Nickname</button>
 			{errorNickname && <p style={{ color: 'red' }}>{errorNickname}</p>}
 
-			<button onClick={handleToggle2FA}>{(profile.has2FA ? 'Disable' : 'Enable') + '2FA'}</button>
+			<button onClick={handleToggle2FA}>{(has2FA ? 'Disable' : 'Enable') + '2FA'}</button>
 		</Container>
 	);
 }

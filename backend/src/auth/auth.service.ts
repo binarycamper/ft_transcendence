@@ -197,6 +197,7 @@ export class AuthService {
 		user.twoFactorAuthenticationSecret = user.unconfirmedTwoFactorSecret;
 		user.unconfirmedTwoFactorSecret = null;
 		user.isTwoFactorAuthenticationEnabled = true;
+		user.status = 'online';
 		await this.userRepository.save(user);
 	}
 
@@ -205,9 +206,9 @@ export class AuthService {
 			throw new Error('User not found');
 		}
 
-		let secret = user.isTwoFactorAuthenticationEnabled
-			? user.twoFactorAuthenticationSecret
-			: user.unconfirmedTwoFactorSecret;
+		let secret = user.unconfirmedTwoFactorSecret
+			? user.unconfirmedTwoFactorSecret
+			: user.twoFactorAuthenticationSecret;
 
 		if (!secret) {
 			throw new Error('2FA secret not set');
@@ -219,7 +220,7 @@ export class AuthService {
 			token: token,
 		});
 
-		if (isValid && !user.twoFactorAuthenticationSecret) {
+		if (isValid && user.unconfirmedTwoFactorSecret) {
 			await this.enable2FAForUser(user);
 		}
 		return isValid;
@@ -242,28 +243,35 @@ export class AuthService {
 	}
 
 	async setupTwoFactorAuthentication(user: User): Promise<{ qrCodeUrl: string }> {
-		const secret = speakeasy.generateSecret();
-		const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
-
-		user.unconfirmedTwoFactorSecret = secret.base32;
-		await this.userRepository.save(user);
-
-		return { qrCodeUrl };
+		if (!user) {
+			throw new Error('User not found');
+		}
+		if (!user.twoFactorAuthenticationSecret) {
+			const secret = speakeasy.generateSecret();
+			const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+			user.unconfirmedTwoFactorSecret = secret.base32;
+			await this.userRepository.save(user);
+			return { qrCodeUrl };
+		} else if (user.twoFactorAuthenticationSecret) {
+			const secret = user.twoFactorAuthenticationSecret;
+			const qrCodeUrl = await QRCode.toDataURL(
+				speakeasy.otpauthURL({ secret: secret, label: user.name, encoding: 'base32' }),
+			);
+			return { qrCodeUrl };
+		}
 	}
 
 	async toggleTwoFactorAuthentication(enable2FA: boolean, user: User): Promise<any> {
-		const targetUser = await this.userRepository.findOne({ where: { id: user.id } });
-		if (!targetUser) {
-			throw new Error('User not found');
+		let redirect = enable2FA;
+		if (!enable2FA && !user.twoFactorAuthenticationSecret) {
+			redirect = true;
+		} else if (enable2FA) {
+			redirect = false;
+			user.isTwoFactorAuthenticationEnabled = false;
+			user.twoFactorAuthenticationSecret = null;
+			user.unconfirmedTwoFactorSecret = null;
+			await this.userRepository.save(user);
 		}
-
-		if (targetUser.id !== user.id) {
-			throw new Error('Unauthorized');
-		}
-
-		targetUser.isTwoFactorAuthenticationEnabled = enable2FA;
-		await this.userRepository.save(targetUser);
-
-		return { message: `2FA is now ${enable2FA ? 'enabled' : 'disabled'}` };
+		return { newStatus: redirect };
 	}
 }
