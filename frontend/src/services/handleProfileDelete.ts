@@ -7,6 +7,7 @@ export default async function handleProfileDelete() {
 				method: 'DELETE',
 				credentials: 'include',
 			});
+
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
