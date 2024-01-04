@@ -203,14 +203,13 @@ export class ChatService {
 		// Verify if the requester is the owner or an admin of the room
 		const isOwner = chatRoom.ownerId === requesterId;
 		const isAdmin = chatRoom.adminIds.includes(requesterId) && !isOwner;
-
 		// If requester is not the owner or an admin, throw an unauthorized exception
-		if (!isOwner && !isAdmin) {
+		if (!isOwner && !isAdmin && userIdToKick !== requesterId) {
 			throw new UnauthorizedException('You do not have permission to kick users from this room.');
 		}
 
 		// If the user to kick is an admin and the requester is not the owner, throw an unauthorized exception
-		if (chatRoom.adminIds.includes(userIdToKick) && !isOwner) {
+		if (chatRoom.adminIds.includes(userIdToKick) && !isOwner && requesterId !== userIdToKick) {
 			throw new UnauthorizedException('Admins can only be kicked by the room owner.');
 		}
 
@@ -227,10 +226,7 @@ export class ChatService {
 		return { message: `User with ID ${userIdToKick} has been kicked from room ${roomId}` };
 	}
 
-	async upgradeToAdmin(roomId: string, userId: string): Promise<any> {
-		//console.log('roomId: ', roomId);
-		//console.log('userId: ', userId);
-
+	async upgradeToAdmin(roomId: string, userId: string, requesterId: string): Promise<any> {
 		const chatRoom = await this.chatRoomRepository.findOne({
 			where: { id: roomId },
 			relations: ['users'],
@@ -239,12 +235,17 @@ export class ChatService {
 		if (!chatRoom) {
 			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
 		}
-		//console.log('chatRoom: ', chatRoom);
+
+		// Verify if the requester is the owner of the room
+		if (chatRoom.ownerId !== requesterId) {
+			throw new UnauthorizedException('Only the room owner can upgrade users to admin.');
+		}
 
 		// Check if the user is already an admin
 		if (chatRoom.adminIds.includes(userId)) {
 			throw new BadRequestException(`User with ID ${userId} is already an admin.`);
 		}
+
 		// Add the user to the admin list
 		chatRoom.adminIds.push(userId);
 		await this.chatRoomRepository.save(chatRoom);
@@ -330,7 +331,7 @@ export class ChatService {
 		// Save the friend request in the database
 		await this.friendrequestRepository.save(friendRequest);
 
-		// Emit an event to the receiver via WebSocket (if you're using real-time features)
+		// Emit an event to the receiver via WebSocket
 		this.server.to(recipientId).emit('new-friend-request', friendRequest);
 
 		return friendRequest;

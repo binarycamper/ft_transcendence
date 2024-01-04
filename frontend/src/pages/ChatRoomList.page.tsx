@@ -139,7 +139,6 @@ export const ChatRoomList = () => {
 				}
 				return;
 			}
-
 			const response = await fetch(`http://localhost:8080/chat/kickuser`, {
 				method: 'POST',
 				credentials: 'include',

@@ -8,7 +8,8 @@ import {
 } from 'class-validator';
 
 export class CompleteProfileDto {
-	@IsStrongPassword()
+	//TODO: increase pw len & decomment IsStrong
+	//@IsStrongPassword()
 	@IsNotEmpty({ message: 'Password is required.' })
 	@MinLength(1, {
 		message: 'Password must be at least 1 characters long.',

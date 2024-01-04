@@ -51,33 +51,52 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req) {
-		const userId = req.user.id; // Get the user ID from the request
-		const user = await this.userService.findProfileById(userId);
+		try {
+			const userId = req.user.id; // Get the user ID from the request
+			const user = await this.userService.findProfileById(userId);
 
-		// Check the number of chat rooms the user already has
-		const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
-		const MAX_CHATROOMS = 5;
-		// If the user already has the maximum number of chat rooms, throw an error
-		if (chatRoomCount >= MAX_CHATROOMS) {
-			throw new ForbiddenException(
-				'You have reached the maximum number of chat rooms. You can still join other rooms in the ChatRoomlist',
+			// Check the number of chat rooms the user already has
+			const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
+			const MAX_CHATROOMS = 5;
+			// If the user already has the maximum number of chat rooms, throw an error
+			if (chatRoomCount >= MAX_CHATROOMS) {
+				throw new ForbiddenException(
+					'You have reached the maximum number of chat rooms. You can still join other rooms in the ChatRoomlist',
+				);
+			}
+
+			const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);
+			if (existingChatRoom) {
+				throw new BadRequestException('Chat room name already in use.');
+			}
+
+			// Since the user has not reached the maximum, create the new chat room
+			chatRoomData.ownerName = user.name;
+			const chatRoom = await this.chatService.createChatRoom(chatRoomData);
+
+			// Add the new chat room to the user's chat rooms
+			user.chatRooms.push(chatRoom);
+
+			// Save the updated user entity
+			await this.userService.updateUser(user);
+
+			return chatRoom;
+		} catch (error) {
+			// Here, handle specific types of errors as needed
+			if (error instanceof ForbiddenException) {
+				// Specific handling for ForbiddenException
+				throw new HttpException(error.message, HttpStatus.FORBIDDEN);
+			} else if (error instanceof BadRequestException) {
+				// Specific handling for BadRequestException
+				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+			}
+			// For other types of errors
+			//console.error('Failed to create chat room:', error);
+			throw new HttpException(
+				'Internal Server Error: Failed to create chat room due to an unexpected error',
+				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
-
-		const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);
-		if (existingChatRoom) {
-			throw new BadRequestException('Chat room name already in use.');
-		}
-		// Since the user has not reached the maximum, create the new chat room
-		chatRoomData.ownerName = user.name;
-		const chatRoom = await this.chatService.createChatRoom(chatRoomData);
-		// Add the new chat room to the user's chat rooms
-		user.chatRooms.push(chatRoom);
-
-		// Save the updated user entity
-		await this.userService.updateUser(user);
-
-		return chatRoom;
 	}
 
 	//get all Chatrooms of that user
@@ -216,6 +235,9 @@ export class ChatController {
 		if (!chatRoom) {
 			throw new NotFoundException('Chat room not found.');
 		}
+		/*if (chatRoom.ownerName === req.user.name) {
+			throw new UnauthorizedException('You are already the owner of that Chatroom!');
+		}*/
 
 		if (chatRoom.type === 'private') {
 			throw new UnauthorizedException('ChatRoom is private, you will need an invite.');
@@ -266,11 +288,16 @@ export class ChatController {
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+			} else if (error instanceof UnauthorizedException) {
+				throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+			} else {
+				// Log the error for debugging
+				//console.log('Failed to kick user:', error);
+				throw new HttpException(
+					'Failed to kick user due to an unexpected error',
+					HttpStatus.INTERNAL_SERVER_ERROR,
+				);
 			}
-			throw new HttpException(
-				'Failed to kick user due to an unexpected error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
 		}
 	}
 
@@ -278,7 +305,11 @@ export class ChatController {
 	@Post('upgradeToAdmin')
 	async upgradeToAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
 		try {
-			await this.chatService.upgradeToAdmin(roomIdUserIdDto.roomId, roomIdUserIdDto.userId);
+			await this.chatService.upgradeToAdmin(
+				roomIdUserIdDto.roomId,
+				roomIdUserIdDto.userId,
+				req.user.id,
+			);
 			return { message: 'User successfully upgraded to admin' };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -289,7 +320,7 @@ export class ChatController {
 				throw new HttpException(`Bad request: ${error.message}`, HttpStatus.BAD_REQUEST);
 			}
 			// Log the error for internal monitoring
-			console.error('Internal Server Error:', error);
+			//console.error('Internal Server Error:', error);
 
 			throw new HttpException(
 				'Internal Server Error: Failed to upgrade user due to an unexpected error',
@@ -297,7 +328,6 @@ export class ChatController {
 			);
 		}
 	}
-
 	@UseGuards(JwtAuthGuard)
 	@Post('revokeadmin')
 	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
@@ -314,13 +344,31 @@ export class ChatController {
 
 			// Check if the user is actually an admin of the chat room
 			if (!chatRoom.adminIds.includes(roomIdUserIdDto.userId)) {
-				throw new BadRequestException(`User with ID ${roomIdUserIdDto.userId} is not an admin.`);
+				throw new BadRequestException(`User is not an admin.`);
 			}
+
+			// Prevent the owner from revoking their own admin status
+			if (chatRoom.ownerId === roomIdUserIdDto.userId) {
+				throw new ForbiddenException('You cannot revoke your admin status as owner!');
+			}
+
 			chatRoom.adminIds = chatRoom.adminIds.filter((adminId) => adminId !== roomIdUserIdDto.userId);
 			await this.chatService.updateChatRoom(chatRoom);
-			return { message: `Admin rights revoked from user with ID ${roomIdUserIdDto.userId}.` };
+			return { message: `Admin rights revoked from user.` };
 		} catch (error) {
-			throw new InternalServerErrorException(error.message);
+			if (error instanceof NotFoundException) {
+				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+			} else if (error instanceof ForbiddenException) {
+				throw new HttpException(error.message, HttpStatus.FORBIDDEN);
+			} else if (error instanceof BadRequestException) {
+				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+			} else {
+				// Log the error for internal monitoring
+				console.error('Error in revoking admin:', error);
+				throw new InternalServerErrorException(
+					'Internal Server Error: Failed to revoke admin rights.',
+				);
+			}
 		}
 	}
 
@@ -341,13 +389,15 @@ export class ChatController {
 		if (chatRoom.ownerId !== userId) {
 			throw new ForbiddenException('Only the owner can change the password of the chat room.');
 		}
-
+		//console.log('old: ', chatRoom.password);
 		// Check if the old password matches
-		const isMatch = chatRoom.password
-			? await bcrypt.compare(oldPassword, chatRoom.password)
-			: false;
-		if (!isMatch) {
-			throw new BadRequestException('Old password does not match.');
+		if (chatRoom.password.length > 1) {
+			const isMatch = chatRoom.password
+				? await bcrypt.compare(oldPassword, chatRoom.password)
+				: false;
+			if (!isMatch) {
+				throw new BadRequestException('Old password does not match.');
+			}
 		}
 
 		// Update the password or remove it
