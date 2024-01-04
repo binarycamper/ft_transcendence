@@ -283,7 +283,11 @@ export class ChatController {
 	@Post('upgradeToAdmin')
 	async upgradeToAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
 		try {
-			await this.chatService.upgradeToAdmin(roomIdUserIdDto.roomId, roomIdUserIdDto.userId);
+			await this.chatService.upgradeToAdmin(
+				roomIdUserIdDto.roomId,
+				roomIdUserIdDto.userId,
+				req.user.id,
+			);
 			return { message: 'User successfully upgraded to admin' };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -346,13 +350,15 @@ export class ChatController {
 		if (chatRoom.ownerId !== userId) {
 			throw new ForbiddenException('Only the owner can change the password of the chat room.');
 		}
-
+		console.log('old: ', chatRoom.password);
 		// Check if the old password matches
-		const isMatch = chatRoom.password
-			? await bcrypt.compare(oldPassword, chatRoom.password)
-			: false;
-		if (!isMatch) {
-			throw new BadRequestException('Old password does not match.');
+		if (chatRoom.password.length > 1) {
+			const isMatch = chatRoom.password
+				? await bcrypt.compare(oldPassword, chatRoom.password)
+				: false;
+			if (!isMatch) {
+				throw new BadRequestException('Old password does not match.');
+			}
 		}
 
 		// Update the password or remove it

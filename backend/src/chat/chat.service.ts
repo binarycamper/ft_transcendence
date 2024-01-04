@@ -226,10 +226,7 @@ export class ChatService {
 		return { message: `User with ID ${userIdToKick} has been kicked from room ${roomId}` };
 	}
 
-	async upgradeToAdmin(roomId: string, userId: string): Promise<any> {
-		//console.log('roomId: ', roomId);
-		//console.log('userId: ', userId);
-
+	async upgradeToAdmin(roomId: string, userId: string, requesterId: string): Promise<any> {
 		const chatRoom = await this.chatRoomRepository.findOne({
 			where: { id: roomId },
 			relations: ['users'],
@@ -238,12 +235,17 @@ export class ChatService {
 		if (!chatRoom) {
 			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
 		}
-		//console.log('chatRoom: ', chatRoom);
+
+		// Verify if the requester is the owner of the room
+		if (chatRoom.ownerId !== requesterId) {
+			throw new UnauthorizedException('Only the room owner can upgrade users to admin.');
+		}
 
 		// Check if the user is already an admin
 		if (chatRoom.adminIds.includes(userId)) {
 			throw new BadRequestException(`User with ID ${userId} is already an admin.`);
 		}
+
 		// Add the user to the admin list
 		chatRoom.adminIds.push(userId);
 		await this.chatRoomRepository.save(chatRoom);

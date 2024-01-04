@@ -48,7 +48,6 @@ export class ChangePasswordDto {
 	@IsString()
 	roomId: string;
 
-	@IsNotEmpty()
 	@IsString()
 	oldPassword: string;
 
