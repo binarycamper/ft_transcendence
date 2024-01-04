@@ -203,9 +203,8 @@ export class ChatService {
 		// Verify if the requester is the owner or an admin of the room
 		const isOwner = chatRoom.ownerId === requesterId;
 		const isAdmin = chatRoom.adminIds.includes(requesterId) && !isOwner;
-
 		// If requester is not the owner or an admin, throw an unauthorized exception
-		if (!isOwner && !isAdmin) {
+		if (!isOwner && !isAdmin && userIdToKick !== requesterId) {
 			throw new UnauthorizedException('You do not have permission to kick users from this room.');
 		}
 
