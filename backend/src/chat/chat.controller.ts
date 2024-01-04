@@ -235,6 +235,9 @@ export class ChatController {
 		if (!chatRoom) {
 			throw new NotFoundException('Chat room not found.');
 		}
+		/*if (chatRoom.ownerName === req.user.name) {
+			throw new UnauthorizedException('You are already the owner of that Chatroom!');
+		}*/
 
 		if (chatRoom.type === 'private') {
 			throw new UnauthorizedException('ChatRoom is private, you will need an invite.');
@@ -325,7 +328,6 @@ export class ChatController {
 			);
 		}
 	}
-
 	@UseGuards(JwtAuthGuard)
 	@Post('revokeadmin')
 	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
@@ -342,13 +344,31 @@ export class ChatController {
 
 			// Check if the user is actually an admin of the chat room
 			if (!chatRoom.adminIds.includes(roomIdUserIdDto.userId)) {
-				throw new BadRequestException(`User with ID ${roomIdUserIdDto.userId} is not an admin.`);
+				throw new BadRequestException(`User is not an admin.`);
 			}
+
+			// Prevent the owner from revoking their own admin status
+			if (chatRoom.ownerId === roomIdUserIdDto.userId) {
+				throw new ForbiddenException('You cannot revoke your admin status as owner!');
+			}
+
 			chatRoom.adminIds = chatRoom.adminIds.filter((adminId) => adminId !== roomIdUserIdDto.userId);
 			await this.chatService.updateChatRoom(chatRoom);
-			return { message: `Admin rights revoked from user with ID ${roomIdUserIdDto.userId}.` };
+			return { message: `Admin rights revoked from user.` };
 		} catch (error) {
-			throw new InternalServerErrorException(error.message);
+			if (error instanceof NotFoundException) {
+				throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+			} else if (error instanceof ForbiddenException) {
+				throw new HttpException(error.message, HttpStatus.FORBIDDEN);
+			} else if (error instanceof BadRequestException) {
+				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+			} else {
+				// Log the error for internal monitoring
+				console.error('Error in revoking admin:', error);
+				throw new InternalServerErrorException(
+					'Internal Server Error: Failed to revoke admin rights.',
+				);
+			}
 		}
 	}
 
