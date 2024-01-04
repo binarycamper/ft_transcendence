@@ -331,7 +331,7 @@ export class ChatService {
 		// Save the friend request in the database
 		await this.friendrequestRepository.save(friendRequest);
 
-		// Emit an event to the receiver via WebSocket (if you're using real-time features)
+		// Emit an event to the receiver via WebSocket
 		this.server.to(recipientId).emit('new-friend-request', friendRequest);
 
 		return friendRequest;
