@@ -10,7 +10,6 @@ type UserProfile = {
 	intraId: number;
 	imageUrl: string;
 	image?: string;
-	id: string;
 	wins: number;
 	losses: number;
 	ladderLevel: number;

@@ -91,7 +91,7 @@ export class ChatController {
 				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
 			}
 			// For other types of errors
-			console.error('Failed to create chat room:', error);
+			//console.error('Failed to create chat room:', error);
 			throw new HttpException(
 				'Internal Server Error: Failed to create chat room due to an unexpected error',
 				HttpStatus.INTERNAL_SERVER_ERROR,
@@ -289,7 +289,7 @@ export class ChatController {
 				throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
 			} else {
 				// Log the error for debugging
-				console.error('Failed to kick user:', error);
+				//console.log('Failed to kick user:', error);
 				throw new HttpException(
 					'Failed to kick user due to an unexpected error',
 					HttpStatus.INTERNAL_SERVER_ERROR,
@@ -317,7 +317,7 @@ export class ChatController {
 				throw new HttpException(`Bad request: ${error.message}`, HttpStatus.BAD_REQUEST);
 			}
 			// Log the error for internal monitoring
-			console.error('Internal Server Error:', error);
+			//console.error('Internal Server Error:', error);
 
 			throw new HttpException(
 				'Internal Server Error: Failed to upgrade user due to an unexpected error',
@@ -369,7 +369,7 @@ export class ChatController {
 		if (chatRoom.ownerId !== userId) {
 			throw new ForbiddenException('Only the owner can change the password of the chat room.');
 		}
-		console.log('old: ', chatRoom.password);
+		//console.log('old: ', chatRoom.password);
 		// Check if the old password matches
 		if (chatRoom.password.length > 1) {
 			const isMatch = chatRoom.password
