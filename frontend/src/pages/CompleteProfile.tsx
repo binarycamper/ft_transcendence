@@ -43,6 +43,7 @@ export function CompleteProfile() {
 	};
   */
 	const validatePassword = (password: string) => {
+    var error = false;
     const options = {
       translations: zxcvbnEnPackage.translations,
       graphs: zxcvbnCommonPackage.adjacencyGraphs,
@@ -55,6 +56,7 @@ export function CompleteProfile() {
     const result = zxcvbn(password);
     if (result.feedback.warning) {
       setPasswordError(result.feedback.warning);
+      error = true;
     } else {
       setPasswordError('');
     }
@@ -62,6 +64,9 @@ export function CompleteProfile() {
       setPasswordWarning(result.feedback.suggestions);
     } else {
       setPasswordWarning([]);
+    }
+    if (error) {
+      return false;
     }
     return true;
 	};
@@ -129,6 +134,16 @@ export function CompleteProfile() {
 		}
 	};
 
+const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+    if (event.target.value.length > 0){
+      validatePassword(event.target.value);
+    } else {
+      setPasswordError('');
+      setPasswordWarning([]);
+    }
+  };
+
 	return (
 		<div>
 			{isProfileComplete ? (
@@ -144,7 +159,7 @@ export function CompleteProfile() {
 								id="password"
 								type="password"
 								value={password}
-								onChange={(e) => setPassword(e.target.value)}
+								onChange={handlePasswordChange}
 								required
 							/>
 							{passwordError && 
