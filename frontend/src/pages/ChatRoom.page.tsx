@@ -292,6 +292,8 @@ export const ChatRoom = () => {
 				setChatRoomError('You have reached the maximum number of chat rooms.');
 			} else if (response.status === HttpStatusCode.BadRequest) {
 				setChatRoomError('Chat room name already in use.');
+			} else if (response.status === HttpStatusCode.SeeOther) {
+				setChatRoomError(result.error + ' goto /twofactorsetup');
 			} else if (response.ok) {
 				window.location.reload();
 				//console.log('Chat room created:', result);
@@ -300,7 +302,7 @@ export const ChatRoom = () => {
 				setChatRoomName('');
 				setChatRoomType('public');
 			} else {
-				setChatRoomError(result.message);
+				setChatRoomError(result.error);
 			}
 		} catch (error) {
 			setChatRoomError('ChatRoom creation failed');

@@ -16,6 +16,7 @@ import { ChatMessage } from './chat.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { CreateChatRoomDto, FriendRequestDto } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
+import { Mute } from './mute.entity';
 
 @Injectable()
 export class ChatService {
@@ -29,6 +30,8 @@ export class ChatService {
 		private chatMessageRepository: Repository<ChatMessage>,
 		@InjectRepository(ChatRoom)
 		private chatRoomRepository: Repository<ChatRoom>,
+		@InjectRepository(Mute)
+		private muteRepository: Repository<Mute>,
 	) {}
 
 	setServer(server: Server) {
@@ -436,6 +439,10 @@ export class ChatService {
 	}
 
 	//########################Debug#############################
+
+	async getAllMutes(): Promise<Mute[]> {
+		return await this.muteRepository.find({ relations: ['chatRoom'] });
+	}
 
 	async getAllChatRooms(): Promise<ChatRoom[]> {
 		return await this.chatRoomRepository.find({

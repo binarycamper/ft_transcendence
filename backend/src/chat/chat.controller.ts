@@ -31,6 +31,7 @@ import {
 	RoomIdUserIdDTO,
 } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
+import { StatusGuard } from 'src/auth/guards/status.guard';
 
 @Controller('chat')
 export class ChatController {
@@ -38,6 +39,8 @@ export class ChatController {
 		private readonly chatService: ChatService,
 		private userService: UserService,
 	) {}
+
+	//########################Mute#############################
 
 	//########################CHatRooms#############################
 
@@ -48,7 +51,7 @@ export class ChatController {
 	}
 
 	//create a new Chatroom
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req) {
 		try {
@@ -100,7 +103,7 @@ export class ChatController {
 	}
 
 	//get all Chatrooms of that user
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Get('mychatrooms')
 	async myChatRooms(@Req() req, @Res() res) {
 		try {
@@ -364,7 +367,7 @@ export class ChatController {
 				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
 			} else {
 				// Log the error for internal monitoring
-				console.error('Error in revoking admin:', error);
+				//console.error('Error in revoking admin:', error);
 				throw new InternalServerErrorException(
 					'Internal Server Error: Failed to revoke admin rights.',
 				);
@@ -372,7 +375,7 @@ export class ChatController {
 		}
 	}
 
-	//change password of chatroom as owner
+	//change ChatROom password as owner
 	@UseGuards(JwtAuthGuard)
 	@Post('changepassword')
 	async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
@@ -498,7 +501,13 @@ export class ChatController {
 
 	//########################Debug#############################	//TODO: delete before eval
 
-	// Endpoint to get all pending requests for the logged-in user
+	// Endpoint to get all pending Mutes
+	@Get('allmutes')
+	async getMutes() {
+		return await this.chatService.getAllMutes();
+	}
+
+	// Endpoint to get all pending requests
 	@Get('allrequests')
 	async getAll() {
 		return await this.chatService.getAllRequests();

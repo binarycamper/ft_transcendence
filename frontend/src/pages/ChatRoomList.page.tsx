@@ -24,6 +24,7 @@ export const ChatRoomList = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [joinError, setJoinError] = useState('');
+	const [muteDurations, setMuteDurations] = useState<{ [key: string]: number }>({});
 
 	useEffect(() => {
 		const getCurrentUser = async () => {
@@ -265,6 +266,56 @@ export const ChatRoomList = () => {
 		}
 	};
 
+	const handleMuteDurationChange = (userId: string, value: string) => {
+		// Assert that e.target.value is a key of MuteDurationOptions
+		const duration = MuteDurationOptions[value as keyof typeof MuteDurationOptions];
+		setMuteDurations((prevDurations) => ({ ...prevDurations, [userId]: duration }));
+	};
+
+	const MuteDurationOptions = {
+		'5min': 5 * 60 * 1000, // 5 minutes in milliseconds
+		'2min': 2 * 60 * 1000, // 2 minutes
+		'1h': 60 * 60 * 1000, // 1 hour
+		'3h': 3 * 60 * 60 * 1000, // 3 hours
+		'1d': 24 * 60 * 60 * 1000, // 1 day
+	};
+
+	const handleMuteUser = async (roomId: string, userIdToMute: string, muteDuration: number) => {
+		// Only allow the owner or an admin to mute users
+		const room = chatRooms.find((room) => room.id === roomId);
+		if (
+			!room ||
+			!currentUser ||
+			(room.ownerId !== currentUser?.id && !room.adminIds.includes(currentUser?.id))
+		) {
+			alert('You do not have permission to mute users in this room.');
+			return;
+		}
+		console.log('muteDuration: ', muteDuration);
+		try {
+			const response = await fetch(`http://localhost:8080/chat/mute`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId, userIdToMute, muteDuration }),
+			});
+
+			if (response.ok) {
+				// Handle the response. For example, update the UI or notify the user.
+				alert('User has been muted successfully');
+			} else {
+				const errorData = await response.json();
+				alert('Failed to mute user: ' + errorData.message);
+			}
+		} catch (error) {
+			alert('Error while attempting to mute user: ' + error);
+		}
+	};
+
+	//TODO: when mute is ready in backend check here the chatroom.mute[] to render an umnute button instead a mute button.
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -320,6 +371,30 @@ export const ChatRoomList = () => {
 														</button>
 													</>
 												)}
+												{room.ownerId === currentUser?.id &&
+													room.ownerId !== admin.id && ( // Only the owner can mute anyone, including admins
+														<>
+															<select
+																onChange={(e) => handleMuteDurationChange(admin.id, e.target.value)}
+																value={muteDurations[admin.id] || ''}
+															>
+																<option value="">Select Mute Duration</option>
+																{Object.entries(MuteDurationOptions).map(([key]) => (
+																	<option key={key} value={key}>
+																		{key}
+																	</option>
+																))}
+															</select>
+															<button
+																className="mute-button"
+																onClick={() =>
+																	handleMuteUser(room.id, admin.id, muteDurations[admin.id] || 0)
+																}
+															>
+																Mute
+															</button>
+														</>
+													)}
 												{admin.id === currentUser?.id && (
 													<button
 														className="kick-user-button"
@@ -341,7 +416,8 @@ export const ChatRoomList = () => {
 											<span key={user.id} className={`user-status user ${user.status}`}>
 												{user.name}
 												{(room.ownerId === currentUser?.id ||
-													(room.adminIds.includes(currentUser?.id) &&
+													(currentUser &&
+														room.adminIds.includes(currentUser?.id) &&
 														user.id !== currentUser?.id)) && ( // Owner and admins can kick non-admins
 													<button
 														className="kick-user-button"
@@ -357,6 +433,30 @@ export const ChatRoomList = () => {
 													>
 														x
 													</button>
+												)}
+												{((currentUser && room.ownerId === currentUser?.id) ||
+													(currentUser && room.adminIds.includes(currentUser?.id))) && (
+													<>
+														<select
+															onChange={(e) => handleMuteDurationChange(user.id, e.target.value)}
+															value={muteDurations[user.id] || ''}
+														>
+															<option value="">Select Mute Duration</option>
+															{Object.entries(MuteDurationOptions).map(([key]) => (
+																<option key={key} value={key}>
+																	{key}
+																</option>
+															))}
+														</select>
+														<button
+															className="mute-button"
+															onClick={() =>
+																handleMuteUser(room.id, user.id, muteDurations[user.id] || 0)
+															}
+														>
+															Mute
+														</button>
+													</>
 												)}
 												{room.ownerId === currentUser?.id &&
 													!room.adminIds.includes(user.id) && ( // Only owner can set admins

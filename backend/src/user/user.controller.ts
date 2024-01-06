@@ -143,17 +143,20 @@ export class UserController {
 		if (!file || file.size === 0) {
 			throw new BadRequestException('No file uploaded or file is empty.');
 		}
-		if (!(await this.isValidImage(file.buffer))) {
-			throw new BadRequestException('Invalid image file.');
-		}
-		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
-		if (file.size > MAX_FILE_SIZE) {
-			throw new BadRequestException('File size exceeds the maximum limit of 1MB.');
-		}
 		const allowedMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png']);
 		if (!allowedMimeTypes.has(file.mimetype)) {
 			throw new BadRequestException('Invalid file type. Only jpeg/jpg/png files are allowed.');
 		}
+
+		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
+		if (file.size > MAX_FILE_SIZE) {
+			throw new BadRequestException('File size exceeds the maximum limit of 1MB.');
+		}
+
+		if (!(await this.isValidImage(file.buffer))) {
+			throw new BadRequestException('Invalid image file.');
+		}
+
 		try {
 			await this.userService.saveUserImage(req.user.id, file);
 			return { message: 'Image uploaded successfully' };
@@ -168,7 +171,7 @@ export class UserController {
 			await sharp(fileBuffer).metadata();
 			return true;
 		} catch (error) {
-			console.error('Invalid image file:', error);
+			//console.error('Invalid image file:', error);
 			return false;
 		}
 	}
@@ -182,7 +185,7 @@ export class UserController {
 		//console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
-		if (fs.existsSync(fullPath)) {
+		if (fs.existsSync(fullPath) && !fullPath.includes('..')) {
 			return res.status(HttpStatus.OK).sendFile(fullPath);
 		} else {
 			//console.log('ERROR cant find path: ', fullPath);
@@ -203,14 +206,14 @@ export class UserController {
 		}
 
 		try {
-			const status = await this.userService.updateUserNickName(userId, newName);
-			if (status) {
+			const returnStatus = await this.userService.updateUserNickName(userId, newName);
+			if (returnStatus) {
 				res.status(HttpStatus.OK).json({ message: 'Nickname updated successfully' });
 			} else {
 				res.status(HttpStatus.OK).json({ message: 'Nickname was not changed, choose another one' });
 			}
 		} catch (error) {
-			console.error('Error updating Nickname:', error);
+			//console.error('Error updating Nickname:', error);
 			throw new HttpException('Failed to update Nickname', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -236,7 +239,7 @@ export class UserController {
 
 			res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
 		} catch (error) {
-			console.error('Error retrieving friends:', error);
+			//console.error('Error retrieving friends:', error);
 			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
 		}
 	}
