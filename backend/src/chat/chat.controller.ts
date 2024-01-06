@@ -39,6 +39,8 @@ export class ChatController {
 		private userService: UserService,
 	) {}
 
+	//########################Mute#############################
+
 	//########################CHatRooms#############################
 
 	//@UseGuards(JwtAuthGuard) //TODO: uncomment before eval!
@@ -498,7 +500,13 @@ export class ChatController {
 
 	//########################Debug#############################	//TODO: delete before eval
 
-	// Endpoint to get all pending requests for the logged-in user
+	// Endpoint to get all pending Mutes
+	@Get('allmutes')
+	async getMutes() {
+		return await this.chatService.getAllMutes();
+	}
+
+	// Endpoint to get all pending requests
 	@Get('allrequests')
 	async getAll() {
 		return await this.chatService.getAllRequests();
