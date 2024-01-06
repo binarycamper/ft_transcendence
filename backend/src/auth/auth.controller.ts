@@ -38,8 +38,8 @@ export class AuthController {
 	) {}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('/status')
-	async checkAuthStatus(@Req() req) {
+	@Get('status')
+	async checkAuthStatus() {
 		return { isAuthenticated: true };
 	}
 

@@ -327,7 +327,7 @@ export class UserController {
 		const user = req.user;
 		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
-			const updatedUser = await this.userService.removeUserInIgnoreList(user, userToBlock.name);
+			await this.userService.removeUserInIgnoreList(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
 		} catch (error) {
 			console.error('Error while unblocking user: ', error.message);
