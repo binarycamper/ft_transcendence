@@ -53,6 +53,8 @@ export class ChatService {
 			mute.chatRoom = chatroom;
 			mute.endTime = endTime;
 			mute.userId = muteUserData.userIdToMute;
+
+			await this.muteRepository.save(mute);
 		} catch (error) {
 			console.error('Failed to mute user:', error);
 			throw new InternalServerErrorException('Unable to mute user: ', error);
@@ -64,7 +66,7 @@ export class ChatService {
 	async getChatRoomById(roomId: string): Promise<ChatRoom> {
 		return await this.chatRoomRepository.findOne({
 			where: { id: roomId },
-			relations: ['users'],
+			relations: ['users', 'mutes'],
 		});
 	}
 

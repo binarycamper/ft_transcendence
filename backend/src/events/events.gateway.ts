@@ -13,6 +13,8 @@ import { ChatService } from 'src/chat/chat.service';
 import { MatchmakingService } from 'src/matchmaking/matchmaking.service';
 import { Match } from '../matchmaking/matchmaking.entity';
 import { UserService } from 'src/user/user.service';
+import { ChatRoom } from 'src/chat/chatRoom.entity';
+import { Mute } from 'src/chat/mute.entity';
 
 @WebSocketGateway({
 	cors: {
@@ -223,6 +225,25 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
+
+			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
+			const mutes: Mute[] = chatRoom.mutes;
+			const activeMute = mutes.find(
+				(mute) => mute.userId === isAuthenticated.userId && new Date(mute.endTime) > new Date(),
+			);
+			if (activeMute) {
+				//console.log('User is currently muted');
+				// You can emit a message to the user informing them they are muted
+				//client.emit('muteInfo', { message: 'You are currently muted and cannot send messages.' });
+				this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
+					content: 'You are currently muted and cannot send messages.',
+					senderId: isAuthenticated.userId,
+					senderName: 'System',
+					receiverId: chatRoom.id,
+					id: isAuthenticated.userId,
+				});
+				return;
+			}
 			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
 			const message = await this.chatService.saveChatRoomMessage(
 				data.chatRoomId,
@@ -232,7 +253,6 @@ export class EventsGateway {
 			//console.log('the new message is: ', message);
 
 			// Emit the message to all ChatROomUsers if they're online
-			const chatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
 			//console.log('chatroom users: ', chatRoom.users);
 			const currUser = await this.userService.findProfileById(isAuthenticated.userId);
 			for (const user of chatRoom.users) {
