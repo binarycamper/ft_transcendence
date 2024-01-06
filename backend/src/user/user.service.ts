@@ -13,9 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import { unlink } from 'fs/promises';
 import { FriendRequest } from 'src/chat/friendRequest.entity';
-import { NotFoundError } from 'rxjs';
 
-const uploadPath = '/usr/src/app/uploads/';
+const UPLOAD_PATH = '/usr/src/app/uploads/';
 
 @Injectable()
 export class UserService {
@@ -201,7 +200,7 @@ export class UserService {
 
 		//Deletes uploaded customImage
 		if (userImage) {
-			const imagePath = uploadPath + userImage.split('?filename=').pop();
+			const imagePath = UPLOAD_PATH + userImage.split('?filename=').pop();
 			try {
 				if (fs.existsSync(imagePath)) {
 					await unlink(imagePath);
@@ -295,12 +294,12 @@ export class UserService {
 		// Generate new filename
 		const fileExtension = file.mimetype.split('/').pop();
 		const newFilename = `${userId}.${fileExtension}`;
-		const newFilePath = uploadPath + newFilename;
+		const newFilePath = UPLOAD_PATH + newFilename;
 
 		// Delete old customImage if it exists
 		if (user.customImage) {
 			const oldFilename = user.customImage.split('?filename=').pop();
-			const oldFilePath = uploadPath + oldFilename;
+			const oldFilePath = UPLOAD_PATH + oldFilename;
 			if (fs.existsSync(oldFilePath)) {
 				await unlink(oldFilePath);
 			}

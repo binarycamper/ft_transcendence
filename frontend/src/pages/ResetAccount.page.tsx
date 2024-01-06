@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { FormEvent, useState } from 'react';
 
 export default function ResetAccount() {
 	const [email, setEmail] = useState('');
 
-	const handleSubmit = async (event: any) => {
+	const handleSubmit = async (event: FormEvent) => {
 		event.preventDefault();
 		try {
 			const response = await fetch('http://localhost:8080/auth/reset-password', {

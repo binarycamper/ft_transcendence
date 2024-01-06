@@ -3,14 +3,14 @@
 if   [ "$NODE_ENV" = 'development' ]; then
 	echo development
 	npm install
-	# development
+# development
 	#npm run-script start
-	# watch mode
+# watch mode
 	npm run-script start:dev
 elif [ "$NODE_ENV" = 'production' ]; then
 	echo production
 	npm install
-	# production mode
+# production mode
 	npm run-script start:prod
 fi
 

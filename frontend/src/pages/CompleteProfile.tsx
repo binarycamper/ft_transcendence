@@ -20,7 +20,7 @@ export function CompleteProfile() {
 		const hasUpperCase = /[A-Z]/.test(password);
 		const hasLowerCase = /[a-z]/.test(password);
 		const hasNumbers = /\d/.test(password);
-		const hasSpecialChar = /[@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?!°]+/.test(password);
+		const hasSpecialChar = /[@#$%^&*()_+\-=[\]{};':"\\|,.<>/?!°]+/.test(password);
 
 		let errorMessage = '';
 		if (password.length < minLength) {
@@ -43,7 +43,7 @@ export function CompleteProfile() {
 	};
   */
 	const validatePassword = (password: string) => {
-		var error = false;
+		let error = false;
 		const options = {
 			translations: zxcvbnEnPackage.translations,
 			graphs: zxcvbnCommonPackage.adjacencyGraphs,
@@ -82,8 +82,8 @@ export function CompleteProfile() {
 				if (data.isComplete) {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
-			} catch (error: any) {
-				setinfo(error);
+			} catch (error) {
+				setinfo(error as string);
 				//console.error('Error checking profile status:', error);
 			}
 		};

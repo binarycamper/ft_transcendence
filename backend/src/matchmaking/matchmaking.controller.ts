@@ -1,6 +1,4 @@
-// matchmaking.controller.ts
-
-import { Controller, Post, Get, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 

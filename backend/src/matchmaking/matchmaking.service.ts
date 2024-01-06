@@ -1,4 +1,3 @@
-// matchmaking.service.ts
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -129,8 +128,12 @@ export class MatchmakingService {
 		} else {
 			// Wenn einer der Spieler geantwortet hat
 			if (proposal.playerOneAccepted || proposal.playerTwoAccepted) {
-				let stayingPlayerId = proposal.playerOneAccepted ? match.playerOne.id : match.playerTwo.id;
-				let leavingPlayerId = proposal.playerOneAccepted ? match.playerTwo.id : match.playerOne.id;
+				const stayingPlayerId = proposal.playerOneAccepted
+					? match.playerOne.id
+					: match.playerTwo.id;
+				const leavingPlayerId = proposal.playerOneAccepted
+					? match.playerTwo.id
+					: match.playerOne.id;
 				this.removeFromQueue(leavingPlayerId);
 				this.matchProposals.delete(matchId);
 				await this.deleteMatch(matchId);
@@ -218,7 +221,7 @@ export class MatchmakingService {
 				} else {
 					// Nur ein Spieler hat akzeptiert, der andere bleibt in der Queue
 					console.log('One player accepted, the other rejected');
-					let acceptedPlayerId = proposal.playerOneAccepted
+					const acceptedPlayerId = proposal.playerOneAccepted
 						? match.playerOne.id
 						: match.playerTwo.id;
 

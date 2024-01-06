@@ -176,7 +176,7 @@ export class AuthService {
 
 	//This function is used to check the validity of the 2FA token.
 	private is2FATokenValid(user: User, token: string): boolean {
-		var result = speakeasy.totp.verify({
+		const result = speakeasy.totp.verify({
 			secret: user.unconfirmed2FASecret,
 			encoding: 'base32',
 			token: token,
@@ -199,7 +199,7 @@ export class AuthService {
 			throw new Error('User not found');
 		}
 
-		let secret = user.unconfirmed2FASecret || user.TFASecret;
+		const secret = user.unconfirmed2FASecret || user.TFASecret;
 
 		if (!secret) {
 			throw new Error('2FA secret not set');
@@ -286,7 +286,7 @@ export class AuthService {
 		const resetToken = Math.random().toString(36).slice(2) + Date.now().toString(36);
 		const redirectUrl = `http://localhost:5173/reset-password/${resetToken}`;
 		user.resetPasswordToken = resetToken;
-		user.resetPasswordExpires = new Date(Date.now() + 3600000); // Token läuft nach 1 Stunde ab
+		user.resetPasswordExpires = new Date(Date.now() + 1_200_000); /* 20 minutes */
 		user.resetPasswordUrl = redirectUrl;
 		await this.userRepository.save(user);
 		await this.sendResetPasswordEmail(email, redirectUrl);
@@ -294,7 +294,7 @@ export class AuthService {
 	}
 
 	async sendResetPasswordEmail(email: string, resetPasswordUrl: string) {
-		let transporter = nodemailer.createTransport({
+		const transporter = nodemailer.createTransport({
 			host: 'smtp.gmail.com',
 			port: 465,
 			secure: true,
@@ -304,7 +304,7 @@ export class AuthService {
 			},
 		});
 
-		let mailOptions = {
+		const mailOptions = {
 			from: '"Support" <transcendence502@gmail.com>',
 			to: email,
 			subject: 'Password Reset',

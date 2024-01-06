@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 export default function ResetPassword() {
@@ -7,7 +7,7 @@ export default function ResetPassword() {
 	const { token } = useParams();
 	const navigate = useNavigate();
 
-	const handleSubmit = async (event: any) => {
+	const handleSubmit = async (event: FormEvent) => {
 		event.preventDefault();
 		if (password !== confirmPassword) {
 			alert("Passwords don't match!");

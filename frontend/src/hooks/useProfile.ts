@@ -166,7 +166,7 @@ export default function useProfile() {
 				}
 				window.location.reload(); // Refreshes the current page
 			} else {
-				const errorData = await response.json();
+				const errorData: Error = await response.json();
 				if (Array.isArray(errorData.message)) {
 					const messages = (errorData.message as Array<any>).map((errorItem) =>
 						Object.values(errorItem.constraints || {}).join('. '),

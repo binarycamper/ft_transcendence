@@ -1,11 +1,4 @@
-import {
-	IsBoolean,
-	IsNotEmpty,
-	IsString,
-	IsStrongPassword,
-	Length,
-	MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, IsStrongPassword, Length, MinLength } from 'class-validator';
 
 export class CompleteProfileDto {
 	//TODO: increase pw len & decomment IsStrong
@@ -20,7 +13,7 @@ export class CompleteProfileDto {
 export class EditNicknameDto {
 	@IsString()
 	@IsNotEmpty()
-	@Length(1, 100)
+	@Length(1, 24)
 	nickname: string;
 }
 

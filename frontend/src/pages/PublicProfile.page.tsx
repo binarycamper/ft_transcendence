@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 type Friend = {
 	email: string;
@@ -14,16 +14,15 @@ type Friend = {
 	gamesWon: number;
 };
 
-type PublicProfileProps = {
-	friendName: string;
-};
+// type PublicProfileProps = {
+// 	friendName: string;
+// };
 
 export const PublicProfile = () => {
 	const [friendProfile, setFriendProfile] = useState<Friend | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const location = useLocation();
 	const friendName = location.state?.friendName;
-	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchFriendProfile = async () => {
@@ -54,7 +53,7 @@ export const PublicProfile = () => {
 		};
 
 		fetchFriendProfile();
-	}, []);
+	}, [friendName]);
 
 	if (isLoading) {
 		return <p>Loading...</p>;

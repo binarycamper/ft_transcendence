@@ -44,7 +44,7 @@ import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
-const uploadPath = '/usr/src/app/uploads/';
+const UPLOAD_PATH = '/usr/src/app/uploads/';
 let number = 0;
 
 @Controller('user')
@@ -197,7 +197,7 @@ export class UserController {
 	@Get('uploads')
 	async getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
 		// Construct the full file path
-		const fullPath = uploadPath + getImageDto.filename;
+		const fullPath = UPLOAD_PATH + getImageDto.filename;
 		//console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
@@ -307,7 +307,7 @@ export class UserController {
 			return;
 		}
 		try {
-			const updatedUser = await this.userService.blockUser(user, userToBlock.name);
+			await this.userService.blockUser(user, userToBlock.name);
 			await this.userService.removeFriend(user.id, userToBlock.id);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {

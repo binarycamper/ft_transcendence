@@ -104,7 +104,7 @@ export const ChatRoomList = () => {
 		}
 	}, [currentUser]);
 
-	const handleJoinRoom = async (roomId: string, roomType: string) => {
+	const handleJoinRoom = async (roomId: string, roomType: 'private' | 'public') => {
 		try {
 			let password = '';
 			if (roomType === 'public') {

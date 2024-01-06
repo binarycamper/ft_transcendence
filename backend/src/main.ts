@@ -8,7 +8,7 @@ async function bootstrap() {
 	const logger = new Logger(bootstrap.name);
 	const app = await NestFactory.create(AppModule);
 
-	app.use((req, res, next) => {
+	app.use((req: Request, res: Response, next) => {
 		logger.log(`Incoming request for: ${req.method} ${req.url}`);
 		next();
 	});
@@ -38,9 +38,9 @@ async function bootstrap() {
 	// Apply rate limiting
 	app.use(
 		rateLimit({
-			windowMs: 10 * 60 * 50, //30sec
-			max: 1000, //1000 requests
-			skip: function (req, res) {
+			windowMs: 10 * 60 * 50, // 30sec
+			max: 1000, // requests
+			skip: function (req) {
 				return req.path.includes('/game/'); //TODO: replace with your game's API endpoint to exclude
 			},
 		}),

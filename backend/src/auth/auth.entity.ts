@@ -1,8 +1,5 @@
-// src/auth/auth.entity.ts
-
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from '../user/user.entity'; // Adjust the path to your User entity
-import { IsNotEmpty, IsString } from 'class-validator';
+import { User } from '../user/user.entity';
 
 @Entity()
 export class AuthToken {

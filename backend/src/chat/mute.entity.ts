@@ -1,4 +1,3 @@
-// Mute.entity.ts
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { ChatRoom } from './chatRoom.entity';
 import { IsUUID } from 'class-validator';

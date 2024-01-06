@@ -1,4 +1,3 @@
-//chat.entity.ts
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ChatRoom } from './chatRoom.entity';
 

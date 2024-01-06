@@ -77,8 +77,8 @@ export default function Blocklist() {
 				setinfo(data.message);
 				//console.error('Failed to block user:', data.message);
 			}
-		} catch (error: any) {
-			setinfo(error);
+		} catch (error) {
+			setinfo(error as string);
 			//console.error('Error while blocking user:', error);
 		}
 	};

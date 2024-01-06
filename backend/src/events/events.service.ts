@@ -1,4 +1,3 @@
-// events.service.ts
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 

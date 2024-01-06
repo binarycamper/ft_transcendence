@@ -210,7 +210,7 @@ export function FriendRequest() {
 		if (selectedFriend) {
 			window.location.href = '/chatroom';
 		}
-	}, [selectedFriend, navigate]); // Add dependencies
+	}, [selectedFriend]);
 
 	// Function to send an invite (placeholder function for now)
 	const sendInvite = useCallback(async () => {

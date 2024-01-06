@@ -7,13 +7,13 @@ export class User {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@Column({ unique: true, length: 100 })
+	@Column({ unique: true, length: 24 })
 	name: string;
 
-	@Column({ nullable: true, unique: true, length: 100 })
+	@Column({ nullable: true, unique: true, length: 24 })
 	nickname: string;
 
-	@Column({ unique: true, nullable: true, length: 100 })
+	@Column({ unique: true, nullable: true, length: 24 })
 	@IsEmail()
 	email: string;
 
@@ -29,9 +29,8 @@ export class User {
 	@Column({ nullable: true })
 	resetPasswordUrl: string;
 
-	//possible status states: { fresh, online, offline }
 	@Column({ default: 'fresh' })
-	status: string;
+	status: 'fresh' | 'online' | 'offline' | 'ingame';
 
 	@ManyToMany(() => User)
 	@JoinTable()
@@ -50,6 +49,7 @@ export class User {
 	@Column({ nullable: true, type: 'varchar' })
 	customImage: string;
 
+	/* Two Factor Authentication */
 	@Column({ default: false })
 	has2FA: boolean;
 
@@ -59,7 +59,7 @@ export class User {
 	@Column({ nullable: true })
 	unconfirmed2FASecret?: string;
 
-	//Game Stats:
+	/* Game Stats */
 	@Column({ default: 0 })
 	gamesWon: number;
 

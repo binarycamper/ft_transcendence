@@ -51,7 +51,7 @@ export const ChatRoom = () => {
 	const [newMessage, setNewMessage] = useState('');
 
 	const [chatRoomName, setChatRoomName] = useState('');
-	const [chatRoomType, setChatRoomType] = useState('public');
+	const [chatRoomType, setChatRoomType] = useState<'private' | 'public'>('public');
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	const [selectedChatRoom, setselectedChatRoom] = useState<ChatRoom | null>(null);
 	const [chatRoomError, setChatRoomError] = useState('');
@@ -191,7 +191,7 @@ export const ChatRoom = () => {
 	};
 
 	const handleClearChat = async (id: string, isRoom: boolean) => {
-		let url = isRoom
+		const url = isRoom
 			? `http://localhost:8080/chat/clearchatroom?chatroomId=${id}`
 			: `http://localhost:8080/chat/deletechat?friendId=${id}`;
 		//console.log('url: ', url);

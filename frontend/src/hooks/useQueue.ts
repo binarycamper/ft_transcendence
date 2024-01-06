@@ -76,7 +76,7 @@ export default function useQue() {
 			socket.off('matchStart', handleMatchStart);
 			socket.off('remainInQueue', handleRemainInQueue);
 		};
-	}, [socket]);
+	}, [navigate, socket]);
 
 	useEffect(() => {
 		const handleMatchProposalExpired = async () => {

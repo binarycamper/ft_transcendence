@@ -1,4 +1,3 @@
-// src/chat/chat.controller.ts
 import {
 	Controller,
 	Post,
@@ -285,11 +284,7 @@ export class ChatController {
 			throw new BadRequestException('Chat room has max users');
 		}
 		// Check if the chat room is private and if the user is an admin or invited
-		if (
-			chatRoom.type === 'private' &&
-			!chatRoom.adminIds.includes(userId) &&
-			!chatRoom.users.some((user) => user.id === userId)
-		) {
+		if (!chatRoom.adminIds.includes(userId) && !chatRoom.users.some((user) => user.id === userId)) {
 			throw new ForbiddenException('You do not have permission to join this room.');
 		}
 

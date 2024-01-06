@@ -1,4 +1,3 @@
-//chatRoom.dto.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
@@ -13,7 +12,7 @@ export class ChatRoom {
 	name: string;
 
 	@Column()
-	type: string; // 'public', 'private'
+	type: 'private' | 'public' | string;
 
 	@Column({ nullable: true })
 	password: string;
