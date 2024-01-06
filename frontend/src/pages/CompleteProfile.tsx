@@ -121,7 +121,9 @@ export function CompleteProfile() {
 				} else {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
-			} else {
+			} else if (response.status === 400 || response.status === 303) {
+        setinfo(data.message);
+      } else {
 				// Assuming that 'message' is an array of objects and you want to display 'isStrongPassword' constraint
 				const messages = data.message
 					.map((item: any) => item.constraints.isStrongPassword)
@@ -130,7 +132,7 @@ export function CompleteProfile() {
 			}
 		} catch (error) {
 			console.log('test 2');
-			setinfo('failed setting pw');
+			setinfo('failed setting pw: ' + error);
 		}
 	};
 
