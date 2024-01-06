@@ -206,14 +206,14 @@ export class UserController {
 		}
 
 		try {
-			const status = await this.userService.updateUserNickName(userId, newName);
-			if (status) {
+			const returnStatus = await this.userService.updateUserNickName(userId, newName);
+			if (returnStatus) {
 				res.status(HttpStatus.OK).json({ message: 'Nickname updated successfully' });
 			} else {
 				res.status(HttpStatus.OK).json({ message: 'Nickname was not changed, choose another one' });
 			}
 		} catch (error) {
-			console.error('Error updating Nickname:', error);
+			//console.error('Error updating Nickname:', error);
 			throw new HttpException('Failed to update Nickname', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -239,7 +239,7 @@ export class UserController {
 
 			res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
 		} catch (error) {
-			console.error('Error retrieving friends:', error);
+			//console.error('Error retrieving friends:', error);
 			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
 		}
 	}
