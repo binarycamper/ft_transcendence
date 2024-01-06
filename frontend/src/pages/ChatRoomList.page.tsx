@@ -265,6 +265,40 @@ export const ChatRoomList = () => {
 		}
 	};
 
+	const handleMuteUser = async (roomId: string, userIdToMute: string) => {
+		// Only allow the owner or an admin to mute users
+		const room = chatRooms.find((room) => room.id === roomId);
+		if (
+			!room ||
+			!currentUser ||
+			(room.ownerId !== currentUser?.id && !room.adminIds.includes(currentUser?.id))
+		) {
+			alert('You do not have permission to mute users in this room.');
+			return;
+		}
+
+		try {
+			const response = await fetch(`http://localhost:8080/chat/mute`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ roomId, userIdToMute }),
+			});
+
+			if (response.ok) {
+				// Handle the response. For example, update the UI or notify the user.
+				alert('User has been muted successfully');
+			} else {
+				const errorData = await response.json();
+				alert('Failed to mute user: ' + errorData.message);
+			}
+		} catch (error) {
+			alert('Error while attempting to mute user: ' + error);
+		}
+	};
+
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
@@ -341,7 +375,8 @@ export const ChatRoomList = () => {
 											<span key={user.id} className={`user-status user ${user.status}`}>
 												{user.name}
 												{(room.ownerId === currentUser?.id ||
-													(room.adminIds.includes(currentUser?.id) &&
+													(currentUser &&
+														room.adminIds.includes(currentUser?.id) &&
 														user.id !== currentUser?.id)) && ( // Owner and admins can kick non-admins
 													<button
 														className="kick-user-button"
