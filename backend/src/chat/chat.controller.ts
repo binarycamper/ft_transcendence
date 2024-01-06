@@ -367,7 +367,7 @@ export class ChatController {
 				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
 			} else {
 				// Log the error for internal monitoring
-				console.error('Error in revoking admin:', error);
+				//console.error('Error in revoking admin:', error);
 				throw new InternalServerErrorException(
 					'Internal Server Error: Failed to revoke admin rights.',
 				);
@@ -375,7 +375,7 @@ export class ChatController {
 		}
 	}
 
-	//change password of chatroom as owner
+	//change ChatROom password as owner
 	@UseGuards(JwtAuthGuard)
 	@Post('changepassword')
 	async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
