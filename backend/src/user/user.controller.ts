@@ -86,6 +86,7 @@ export class UserController {
 		if (isProfileComplete) {
 			throw new HttpException('Profile already complete!', HttpStatus.SEE_OTHER);
 		}
+
 		if (!completeProfileDto.password) {
 			throw new BadRequestException('Invalid password');
 		}

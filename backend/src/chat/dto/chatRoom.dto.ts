@@ -114,3 +114,13 @@ export class MuteUserDto {
 	@IsString()
 	userIdToMute: string;
 }
+
+export class UnMuteUserDto {
+	@IsNotEmpty()
+	@IsString()
+	roomId: string;
+
+	@IsNotEmpty()
+	@IsString()
+	userIdToUnMute: string;
+}

@@ -14,7 +14,12 @@ import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
 import { ChatRoom } from './chatRoom.entity';
-import { CreateChatRoomDto, FriendRequestDto, MuteUserDto } from './dto/chatRoom.dto';
+import {
+	CreateChatRoomDto,
+	FriendRequestDto,
+	MuteUserDto,
+	UnMuteUserDto,
+} from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
 import { Mute } from './mute.entity';
 
@@ -58,6 +63,25 @@ export class ChatService {
 		} catch (error) {
 			console.error('Failed to mute user:', error);
 			throw new InternalServerErrorException('Unable to mute user: ', error);
+		}
+	}
+
+	async unmuteUser(unMuteUserData: UnMuteUserDto): Promise<void> {
+		try {
+			const mute = await this.muteRepository.findOne({
+				where: {
+					chatRoom: { id: unMuteUserData.roomId },
+					userId: unMuteUserData.userIdToUnMute,
+				},
+			});
+			if (!mute) {
+				console.log('No active mute found for the user in this chat room');
+				throw new NotFoundException('No active mute found for the user in this chat room');
+			}
+			await this.muteRepository.remove(mute); // To completely remove the mute entry
+		} catch (error) {
+			console.log('Failed to unmute user:', error);
+			throw new InternalServerErrorException('Unable to unmute user: ', error);
 		}
 	}
 

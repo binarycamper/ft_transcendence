@@ -30,6 +30,7 @@ import {
 	InviteRoomDto,
 	MuteUserDto,
 	RoomIdUserIdDTO,
+	UnMuteUserDto,
 } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
 import { StatusGuard } from 'src/auth/guards/status.guard';
@@ -46,15 +47,29 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Post('mute')
 	async muteChatRoomUser(@Body() muteUserData: MuteUserDto) {
-		console.log('dto: ', muteUserData);
-		// Call the service method to handle the mute logic
-		await this.chatService.muteUser(muteUserData);
-		// Return a response or throw an exception if something goes wrong
+		try {
+			await this.chatService.muteUser(muteUserData);
+		} catch (error) {
+			console.log('Error muting user:', error);
+			throw new HttpException('Failed to mute user.', HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('unmute')
+	async unmuteChatRoomUser(@Body() unMuteUserData: UnMuteUserDto) {
+		try {
+			await this.chatService.unmuteUser(unMuteUserData);
+		} catch (error) {
+			console.log('Error muting user:', error);
+			throw new HttpException('Failed to mute user.', HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	//########################CHatRooms#############################
 
-	//@UseGuards(JwtAuthGuard) //TODO: uncomment before eval!
+	//TODO: avoid getting private rooms here!
+	@UseGuards(JwtAuthGuard)
 	@Get('allchatrooms')
 	async getChatRooms() {
 		return await this.chatService.getAllChatRooms();
