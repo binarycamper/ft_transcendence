@@ -299,7 +299,7 @@ export const ChatRoomList = () => {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ roomId, userIdToMute, muteDuration }),
+				body: JSON.stringify({ muteDuration, roomId, userIdToMute }),
 			});
 
 			if (response.ok) {

@@ -28,6 +28,7 @@ import {
 	CreateChatRoomDto,
 	FriendRequestDto,
 	InviteRoomDto,
+	MuteUserDto,
 	RoomIdUserIdDTO,
 } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
@@ -41,6 +42,15 @@ export class ChatController {
 	) {}
 
 	//########################Mute#############################
+
+	@UseGuards(JwtAuthGuard)
+	@Post('mute')
+	async muteChatRoomUser(@Body() muteUserData: MuteUserDto) {
+		console.log('dto: ', muteUserData);
+		// Call the service method to handle the mute logic
+		await this.chatService.muteUser(muteUserData);
+		// Return a response or throw an exception if something goes wrong
+	}
 
 	//########################CHatRooms#############################
 
@@ -505,6 +515,12 @@ export class ChatController {
 	@Get('allmutes')
 	async getMutes() {
 		return await this.chatService.getAllMutes();
+	}
+
+	@Delete('allmutes')
+	@HttpCode(HttpStatus.NO_CONTENT)
+	async deleteAllMutes() {
+		return await this.chatService.deleteAllMutes();
 	}
 
 	// Endpoint to get all pending requests
