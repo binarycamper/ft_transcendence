@@ -143,17 +143,20 @@ export class UserController {
 		if (!file || file.size === 0) {
 			throw new BadRequestException('No file uploaded or file is empty.');
 		}
-		if (!(await this.isValidImage(file.buffer))) {
-			throw new BadRequestException('Invalid image file.');
-		}
-		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
-		if (file.size > MAX_FILE_SIZE) {
-			throw new BadRequestException('File size exceeds the maximum limit of 1MB.');
-		}
 		const allowedMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png']);
 		if (!allowedMimeTypes.has(file.mimetype)) {
 			throw new BadRequestException('Invalid file type. Only jpeg/jpg/png files are allowed.');
 		}
+
+		const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
+		if (file.size > MAX_FILE_SIZE) {
+			throw new BadRequestException('File size exceeds the maximum limit of 1MB.');
+		}
+
+		if (!(await this.isValidImage(file.buffer))) {
+			throw new BadRequestException('Invalid image file.');
+		}
+
 		try {
 			await this.userService.saveUserImage(req.user.id, file);
 			return { message: 'Image uploaded successfully' };
