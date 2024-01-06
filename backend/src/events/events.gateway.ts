@@ -243,6 +243,12 @@ export class EventsGateway {
 					id: isAuthenticated.userId,
 				});
 				return;
+			} else {
+				// Check if there are any expired mutes and delete them.
+				const expiredMutes = mutes.filter((mute) => new Date(mute.endTime) <= new Date());
+				for (const expiredMute of expiredMutes) {
+					await this.chatService.deleteMute(expiredMute.id);
+				}
 			}
 			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
 			const message = await this.chatService.saveChatRoomMessage(

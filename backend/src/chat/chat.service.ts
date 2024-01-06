@@ -468,6 +468,19 @@ export class ChatService {
 		return await this.muteRepository.find({ relations: ['chatRoom'] });
 	}
 
+	async deleteMute(id: string): Promise<void> {
+		const mute = await this.muteRepository.find({
+			where: [{ id: id }],
+		});
+		if (mute) {
+			await this.muteRepository.remove(mute);
+		} else {
+			// Handle the case where the mute is not found
+			console.error(`Mute with id ${id} not found.`);
+			// You might want to throw an error or handle this case differently
+		}
+	}
+
 	async deleteAllMutes(): Promise<void> {
 		const allMutes = await this.getAllMutes();
 		await this.muteRepository.remove(allMutes);
