@@ -171,7 +171,7 @@ export class UserController {
 			await sharp(fileBuffer).metadata();
 			return true;
 		} catch (error) {
-			console.error('Invalid image file:', error);
+			//console.error('Invalid image file:', error);
 			return false;
 		}
 	}
@@ -185,7 +185,7 @@ export class UserController {
 		//console.log('FilePath= ', fullPath);
 
 		// Check if the file exists and send it, otherwise send a 404 response
-		if (fs.existsSync(fullPath)) {
+		if (fs.existsSync(fullPath) && !fullPath.includes('..')) {
 			return res.status(HttpStatus.OK).sendFile(fullPath);
 		} else {
 			//console.log('ERROR cant find path: ', fullPath);
