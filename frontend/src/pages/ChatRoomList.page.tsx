@@ -361,8 +361,6 @@ export const ChatRoomList = () => {
 		}
 	};
 
-	//TODO: when mute is ready in backend check here the chatroom.mute[] to render an umnute button instead a mute button.
-
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
 	}
