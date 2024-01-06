@@ -5,11 +5,24 @@ export function TwoFactorSetup() {
 	const [twoFACode, setTwoFACode] = useState('');
 	const [qrCodeUrl, setQrCodeUrl] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
-	const [isSetup, setIsSetup] = useState(false); // Zustand, um zu überprüfen, ob es sich um eine Ersteinrichtung handelt
-	const location = useLocation();
-	const userId = location.state?.userId;
-	console.log('userId: ', userId);
+	const [isSetup, setIsSetup] = useState(false);
+	const [userId, setUserId] = useState('');
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		const fetchProfile = async () => {
+			const response = await fetch(`http://localhost:8080/user/id`, {
+				method: 'GET',
+				credentials: 'include',
+			});
+			const data = await response.json();
+
+			if (data.id) {
+				setUserId(data.id);
+			}
+		};
+		fetchProfile();
+	}, [userId]);
 
 	useEffect(() => {
 		if (userId) {
@@ -22,7 +35,7 @@ export function TwoFactorSetup() {
 
 	const handle2FASetup = async () => {
 		try {
-			const response = await fetch(`http://localhost:8080/auth/2fa/setup?userId=${userId}`, {
+			const response = await fetch(`http://localhost:8080/auth/2fa/setup`, {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -35,9 +48,7 @@ export function TwoFactorSetup() {
 	};
 
 	const verify2FACode = async () => {
-		const url = isSetup
-			? `http://localhost:8080/auth/2fa/verify-2fa?userId=${userId}`
-			: 'http://localhost:8080/auth/2fa/verify-2fa';
+		const url = 'http://localhost:8080/auth/2fa/verify-2fa';
 		try {
 			const response = await fetch(url, {
 				method: 'POST',
@@ -46,12 +57,11 @@ export function TwoFactorSetup() {
 				},
 				body: JSON.stringify({
 					token: twoFACode,
-					userId: userId,
 				}),
 				credentials: 'include',
 			});
 
-			if (response.status === 200) {
+			if (response.ok) {
 				navigate('/profile', {});
 			} else {
 				console.error('Invalid 2FA code');

@@ -53,8 +53,9 @@ export class AuthController {
 	@Post('login')
 	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
 		const { email, password } = loginDto;
-		const userId = await this.userService.findUserIdByMail(email);
-
+		const response = await this.userService.findUserIdForLogin(email);
+		const userId = response.id;
+		console.log('userId= ', userId);
 		if (!userId) {
 			throw new UnauthorizedException('Invalid email.');
 		}
@@ -69,10 +70,24 @@ export class AuthController {
 
 		//If TwoAuth is enable then skip login and response ok, Fronent creates Qr Code Site
 		if (user.isTwoFactorAuthenticationEnabled) {
+			user.status = 'fresh';
+			await this.userRepository.save(user);
+			const jwtToken = await this.authService.createAccessToken(user.id);
+			if (!jwtToken) {
+				throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+			}
+			res.clearCookie('token');
+			res.cookie('token', jwtToken, {
+				httpOnly: true,
+				maxAge: 86400000 * 7,
+				secure: process.env.NODE_ENV !== 'development',
+				sameSite: 'lax',
+			});
 			return res.status(HttpStatus.OK).json({
 				message: '2FA required',
 				require2FA: true,
 				userId: user.id,
+				accessToken: jwtToken,
 			});
 		}
 
@@ -88,6 +103,7 @@ export class AuthController {
 			secure: process.env.NODE_ENV !== 'development',
 			sameSite: 'lax',
 		});
+
 		return res
 			.status(200)
 			.json({ message: 'Login successfully', accessToken: jwtToken, userId: user.id });
@@ -129,9 +145,14 @@ export class AuthController {
 		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Post('/2fa/verify-2fa')
-	async verifyTwoFactorAuthentication(@Body() verifyDto: Verify2FADto, @Res() response: Response) {
-		const userId = verifyDto.userId;
+	async verifyTwoFactorAuthentication(
+		@Req() req,
+		@Body() verifyDto: Verify2FADto,
+		@Res() response: Response,
+	) {
+		const userId = req.user.id;
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
 			throw new UnauthorizedException('User not found');
@@ -153,12 +174,17 @@ export class AuthController {
 				secure: process.env.NODE_ENV !== 'development',
 				sameSite: 'lax',
 			});
+			user.status = 'online';
+			await this.userRepository.save(user);
 			return response.status(HttpStatus.OK).json({ accessToken: jwtToken, userId: user.id });
 		}
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Get('/2fa/setup')
-	async setupTwoFactorAuthentication(@Query('userId') userId: string) {
+	async setupTwoFactorAuthentication(@Req() req) {
+		const userId = req.user.id;
+
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
 			throw new Error('User not found');
@@ -172,13 +198,17 @@ export class AuthController {
 	async toggleTwoFactorAuthentication(
 		@Req() req: any,
 		@Res() res: Response,
-		@Query('enable2FA') enable2FA: boolean,
+		@Body() body: { has2FA: boolean },
 	): Promise<any> {
-		const response = await this.authService.toggleTwoFactorAuthentication(enable2FA, req.user); // req.user enthält die Benutzerinformationen (vorausgesetzt, Sie verwenden Passport oder eine ähnliche Authentifizierungsbibliothek)
-		const user = await this.userRepository.findOne({ where: { id: req.user.id } });
-		if (user.unconfirmedTwoFactorSecret === null && enable2FA === true) {
-			return res.status(HttpStatus.SEE_OTHER).json(response);
+		try {
+			const user = await this.userRepository.findOne({ where: { id: req.user.id } });
+			const response = await this.authService.toggleTwoFactorAuthentication(body.has2FA, user);
+			console.log;
+			return res
+				.status(HttpStatus.OK)
+				.json({ isTwoFactorAuthenticationEnabled: response.newStatus });
+		} catch (error) {
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
 		}
-		return res.status(HttpStatus.OK).json(response);
 	}
 }

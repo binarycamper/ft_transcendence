@@ -56,7 +56,7 @@ export default function useProfile() {
 				}
 
 				// Set the 2FA status
-				setHas2FA(profileData.has2FA);
+				setHas2FA(profileData.isTwoFactorAuthenticationEnabled);
 			} catch (error) {
 				console.error('Error fetching profile:', error);
 				if (isSubscribed) {
@@ -183,27 +183,25 @@ export default function useProfile() {
 
 	async function handleToggle2FA() {
 		try {
-			const response = await fetch(`http://localhost:8080/auth/toggle-2fa?enable2FA=${!has2FA}`, {
+			const response = await fetch(`http://localhost:8080/auth/toggle-2fa`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				credentials: 'include',
+				body: JSON.stringify({
+					has2FA,
+				}),
 			});
-			//console.log('response: ', response);
-			if (response.status === 303) {
-				const res = await fetch(`http://localhost:8080/user/id`, {
-					method: 'GET',
-					credentials: 'include',
-				});
-				const data = await res.json();
-				// console.log('res: ', data.id);
-				navigate('/twofactorsetup', { state: { userId: data.id } });
-			}
 
 			if (response.ok) {
-				console.log('2FA Status changed');
-				window.location.reload();
+				if (!has2FA) {
+					navigate('/twofactorsetup');
+				} else if (has2FA) {
+					window.location.reload();
+				}
+
+				// window.location.reload();
 			} else {
 				console.error('Failed to change 2FA status');
 			}
@@ -224,5 +222,6 @@ export default function useProfile() {
 		profile,
 		setNewNickname,
 		toggleImage,
+		has2FA,
 	};
 }
