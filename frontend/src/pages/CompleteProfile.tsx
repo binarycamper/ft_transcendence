@@ -13,8 +13,8 @@ export function CompleteProfile() {
 	const [info, setinfo] = useState('');
 
 	const navigate = useNavigate();
-  
-  /*
+
+	/*
   const validatePassword = (password: string) => {
 		const minLength = 8;
 		const hasUpperCase = /[A-Z]/.test(password);
@@ -43,32 +43,32 @@ export function CompleteProfile() {
 	};
   */
 	const validatePassword = (password: string) => {
-    var error = false;
-    const options = {
-      translations: zxcvbnEnPackage.translations,
-      graphs: zxcvbnCommonPackage.adjacencyGraphs,
-      dictionary: {
-        ...zxcvbnCommonPackage.dictionary,
-        ...zxcvbnEnPackage.dictionary,
-      },
-    };
-    zxcvbnOptions.setOptions(options);
-    const result = zxcvbn(password);
-    if (result.feedback.warning) {
-      setPasswordError(result.feedback.warning);
-      error = true;
-    } else {
-      setPasswordError('');
-    }
-    if (result.feedback.suggestions) {
-      setPasswordWarning(result.feedback.suggestions);
-    } else {
-      setPasswordWarning([]);
-    }
-    if (error) {
-      return false;
-    }
-    return true;
+		var error = false;
+		const options = {
+			translations: zxcvbnEnPackage.translations,
+			graphs: zxcvbnCommonPackage.adjacencyGraphs,
+			dictionary: {
+				...zxcvbnCommonPackage.dictionary,
+				...zxcvbnEnPackage.dictionary,
+			},
+		};
+		zxcvbnOptions.setOptions(options);
+		const result = zxcvbn(password);
+		if (result.feedback.warning) {
+			setPasswordError(result.feedback.warning);
+			error = true;
+		} else {
+			setPasswordError('');
+		}
+		if (result.feedback.suggestions) {
+			setPasswordWarning(result.feedback.suggestions);
+		} else {
+			setPasswordWarning([]);
+		}
+		if (error) {
+			return false;
+		}
+		return true;
 	};
 
 	useEffect(() => {
@@ -94,9 +94,9 @@ export function CompleteProfile() {
 		event.preventDefault();
 
 		//TOdo: Validate the password
-		if ( !validatePassword(password)) {
-      return;
-    }
+		if (!validatePassword(password)) {
+			return;
+		}
 		// Clear the previous password error
 		setPasswordError('');
 
@@ -122,8 +122,8 @@ export function CompleteProfile() {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
 			} else if (response.status === 400 || response.status === 303) {
-        setinfo(data.message);
-      } else {
+				setinfo(data.message);
+			} else {
 				// Assuming that 'message' is an array of objects and you want to display 'isStrongPassword' constraint
 				const messages = data.message
 					.map((item: any) => item.constraints.isStrongPassword)
@@ -136,15 +136,15 @@ export function CompleteProfile() {
 		}
 	};
 
-const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
-    if (event.target.value.length > 0){
-      validatePassword(event.target.value);
-    } else {
-      setPasswordError('');
-      setPasswordWarning([]);
-    }
-  };
+	const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setPassword(event.target.value);
+		if (event.target.value.length > 0) {
+			validatePassword(event.target.value);
+		} else {
+			setPasswordError('');
+			setPasswordWarning([]);
+		}
+	};
 
 	return (
 		<div>
@@ -164,32 +164,33 @@ const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 								onChange={handlePasswordChange}
 								required
 							/>
-							{passwordError && 
-                  <div 
-                  style={{
-                    background: '#FF7171',
-                    border: 'solid #FF0000',
-                    borderRadius: '25px',
-                    padding: '12.5px',
-                    margin: '5px',
-								  }}
-                  >
-                  <p >{passwordError}</p>
-                  </div>
-              }
-							{passwordWarning && passwordWarning.map((warning) =>
-                  <div
-                  style={{
-                    background: '#FFB46B',
-                    border: 'solid #FF7F00',
-                    borderRadius: '25px',
-                    padding: '12.5px',
-                    margin: '5px',
-								  }}
-                  >
-                  <p >{warning}</p>
-                  </div>
-                )}
+							{passwordError && (
+								<div
+									style={{
+										background: '#FF7171',
+										border: 'solid #FF0000',
+										borderRadius: '25px',
+										padding: '12.5px',
+										margin: '5px',
+									}}
+								>
+									<p>{passwordError}</p>
+								</div>
+							)}
+							{passwordWarning &&
+								passwordWarning.map((warning) => (
+									<div
+										style={{
+											background: '#FFB46B',
+											border: 'solid #FF7F00',
+											borderRadius: '25px',
+											padding: '12.5px',
+											margin: '5px',
+										}}
+									>
+										<p>{warning}</p>
+									</div>
+								))}
 						</div>
 						<div>
 							<input

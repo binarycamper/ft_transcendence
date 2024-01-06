@@ -46,9 +46,9 @@
 		"socket.io": "^4.7.2",
 		"speakeasy": "^2.0.0",
 		"typeorm": "^0.3.17",
-    "@zxcvbn-ts/core": "3.0.4",
-    "@zxcvbn-ts/language-common": "3.0.4",
-    "@zxcvbn-ts/language-en": "3.0.2"
+		"@zxcvbn-ts/core": "3.0.4",
+		"@zxcvbn-ts/language-common": "3.0.4",
+		"@zxcvbn-ts/language-en": "3.0.2"
 	},
 	"devDependencies": {
 		"@nestjs/cli": "^10.0.1",

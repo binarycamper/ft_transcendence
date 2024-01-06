@@ -93,19 +93,19 @@ export class UserController {
 		if (!completeProfileDto.password) {
 			throw new BadRequestException('Invalid password');
 		}
-    const options = {
-      translations: zxcvbnEnPackage.translations,
-      graphs: zxcvbnCommonPackage.adjacencyGraphs,
-      dictionary: {
-        ...zxcvbnCommonPackage.dictionary,
-        ...zxcvbnEnPackage.dictionary,
-      },
-    };
-    zxcvbnOptions.setOptions(options);
-    const result = zxcvbn(completeProfileDto.password);
-    if (result.feedback.warning) {
-      throw new BadRequestException('Insecure Password');
-    }
+		const options = {
+			translations: zxcvbnEnPackage.translations,
+			graphs: zxcvbnCommonPackage.adjacencyGraphs,
+			dictionary: {
+				...zxcvbnCommonPackage.dictionary,
+				...zxcvbnEnPackage.dictionary,
+			},
+		};
+		zxcvbnOptions.setOptions(options);
+		const result = zxcvbn(completeProfileDto.password);
+		if (result.feedback.warning) {
+			throw new BadRequestException('Insecure Password');
+		}
 		await this.userService.complete(userId, completeProfileDto.password);
 		return res
 			.status(HttpStatus.OK)
