@@ -14,7 +14,12 @@ import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
 import { ChatRoom } from './chatRoom.entity';
-import { CreateChatRoomDto, FriendRequestDto } from './dto/chatRoom.dto';
+import {
+	CreateChatRoomDto,
+	FriendRequestDto,
+	MuteUserDto,
+	UnMuteUserDto,
+} from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
 import { Mute } from './mute.entity';
 
@@ -38,12 +43,54 @@ export class ChatService {
 		this.server = server;
 	}
 
+	//########################Mute#############################
+
+	async muteUser(muteUserData: MuteUserDto): Promise<void> {
+		try {
+			if (muteUserData.muteDuration <= 0) {
+				console.error('Invalid mute duration');
+				throw new BadRequestException('invalid mute time');
+			}
+			const chatroom = await this.getChatRoomById(muteUserData.roomId);
+			const currentTime = new Date();
+			const endTime = new Date(currentTime.getTime() + muteUserData.muteDuration);
+			const mute = new Mute();
+			mute.chatRoom = chatroom;
+			mute.endTime = endTime;
+			mute.userId = muteUserData.userIdToMute;
+
+			await this.muteRepository.save(mute);
+		} catch (error) {
+			console.error('Failed to mute user:', error);
+			throw new InternalServerErrorException('Unable to mute user: ', error);
+		}
+	}
+
+	async unmuteUser(unMuteUserData: UnMuteUserDto): Promise<void> {
+		try {
+			const mute = await this.muteRepository.findOne({
+				where: {
+					chatRoom: { id: unMuteUserData.roomId },
+					userId: unMuteUserData.userIdToUnMute,
+				},
+			});
+			if (!mute) {
+				console.log('No active mute found for the user in this chat room');
+				throw new NotFoundException('No active mute found for the user in this chat room');
+			}
+			await this.muteRepository.remove(mute); // To completely remove the mute entry
+		} catch (error) {
+			console.log('Failed to unmute user:', error);
+			throw new InternalServerErrorException('Unable to unmute user: ', error);
+		}
+	}
+
 	//########################CHatRooms#############################
 
 	async getChatRoomById(roomId: string): Promise<ChatRoom> {
 		return await this.chatRoomRepository.findOne({
 			where: { id: roomId },
-			relations: ['users'],
+			relations: ['users', 'mutes'],
 		});
 	}
 
@@ -268,7 +315,8 @@ export class ChatService {
 		const now = new Date();
 		const message = new ChatMessage();
 		message.senderId = senderId;
-		(message.senderName = sender.name), (message.receiverId = receiverId);
+		message.senderName = sender.name;
+		message.receiverId = receiverId;
 		message.content = content;
 		message.createdAt = now;
 		await this.chatMessageRepository.save(message);
@@ -442,6 +490,24 @@ export class ChatService {
 
 	async getAllMutes(): Promise<Mute[]> {
 		return await this.muteRepository.find({ relations: ['chatRoom'] });
+	}
+
+	async deleteMute(id: string): Promise<void> {
+		const mute = await this.muteRepository.find({
+			where: [{ id: id }],
+		});
+		if (mute) {
+			await this.muteRepository.remove(mute);
+		} else {
+			// Handle the case where the mute is not found
+			console.error(`Mute with id ${id} not found.`);
+			// You might want to throw an error or handle this case differently
+		}
+	}
+
+	async deleteAllMutes(): Promise<void> {
+		const allMutes = await this.getAllMutes();
+		await this.muteRepository.remove(allMutes);
 	}
 
 	async getAllChatRooms(): Promise<ChatRoom[]> {

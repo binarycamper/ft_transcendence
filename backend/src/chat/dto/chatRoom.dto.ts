@@ -1,6 +1,6 @@
 // chat-room.dto.ts
 
-import { IsString, IsNotEmpty, IsOptional, IsArray, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray, IsUUID, IsNumber } from 'class-validator';
 import { Mute } from '../mute.entity';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from '../chat.entity';
@@ -99,4 +99,28 @@ export class ClearChatRoomDto {
 	@IsString()
 	@IsUUID()
 	chatroomId: string;
+}
+
+export class MuteUserDto {
+	@IsNotEmpty()
+	@IsNumber()
+	muteDuration: number; // Duration in milliseconds
+
+	@IsNotEmpty()
+	@IsString()
+	roomId: string;
+
+	@IsNotEmpty()
+	@IsString()
+	userIdToMute: string;
+}
+
+export class UnMuteUserDto {
+	@IsNotEmpty()
+	@IsString()
+	roomId: string;
+
+	@IsNotEmpty()
+	@IsString()
+	userIdToUnMute: string;
 }
