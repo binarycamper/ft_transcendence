@@ -10,6 +10,9 @@ import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { UserService } from 'src/user/user.service';
 import { v4 as uuidv4 } from 'uuid';
+import * as nodemailer from 'nodemailer';
+import * as bcrypt from 'bcryptjs';
+import { MoreThan } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -261,5 +264,89 @@ export class AuthService {
 			await this.userRepository.save(user);
 		}
 		return { newStatus: redirect };
+	}
+
+	async resetPassword(email: string): Promise<{ message: string }> {
+		const user = await this.userRepository.findOne({
+			where: { email: email },
+			select: [
+				'id',
+				'name',
+				'email',
+				'password',
+				'resetPasswordToken',
+				'resetPasswordExpires',
+				'resetPasswordUrl',
+			],
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		console.log('user= ', user);
+		const resetToken = Math.random().toString(36).slice(2) + Date.now().toString(36);
+		const redirectUrl = `http://localhost:5173/reset-password/${resetToken}`;
+		user.resetPasswordToken = resetToken;
+		user.resetPasswordExpires = new Date(Date.now() + 3600000); // Token läuft nach 1 Stunde ab
+		user.resetPasswordUrl = redirectUrl;
+		await this.userRepository.save(user);
+		await this.sendResetPasswordEmail(email, redirectUrl);
+		return { message: 'Password reset token generated' };
+	}
+
+	async sendResetPasswordEmail(email: string, resetPasswordUrl: string) {
+		let transporter = nodemailer.createTransport({
+			host: 'smtp.gmail.com',
+			port: 465,
+			secure: true,
+			auth: {
+				user: 'transcendence502@gmail.com',
+				pass: this.configService.get<string>('APP_PASSWORD'),
+			},
+		});
+
+		let mailOptions = {
+			from: '"Support" <transcendence502@gmail.com>',
+			to: email,
+			subject: 'Password Reset',
+			text: `Please use the following link to reset your password: ${resetPasswordUrl}`,
+			html: `<p>Please use the following link to reset your password: <a href="${resetPasswordUrl}">${resetPasswordUrl}</a></p>`,
+		};
+
+		transporter.sendMail(mailOptions, (error, info) => {
+			if (error) {
+				console.log('Error sending email: ', error);
+				throw new Error('Error sending email');
+			}
+			console.log('Email sent: ', info.messageId);
+		});
+	}
+
+	async updatePassword(token: string, newPassword: string): Promise<{ message: string }> {
+		const user = await this.userRepository.findOne({
+			where: {
+				resetPasswordToken: token,
+				resetPasswordExpires: MoreThan(new Date()),
+			},
+		});
+
+		if (!user) {
+			throw new Error('Invalid or expired password reset token');
+		}
+
+		user.password = await bcrypt.hash(newPassword, 10);
+		user.resetPasswordToken = null;
+		user.resetPasswordExpires = null;
+		await this.userRepository.save(user);
+		return { message: 'Password updated successfully' };
+	}
+
+	async verifyResetToken(token: string): Promise<boolean> {
+		const user = await this.userRepository.findOne({
+			where: {
+				resetPasswordToken: token,
+				resetPasswordExpires: MoreThan(new Date()),
+			},
+		});
+		return !!user;
 	}
 }

@@ -16,6 +16,9 @@ import { Settings } from './pages/Settings.page';
 import { Spiel } from './pages/Spiel.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import { ChatRoomList } from './pages/ChatRoomList.page';
+import ResetPassword from './pages/ResetPassword.page';
+import ResetAccount from './pages/ResetAccount.page';
+import VerifyResetToken from './pages/VerifyResetToken.page';
 
 const router = createBrowserRouter([
 	{
@@ -89,6 +92,17 @@ const router = createBrowserRouter([
 	{
 		path: '/spiel',
 		element: <Spiel />,
+	},
+	{
+		path: '/reset-account',
+		element: <ResetAccount />,
+	},
+	{
+		element: <ResetPassword />,
+	},
+	{
+		path: '/reset-password/:token',
+		element: <VerifyResetToken />,
 	},
 ]);
 

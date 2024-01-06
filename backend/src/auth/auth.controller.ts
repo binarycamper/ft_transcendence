@@ -7,6 +7,7 @@ import {
 	Get,
 	Res,
 	Req,
+	Param,
 	UseGuards,
 	Query,
 	HttpException,
@@ -204,5 +205,35 @@ export class AuthController {
 		} catch (error) {
 			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
 		}
+	}
+
+	@Post('/reset-password')
+	async resetPassword(@Body() body: { email: string }, @Res() res: Response) {
+		try {
+			console.log('body.email= ', body.email);
+			const response = await this.authService.resetPassword(body.email);
+			return res.status(HttpStatus.OK).json({ message: response.message });
+		} catch (error) {
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+		}
+	}
+
+	@Post('/update-password')
+	async updatePassword(@Body() body: { token: string; password: string }, @Res() res: Response) {
+		try {
+			const response = await this.authService.updatePassword(body.token, body.password);
+			return res.status(HttpStatus.OK).json({ message: response.message });
+		} catch (error) {
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+		}
+	}
+
+	@Get('/verify-reset-token/:token')
+	async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
+		const isValid = await this.authService.verifyResetToken(token);
+		if (!isValid) {
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
+		}
+		return res.status(HttpStatus.OK).json({ message: 'Valid token' });
 	}
 }

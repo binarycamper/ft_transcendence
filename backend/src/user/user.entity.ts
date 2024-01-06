@@ -20,6 +20,15 @@ export class User {
 	@Column({ select: false }) // Exclude password field by default
 	password: string;
 
+	@Column({ nullable: true })
+	resetPasswordToken: string;
+
+	@Column({ nullable: true })
+	resetPasswordExpires: Date;
+
+	@Column({ nullable: true })
+	resetPasswordUrl: string;
+
 	//possible status states: { fresh, online, offline }
 	@Column({ default: 'fresh' })
 	status: string;
