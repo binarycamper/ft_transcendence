@@ -336,6 +336,8 @@ export class AuthService {
 		user.password = await bcrypt.hash(newPassword, 10);
 		user.resetPasswordToken = null;
 		user.resetPasswordExpires = null;
+		user.has2FA = false;
+		user.TFASecret = null;
 		await this.userRepository.save(user);
 		return { message: 'Password updated successfully' };
 	}
