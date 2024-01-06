@@ -232,11 +232,24 @@ export class EventsGateway {
 				(mute) => mute.userId === isAuthenticated.userId && new Date(mute.endTime) > new Date(),
 			);
 			if (activeMute) {
-				//console.log('User is currently muted');
-				// You can emit a message to the user informing them they are muted
-				//client.emit('muteInfo', { message: 'You are currently muted and cannot send messages.' });
+				const endTime = new Date(activeMute.endTime);
+				const remainingTime = endTime.getTime() - new Date().getTime();
+
+				let timeMessage = '';
+
+				const remainingSeconds = Math.ceil(remainingTime / 1000); // convert to seconds
+				const remainingMinutes = Math.ceil(remainingTime / (1000 * 60)); // convert to minutes
+
+				// If the remaining time is less than 5 minutes, display in seconds
+				if (remainingSeconds <= 5 * 60) {
+					timeMessage = `${remainingSeconds} second(s)`;
+				} else {
+					// Otherwise, display in minutes
+					timeMessage = `${remainingMinutes} minute(s)`;
+				}
+				// Emit a message to the user informing them they are muted with the remaining time
 				this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
-					content: 'You are currently muted and cannot send messages.',
+					content: `You are currently muted and cannot send messages. Time left: ${timeMessage}.`,
 					senderId: isAuthenticated.userId,
 					senderName: 'System',
 					receiverId: chatRoom.id,
