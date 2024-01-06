@@ -5,7 +5,7 @@ interface BlockedUser {
 	name: string;
 }
 
-const IgnoreList = () => {
+export default function Blocklist() {
 	const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [userNameToBlock, setUserNameToBlock] = useState('');
@@ -114,6 +114,4 @@ const IgnoreList = () => {
 			)}
 		</div>
 	);
-};
-
-export default IgnoreList;
+}

@@ -114,7 +114,7 @@ export class UserController {
 	@Delete('delete')
 	async deleteUser(@Req() req): Promise<{ message: string }> {
 		try {
-			await this.userService.deleteUserById(req.user.id, req.user.image);
+			await this.userService.deleteUserById(req.user.id, req.user.customImage);
 			req.res.clearCookie('token', { sameSite: 'none', secure: true });
 			return { message: 'User deleted successfully' };
 		} catch (error) {
@@ -134,7 +134,7 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@UseInterceptors(FileInterceptor('image'))
+	@UseInterceptors(FileInterceptor('customImage'))
 	@Post('uploadImage')
 	async uploadImage(
 		@UploadedFile() file: Express.Multer.File,
@@ -288,7 +288,7 @@ export class UserController {
 			return;
 		}
 		try {
-			const updatedUser = await this.userService.ignoreUser(user, userToBlock.name);
+			const updatedUser = await this.userService.blockUser(user, userToBlock.name);
 			await this.userService.removeFriend(user.id, userToBlock.id);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {
@@ -308,8 +308,8 @@ export class UserController {
 	@Get('blockedUsers')
 	async blockedUsers(@Req() req, @Res() res: Response) {
 		try {
-			const ignoredUsers = await this.userService.findIgnoredUsers(req.user.id);
-			res.status(HttpStatus.OK).json(ignoredUsers);
+			const blockedUsers = await this.userService.findBlockedUsers(req.user.id);
+			res.status(HttpStatus.OK).json(blockedUsers);
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
@@ -327,7 +327,7 @@ export class UserController {
 		const user = req.user;
 		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
-			const updatedUser = await this.userService.removeUserInIgnoreList(user, userToBlock.name);
+			await this.userService.removeUserInBlocklist(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
 		} catch (error) {
 			console.error('Error while unblocking user: ', error.message);
@@ -347,16 +347,8 @@ export class UserController {
 	async getPublicProfile(@Query() getPublicProfileDto: GetPublicProfileDto) {
 		const friendProfile = await this.userService.findProfileByName(getPublicProfileDto.friendname);
 		// Exclude password and other sensitive fields from the result
-		const {
-			password,
-			id,
-			intraId,
-			ignorelist,
-			isTwoFactorAuthenticationEnabled,
-			unconfirmedTwoFactorSecret,
-			twoFactorAuthenticationSecret,
-			...result
-		} = friendProfile;
+		const { password, id, intraId, blocklist, has2FA, unconfirmed2FASecret, TFASecret, ...result } =
+			friendProfile;
 
 		return result;
 	}
@@ -376,8 +368,8 @@ export class UserController {
 			password: '1',
 			intraId: debugUserId,
 			id: debugUserId,
-			imageUrl: 'someDebugImageUrl',
-			image: 'http://localhost:8080/user/uploads?filename=' + debugUserId + '.png',
+			intraImage: 'someDebugIntraImage',
+			customImage: 'http://localhost:8080/user/uploads?filename=' + debugUserId + '.png',
 			status: 'offline',
 		});
 

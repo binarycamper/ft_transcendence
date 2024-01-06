@@ -22,9 +22,7 @@ export class AuthService {
 		private readonly jwtService: JwtService,
 	) {}
 
-	/*
-    This method is used to obtain the OAuth token from 42's API.
-    */
+	/* This method is used to obtain the OAuth token from 42's API. */
 	private async getOAuthToken(code: string): Promise<string> {
 		const clientId = this.configService.get<string>('INTRA_UID');
 		const clientSecret = this.configService.get<string>('INTRA_SECRET');
@@ -40,9 +38,7 @@ export class AuthService {
 		return tokenResponse.data.access_token;
 	}
 
-	/*
-    This method retrieves user data from 42's API.
-    */
+	/* This method retrieves user data from 42's API. */
 	private async getOAuthUserData(accessToken: string): Promise<any> {
 		const userResponse = await this.httpService
 			.get('https://api.intra.42.fr/v2/me', {
@@ -53,9 +49,7 @@ export class AuthService {
 		return userResponse.data;
 	}
 
-	/*
-    This method creates a new user or updates it if it already exists.
-    */
+	/* This method creates a new user or updates it if it already exists. */
 	// private async createUserOrUpdate(userData: any): Promise<User> {
 	// 	//console.log('userData= ', userData);
 	// 	let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
@@ -89,33 +83,31 @@ export class AuthService {
 	// 	return user;
 	// }
 
-	private async createUserOrUpdate(userData: any): Promise<User> {
-		let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
+	private async createUserOrUpdate(intraUser: any): Promise<User> {
+		const user: User = await this.userRepository.findOne({ where: { intraId: intraUser.id } });
 
 		if (!user) {
-			// Benutzer existiert nicht, erstelle neuen Benutzer
 			const newUser = this.userRepository.create({
 				id: uuidv4(),
-				name: userData.login,
-				email: userData.email,
+				name: intraUser.login,
+				email: intraUser.email,
 				password: 'hashed-pw',
 				status: 'fresh',
-				intraId: userData.id,
-				imageUrl: userData.image?.versions?.medium,
-				isTwoFactorAuthenticationEnabled: false,
+				intraId: intraUser.id,
+				intraImage: intraUser.image?.versions?.medium,
+				has2FA: false,
 			});
 			await this.userRepository.save(newUser);
 			return newUser;
-		} else {
-			// Benutzer existiert bereits, update nur sichere Felder
-			// Kein Überschreiben von isTwoFactorAuthenticationEnabled, wenn es bereits aktiviert ist
-			if (!user.isTwoFactorAuthenticationEnabled) {
-				user.isTwoFactorAuthenticationEnabled = false;
-			}
-			// Aktualisiere andere sichere Felder nach Bedarf
-			await this.userRepository.save(user);
-			return user;
 		}
+		// Benutzer existiert bereits, update nur sichere Felder
+		// Kein Überschreiben von isTwoFactorAuthenticationEnabled, wenn es bereits aktiviert ist
+		// TODO if user already exists
+		if (!user.has2FA) {
+			user.has2FA = false;
+		}
+		await this.userRepository.save(user);
+		return user;
 	}
 
 	async authenticate(
@@ -143,9 +135,7 @@ export class AuthService {
 
 	/////////////////////// NOT USED generateNewAccessToken NOT USED ///////////////////////
 
-	/*
-    This method is used to validate the refresh token and retrieve the user from the database.
-    */
+	/* This method is used to validate the refresh token and retrieve the user from the database. */
 	private async validateRefreshToken(refreshToken: string): Promise<User> {
 		try {
 			const decoded = this.jwtService.verify(refreshToken);
@@ -184,7 +174,7 @@ export class AuthService {
 	//This function is used to check the validity of the 2FA token.
 	private is2FATokenValid(user: User, token: string): boolean {
 		var result = speakeasy.totp.verify({
-			secret: user.unconfirmedTwoFactorSecret,
+			secret: user.unconfirmed2FASecret,
 			encoding: 'base32',
 			token: token,
 		});
@@ -192,23 +182,21 @@ export class AuthService {
 		return result;
 	}
 
-	//This function is used to activate 2FA for a user and to save corresponding changes in the database.
+	/* Enable 2FA for user and save corresponding changes in the database. */
 	private async enable2FAForUser(user: User): Promise<void> {
-		user.twoFactorAuthenticationSecret = user.unconfirmedTwoFactorSecret;
-		user.unconfirmedTwoFactorSecret = null;
-		user.isTwoFactorAuthenticationEnabled = true;
+		user.TFASecret = user.unconfirmed2FASecret;
+		user.unconfirmed2FASecret = null;
+		user.has2FA = true;
 		user.status = 'online';
 		await this.userRepository.save(user);
 	}
 
-	async verifyTwoFactorAuthenticationToken(user: User, token: string): Promise<boolean> {
+	async verify2FAToken(user: User, token: string): Promise<boolean> {
 		if (!user) {
 			throw new Error('User not found');
 		}
 
-		let secret = user.unconfirmedTwoFactorSecret
-			? user.unconfirmedTwoFactorSecret
-			: user.twoFactorAuthenticationSecret;
+		let secret = user.unconfirmed2FASecret || user.TFASecret;
 
 		if (!secret) {
 			throw new Error('2FA secret not set');
@@ -220,7 +208,7 @@ export class AuthService {
 			token: token,
 		});
 
-		if (isValid && user.unconfirmedTwoFactorSecret) {
+		if (isValid && user.unconfirmed2FASecret) {
 			await this.enable2FAForUser(user);
 		}
 		return isValid;
@@ -236,24 +224,24 @@ export class AuthService {
 			name: user.name,
 			id: user.id,
 			email: user.email,
-			require2FA: user.isTwoFactorAuthenticationEnabled,
+			require2FA: user.has2FA,
 		};
 		const accesToken = this.jwtService.sign(payload);
 		return accesToken;
 	}
 
-	async setupTwoFactorAuthentication(user: User): Promise<{ qrCodeUrl: string }> {
+	async setup2FA(user: User): Promise<{ qrCodeUrl: string }> {
 		if (!user) {
 			throw new Error('User not found');
 		}
-		if (!user.twoFactorAuthenticationSecret) {
+		if (!user.TFASecret) {
 			const secret = speakeasy.generateSecret();
 			const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
-			user.unconfirmedTwoFactorSecret = secret.base32;
+			user.unconfirmed2FASecret = secret.base32;
 			await this.userRepository.save(user);
 			return { qrCodeUrl };
-		} else if (user.twoFactorAuthenticationSecret) {
-			const secret = user.twoFactorAuthenticationSecret;
+		} else if (user.TFASecret) {
+			const secret = user.TFASecret;
 			const qrCodeUrl = await QRCode.toDataURL(
 				speakeasy.otpauthURL({ secret: secret, label: user.name, encoding: 'base32' }),
 			);
@@ -261,15 +249,15 @@ export class AuthService {
 		}
 	}
 
-	async toggleTwoFactorAuthentication(enable2FA: boolean, user: User): Promise<any> {
+	async toggle2FA(enable2FA: boolean, user: User): Promise<any> {
 		let redirect = enable2FA;
-		if (!enable2FA && !user.twoFactorAuthenticationSecret) {
+		if (!enable2FA && !user.TFASecret) {
 			redirect = true;
 		} else if (enable2FA) {
 			redirect = false;
-			user.isTwoFactorAuthenticationEnabled = false;
-			user.twoFactorAuthenticationSecret = null;
-			user.unconfirmedTwoFactorSecret = null;
+			user.has2FA = false;
+			user.TFASecret = null;
+			user.unconfirmed2FASecret = null;
 			await this.userRepository.save(user);
 		}
 		return { newStatus: redirect };

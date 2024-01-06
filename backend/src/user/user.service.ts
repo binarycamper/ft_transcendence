@@ -30,7 +30,7 @@ export class UserService {
 	) {}
 
 	findAll(): Promise<User[]> {
-		return this.userRepository.find({ relations: ['friends', 'ignorelist', 'chatRooms'] });
+		return this.userRepository.find({ relations: ['friends', 'blocklist', 'chatRooms'] });
 	}
 
 	async findAllFriends(user: User): Promise<User[]> {
@@ -57,16 +57,16 @@ export class UserService {
 				'nickname',
 				'status',
 				'intraId',
-				'imageUrl',
-				'image',
-				'isTwoFactorAuthenticationEnabled',
-				'twoFactorAuthenticationSecret',
-				'unconfirmedTwoFactorSecret',
+				'intraImage',
+				'customImage',
+				'has2FA',
+				'TFASecret',
+				'unconfirmed2FASecret',
 				'friends',
-				'ignorelist',
+				'blocklist',
 				'chatRooms',
 			],
-			relations: ['friends', 'ignorelist', 'chatRooms'],
+			relations: ['friends', 'blocklist', 'chatRooms'],
 		});
 		if (!user) {
 			throw new Error('User not found');
@@ -86,11 +86,11 @@ export class UserService {
 				'nickname',
 				'status',
 				'intraId',
-				'imageUrl',
-				'image',
-				'isTwoFactorAuthenticationEnabled',
-				'twoFactorAuthenticationSecret',
-				'unconfirmedTwoFactorSecret',
+				'intraImage',
+				'customImage',
+				'has2FA',
+				'TFASecret',
+				'unconfirmed2FASecret',
 				'friends',
 				'password',
 			],
@@ -104,7 +104,7 @@ export class UserService {
 	async findProfileByName(friendName: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { name: friendName },
-			relations: ['friends', 'ignorelist'],
+			relations: ['friends', 'blocklist'],
 		});
 		return user;
 	}
@@ -130,7 +130,7 @@ export class UserService {
 	async findUserbyName(name: string): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { name: name },
-			select: ['id', 'email', 'name', 'nickname', 'status', 'imageUrl', 'image'],
+			select: ['id', 'email', 'name', 'nickname', 'status', 'intraImage', 'customImage'],
 		});
 		return user;
 	}
@@ -199,7 +199,7 @@ export class UserService {
 			await this.friendRequestRepository.remove(friendRequests);
 		}
 
-		//Deletes uploaded image
+		//Deletes uploaded customImage
 		if (userImage) {
 			const imagePath = uploadPath + userImage.split('?filename=').pop();
 			try {
@@ -297,21 +297,21 @@ export class UserService {
 		const newFilename = `${userId}.${fileExtension}`;
 		const newFilePath = uploadPath + newFilename;
 
-		// Delete old image if it exists
-		if (user.image) {
-			const oldFilename = user.image.split('?filename=').pop();
+		// Delete old customImage if it exists
+		if (user.customImage) {
+			const oldFilename = user.customImage.split('?filename=').pop();
 			const oldFilePath = uploadPath + oldFilename;
 			if (fs.existsSync(oldFilePath)) {
 				await unlink(oldFilePath);
 			}
 		}
 
-		// Save the new image
+		// Save the new customImage
 		const writeStream = fs.createWriteStream(newFilePath);
 		writeStream.write(file.buffer);
 
-		// Update user with new image URL which is also the request for itself
-		user.image = `http://localhost:8080/user/uploads?filename=${newFilename}`;
+		// Update user with new customImage URL which is also the request for itself
+		user.customImage = `http://localhost:8080/user/uploads?filename=${newFilename}`;
 		await this.userRepository.save(user);
 	}
 
@@ -376,19 +376,19 @@ export class UserService {
 		return await this.userRepository.save(userWithFriends);
 	}
 
-	async ignoreUser(currUser: User, userName: string): Promise<User> {
+	async blockUser(currUser: User, userName: string): Promise<User> {
 		// Retrieve the user with their current relations
 		const userWithRelations = await this.userRepository.findOne({
 			where: { id: currUser.id },
-			relations: ['friends', 'ignorelist'],
+			relations: ['friends', 'blocklist'],
 		});
 		if (!userWithRelations) {
 			throw new NotFoundException('User not found');
 		}
 
-		// Check if the user is already in the ignorelist
-		const isAlreadyBlocked = userWithRelations.ignorelist.some(
-			(ignoredUser) => ignoredUser.name === userName,
+		// Check if the user is already in the blocklist
+		const isAlreadyBlocked = userWithRelations.blocklist.some(
+			(blockedUser) => blockedUser.name === userName,
 		);
 		if (isAlreadyBlocked) {
 			throw new BadRequestException('User already blocked');
@@ -397,58 +397,58 @@ export class UserService {
 		//get UserToBlock with relations
 		const userToBlock = await this.userRepository.findOne({
 			where: { name: userName },
-			relations: ['friends', 'ignorelist'],
+			relations: ['friends', 'blocklist'],
 		});
 		if (!userToBlock) {
 			throw new NotFoundException('User not found');
 		}
 
 		//block User
-		await userWithRelations.ignorelist.push(userToBlock);
+		await userWithRelations.blocklist.push(userToBlock);
 		await this.userRepository.save(userWithRelations);
 		return await this.userRepository.save(userWithRelations);
 	}
 
-	async findIgnoredUsers(userId: string): Promise<User[]> {
+	async findBlockedUsers(userId: string): Promise<User[]> {
 		try {
 			const user = await this.userRepository.findOne({
 				where: { id: userId },
-				relations: ['ignorelist'],
+				relations: ['blocklist'],
 			});
 
 			if (!user) {
 				throw new NotFoundException('User not found');
 			}
 
-			// Return the ignored users
-			return user.ignorelist;
+			// Return the blocked users
+			return user.blocklist;
 		} catch (error) {
 			throw new InternalServerErrorException('Could not retrieve blocked users');
 		}
 	}
 
-	async removeUserInIgnoreList(currUser: User, userName: string): Promise<User> {
+	async removeUserInBlocklist(currUser: User, userName: string): Promise<User> {
 		// Retrieve the user with their current relations
 		const userWithRelations = await this.userRepository.findOne({
 			where: { id: currUser.id },
-			relations: ['friends', 'ignorelist'],
+			relations: ['friends', 'blocklist'],
 		});
 		if (!userWithRelations) {
 			throw new NotFoundException('User not found');
 		}
 
-		// Find the user to be removed from the ignore list
-		const userIndex = userWithRelations.ignorelist.findIndex(
-			(ignoredUser) => ignoredUser.name === userName,
+		// Find the user to be removed from the blocklist
+		const userIndex = userWithRelations.blocklist.findIndex(
+			(blockedUser) => blockedUser.name === userName,
 		);
 
-		// Check if the user is in the ignore list
+		// Check if the user is in the blocklist
 		if (userIndex === -1) {
-			throw new NotFoundException('User not in ignore list');
+			throw new NotFoundException('User not in blocklist');
 		}
 
-		// Remove the user from the ignore list
-		userWithRelations.ignorelist.splice(userIndex, 1);
+		// Remove the user from the blocklist
+		userWithRelations.blocklist.splice(userIndex, 1);
 
 		// Save the updated user
 		await this.userRepository.save(userWithRelations);
@@ -458,9 +458,9 @@ export class UserService {
 	}
 
 	//debug:
-	async createDebugUser(userData: Partial<User>): Promise<User> {
+	async createDebugUser(intraData: Partial<User>): Promise<User> {
 		// Create a new User entity with the provided data
-		const newUser = this.userRepository.create(userData);
+		const newUser = this.userRepository.create(intraData);
 
 		// Hash the password before saving
 		newUser.password = await bcrypt.hash(newUser.password, 10);

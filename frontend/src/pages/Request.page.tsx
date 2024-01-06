@@ -220,8 +220,8 @@ export function FriendRequest() {
 		}
 	}, [selectedFriend]); // Add dependencies
 
-	const goToIgnoreList = useCallback(() => {
-		navigate('/ignorelist');
+	const goToBlocklist = useCallback(() => {
+		navigate('/blocklist');
 	}, [navigate]);
 
 	const acceptButtonStyle: React.CSSProperties = {
@@ -236,8 +236,8 @@ export function FriendRequest() {
 
 	return (
 		<div style={{ position: 'relative' }}>
-			<button onClick={goToIgnoreList} style={buttonStyleBase}>
-				View Ignore List
+			<button onClick={goToBlocklist} style={buttonStyleBase}>
+				View Blocklist
 			</button>
 			<h1>
 				Open Requests:{' '}

@@ -36,7 +36,6 @@ Insert error logs here
 
 ```
 ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
-
 - Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it.
 ```
 

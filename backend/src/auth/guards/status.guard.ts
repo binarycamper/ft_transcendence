@@ -9,9 +9,7 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 export class StatusGuard implements CanActivate {
-	canActivate(
-		context: ExecutionContext,
-	): boolean | Promise<boolean> | Observable<boolean> {
+	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context.switchToHttp().getRequest();
 		const user = request.user;
 

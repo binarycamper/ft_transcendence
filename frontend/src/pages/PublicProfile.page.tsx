@@ -4,14 +4,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 type Friend = {
 	email: string;
 	id: string;
-	image: string;
-	imageUrl: string;
+	customImage: string;
+	intraImage: string;
 	ladderLevel: number;
-	losses: number;
+	gamesLost: number;
 	name: string;
 	nickname: string;
 	status: string;
-	wins: number;
+	gamesWon: number;
 };
 
 type PublicProfileProps = {
@@ -66,14 +66,14 @@ export const PublicProfile = () => {
 				<div>
 					<h3>{friendProfile.nickname || friendProfile.name}'s Profile</h3>
 					<img
-						src={friendProfile.image ? friendProfile.image : friendProfile.imageUrl}
+						src={friendProfile.customImage || friendProfile.intraImage}
 						alt={`${friendProfile.nickname || friendProfile.name}'s profile`}
 					/>
 					<p>Email: {friendProfile.email}</p>
 					<p>Status: {friendProfile.status}</p>
 					<p>Ladder Level: {friendProfile.ladderLevel}</p>
-					<p>Wins: {friendProfile.wins}</p>
-					<p>Losses: {friendProfile.losses}</p>
+					<p>Wins: {friendProfile.gamesWon}</p>
+					<p>Losses: {friendProfile.gamesLost}</p>
 				</div>
 			)}
 		</div>

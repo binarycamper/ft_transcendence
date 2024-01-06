@@ -9,8 +9,8 @@ type UserProfile = {
 	gamesWon: number;
 	has2FA: boolean;
 	id: string;
-	image?: string /* customImageUpload */;
-	imageUrl: string /* intraImageURL */;
+	customImage?: string;
+	intraImage: string;
 	intraId: number;
 	ladderLevel: number;
 	name: string;
@@ -24,11 +24,11 @@ export default function useProfile() {
 	const [profile, setProfile] = useState<UserProfile | null>(null);
 
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [isCustomImage, setIsCustomImage] = useState(false);
-	const [customImageURL, setCustomImageURL] = useState('');
+	const [isCustomImageActive, setIsCustomImageActive] = useState(false);
+	const [customImage, setCustomImage] = useState('');
 
 	const [newNickname, setNewNickname] = useState('');
-	const [errorNickname, setErrorNickname] = useState('');
+	const [errorProfile, setErrorProfile] = useState('');
 
 	const [has2FA, setHas2FA] = useState(false);
 
@@ -50,13 +50,13 @@ export default function useProfile() {
 				// console.log('User profile data: ', profileData);
 				if (isSubscribed) {
 					setProfile(profileData);
-					if (profileData.image) {
-						fetchImage(profileData.image);
+					if (profileData.customImage) {
+						fetchCustomImage(profileData.customImage);
 					}
 				}
 
 				// Set the 2FA status
-				setHas2FA(profileData.isTwoFactorAuthenticationEnabled);
+				setHas2FA(profileData.has2FA);
 			} catch (error) {
 				console.error('Error fetching profile:', error);
 				if (isSubscribed) {
@@ -75,15 +75,15 @@ export default function useProfile() {
 		};
 	}, [navigate]);
 
-	function toggleImage() {
-		if (profile && profile.image) {
-			setIsCustomImage(!isCustomImage);
+	function toggleProfileImage() {
+		if (profile?.customImage) {
+			setIsCustomImageActive(!isCustomImageActive);
 		}
 	}
 
-	async function fetchImage(image: string) {
+	async function fetchCustomImage(customImage: string) {
 		try {
-			const response = await fetch(image, {
+			const response = await fetch(customImage, {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -91,9 +91,9 @@ export default function useProfile() {
 				throw new Error(`Image fetch failed: ${response.statusText}`);
 			}
 			const blob = await response.blob();
-			setCustomImageURL(URL.createObjectURL(blob));
+			setCustomImage(URL.createObjectURL(blob));
 		} catch (error) {
-			console.error('Error fetching image:', error);
+			console.error('Error fetching customImage:', error);
 		}
 	}
 
@@ -107,7 +107,7 @@ export default function useProfile() {
 		if (!selectedFile) return alert('Please select an image to upload.');
 
 		const formData = new FormData();
-		formData.append('image', selectedFile);
+		formData.append('customImage', selectedFile);
 		try {
 			const response = await fetch('http://localhost:8080/user/uploadImage', {
 				method: 'POST',
@@ -124,26 +124,27 @@ export default function useProfile() {
 					'Please ensure the file is an image with one of the following types: .jpg, .jpeg, .png';
 				console.log(userGuidance);
 			} else if (!response.ok) {
-				throw new Error('Failed to upload image.');
+				throw new Error('Failed to upload customImage.');
 			} else {
 				responseData = await response.json(); // Read and store the response body for a successful response
 				setProfile({
 					...profile,
-					imageUrl: responseData.imageUrl,
-				} as UserProfile); // Update the profile image
+					intraImage: responseData.intraImage,
+				} as UserProfile); // Update the profile customImage
 			}
 		} catch (error) {
-			console.error('Error uploading image:', error);
+			console.error('Error uploading customImage:', error);
+			setErrorProfile(`${error}`);
 		}
 		window.location.reload(); // Refreshes the current page
 	}
 
 	async function changeNickname() {
-		if (!newNickname.trim()) return setErrorNickname('Nickname cannot be empty.');
+		if (!newNickname.trim()) return setErrorProfile('Nickname cannot be empty.');
 
-		if (newNickname.length > 100) return setErrorNickname('Nickname must be smaller than 100.');
+		if (newNickname.length > 100) return setErrorProfile('Nickname must be smaller than 100.');
 
-		setErrorNickname(''); // Reset error message
+		setErrorProfile(''); // Reset error message
 
 		try {
 			const response = await fetch('http://localhost:8080/user/editName', {
@@ -170,14 +171,14 @@ export default function useProfile() {
 					const messages = (errorData.message as Array<any>).map((errorItem) =>
 						Object.values(errorItem.constraints || {}).join('. '),
 					);
-					setErrorNickname(messages.join(' ')); // Join all messages into a single string
+					setErrorProfile(messages.join(' ')); // Join all messages into a single string
 				} else {
 					// If it's not an array, it might be a single message
-					setErrorNickname(errorData.message || 'An unexpected error occurred.');
+					setErrorProfile(errorData.message || 'An unexpected error occurred.');
 				}
 			}
 		} catch (error) {
-			setErrorNickname('Failed to change nickname. Please try again.');
+			setErrorProfile('Failed to change nickname. Please try again.');
 		}
 	}
 
@@ -212,16 +213,16 @@ export default function useProfile() {
 
 	return {
 		changeNickname,
-		customImageURL,
-		errorNickname,
+		customImage,
+		errorProfile,
 		handleFileChange,
 		handleImageUpload,
 		handleToggle2FA,
-		isCustomImage,
+		isCustomImageActive,
 		newNickname,
 		profile,
 		setNewNickname,
-		toggleImage,
+		toggleProfileImage,
 		has2FA,
 	};
 }

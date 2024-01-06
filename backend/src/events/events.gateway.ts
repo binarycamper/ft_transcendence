@@ -237,13 +237,13 @@ export class EventsGateway {
 			const currUser = await this.userService.findProfileById(isAuthenticated.userId);
 			for (const user of chatRoom.users) {
 				const recipient = await this.userService.findProfileById(user.id);
-				if (recipient.ignorelist.some((ignoredUser) => ignoredUser.id === currUser.id)) {
-					//console.log('User is ignored!');
-					// If the sender is on the recipient's ignore list, censor the message
+				if (recipient.blocklist.some((blockedUser) => blockedUser.id === currUser.id)) {
+					//console.log('User is blocked!');
+					// If the sender is on the recipient's blocklist, censor the message
 					this.server.to(`user_${user.id}`).emit('receiveMessage', {
 						content: '[Message Hidden]',
 						senderId: message.senderId,
-						senderName: 'Ignored User',
+						senderName: 'Blocked User',
 						receiverId: message.receiverId,
 						id: message.id,
 					});

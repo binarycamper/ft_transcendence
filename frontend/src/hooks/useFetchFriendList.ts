@@ -14,14 +14,14 @@ type ChatRequest = {
 type Friend = {
 	email: string;
 	id: string;
-	image: string;
-	imageUrl: string;
+	customImage: string;
+	intraImage: string;
 	ladderLevel: number;
-	losses: number;
+	gamesLost: number;
 	name: string;
 	nickname: string;
 	status: string;
-	wins: number;
+	gamesWon: number;
 };
 
 export default function useFetchFriendList() {

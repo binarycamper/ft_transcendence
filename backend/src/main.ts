@@ -5,7 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
-	const logger = new Logger('Bootstrap');
+	const logger = new Logger(bootstrap.name);
 	const app = await NestFactory.create(AppModule);
 
 	app.use((req, res, next) => {

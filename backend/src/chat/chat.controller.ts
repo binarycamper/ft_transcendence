@@ -130,10 +130,10 @@ export class ChatController {
 
 			const chatHistory = await this.chatService.findChatRoomChat(clearChatRoomDto.chatroomId);
 
-			// Censor messages from ignored users
+			// Censor messages from blocked users
 			const censoredHistory = chatHistory.map((message) => {
-				if (user.ignorelist.some((ignoredUser) => ignoredUser.id === message.senderId)) {
-					return { ...message, content: '[Message Hidden]', senderName: '[Ignored User]' };
+				if (user.blocklist.some((blockedUser) => blockedUser.id === message.senderId)) {
+					return { ...message, content: '[Message Hidden]', senderName: '[Blocked User]' };
 				}
 				return message;
 			});

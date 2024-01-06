@@ -30,32 +30,32 @@ export class User {
 
 	@ManyToMany(() => User)
 	@JoinTable()
-	ignorelist: User[];
+	blocklist: User[];
 
 	@Column()
 	intraId: string;
 
 	@Column({ nullable: true, type: 'varchar' })
-	imageUrl: string;
+	intraImage: string;
 
 	@Column({ nullable: true, type: 'varchar' })
-	image: string;
+	customImage: string;
 
 	@Column({ default: false })
-	isTwoFactorAuthenticationEnabled: boolean;
+	has2FA: boolean;
 
 	@Column({ nullable: true })
-	twoFactorAuthenticationSecret?: string;
+	TFASecret?: string;
 
 	@Column({ nullable: true })
-	unconfirmedTwoFactorSecret?: string;
+	unconfirmed2FASecret?: string;
 
 	//Game Stats:
 	@Column({ default: 0 })
-	wins: number;
+	gamesWon: number;
 
 	@Column({ default: 0 })
-	losses: number;
+	gamesLost: number;
 
 	@Column({ default: 1 }) // Assuming ladder level starts at 1
 	ladderLevel: number;

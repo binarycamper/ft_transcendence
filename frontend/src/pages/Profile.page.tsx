@@ -8,16 +8,16 @@ export function Profile() {
 
 	const {
 		changeNickname,
-		customImageURL,
-		errorNickname,
+		customImage,
+		errorProfile,
 		handleFileChange,
 		handleImageUpload,
 		handleToggle2FA,
-		isCustomImage,
+		isCustomImageActive,
 		newNickname,
 		profile,
 		setNewNickname,
-		toggleImage,
+		toggleProfileImage,
 		has2FA,
 	} = useProfile();
 
@@ -29,12 +29,12 @@ export function Profile() {
 		<Container my={'10vh'} size={'lg'}>
 			<Title>Profile</Title>
 			<img
-				src={isCustomImage && profile.image ? customImageURL : profile.imageUrl}
+				src={isCustomImageActive && profile.customImage ? customImage : profile.intraImage}
 				alt={`${profile.name}'s profile`}
 			/>
-			{profile.image && (
-				<button onClick={toggleImage}>
-					{isCustomImage ? 'Show Intra Image' : 'Show Custom Image'}
+			{profile.customImage && (
+				<button onClick={toggleProfileImage}>
+					{isCustomImageActive ? 'Show Intra Image' : 'Show Custom Image'}
 				</button>
 			)}
 			<p>
@@ -64,7 +64,7 @@ export function Profile() {
 				placeholder="Enter new nickname"
 			/>
 			<button onClick={changeNickname}>Change Nickname</button>
-			{errorNickname && <p style={{ color: 'red' }}>{errorNickname}</p>}
+			{errorProfile && <p style={{ color: 'red' }}>{errorProfile}</p>}
 
 			<button onClick={handleToggle2FA}>{(has2FA ? 'Disable' : 'Enable') + '2FA'}</button>
 		</Container>

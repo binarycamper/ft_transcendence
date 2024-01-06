@@ -121,14 +121,14 @@ export function FriendList() {
 				<div>
 					<h3>{friendProfile.nickname || friendProfile.name}'s Profile</h3>
 					<img
-						src={friendProfile.image ? friendProfile.image : friendProfile.imageUrl}
+						src={friendProfile.customImage || friendProfile.intraImage}
 						alt={`${friendProfile.nickname || friendProfile.name}'s profile`}
 					/>
 					<p>Email: {friendProfile.email}</p>
 					<p>Status: {friendProfile.status}</p>
 					<p>Ladder Level: {friendProfile.ladderLevel}</p>
-					<p>Wins: {friendProfile.wins}</p>
-					<p>Losses: {friendProfile.losses}</p>
+					<p>Wins: {friendProfile.gamesWon}</p>
+					<p>Losses: {friendProfile.gamesLost}</p>
 					{/* Render additional details here */}
 				</div>
 			)}

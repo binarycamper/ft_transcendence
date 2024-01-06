@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AuthCallback from './pages/AuthCallback.page';
 import Header from './components/Header/Header';
-import IgnoreList from './pages/IgnoreList.page';
+import Blocklist from './pages/Blocklist.page';
 import { ChatRoom } from './pages/ChatRoom.page';
 import { CompleteProfile } from './pages/CompleteProfile';
 import { ErrorPage } from './pages/Error.page';
@@ -79,8 +79,8 @@ const router = createBrowserRouter([
 		element: <AuthCallback />,
 	},
 	{
-		path: '/ignorelist',
-		element: <IgnoreList />,
+		path: '/blocklist',
+		element: <Blocklist />,
 	},
 	{
 		path: '/publicprofile',

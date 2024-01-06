@@ -346,18 +346,18 @@ export class ChatService {
 		if (!recipientUser) {
 			throw new NotFoundException('Recipient user not found.');
 		}
-		// Check if the currUser is on ignorelist of friend target
-		const isInIgnoreListrecip = recipientUser.ignorelist.some(
-			(ignoredUser) => ignoredUser.name === currUser.name,
+		// Check if the currUser is on blocklist of friend target
+		const isInBlocklistrecip = recipientUser.blocklist.some(
+			(blockedUser) => blockedUser.name === currUser.name,
 		);
-		if (isInIgnoreListrecip) {
-			throw new Error('You are on the ignorelist of that user.');
+		if (isInBlocklistrecip) {
+			throw new Error('You are on the blocklist of that user.');
 		}
-		const isInIgnoreListcurr = currUser.ignorelist.some(
-			(ignoredUser) => ignoredUser.name === friendRequestDto.recipient,
+		const isInBlocklistcurr = currUser.blocklist.some(
+			(blockedUser) => blockedUser.name === friendRequestDto.recipient,
 		);
-		if (isInIgnoreListcurr) {
-			throw new Error('You cannot send a friend request to a user in your ignore list.');
+		if (isInBlocklistcurr) {
+			throw new Error('You cannot send a friend request to a user in your blocklist.');
 		}
 		const isAlreadyFriends = currUser.friends.some(
 			(friend) => friend.name === friendRequestDto.recipient,

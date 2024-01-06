@@ -1,12 +1,6 @@
 // src/auth/auth.entity.ts
 
-import {
-	Entity,
-	PrimaryGeneratedColumn,
-	Column,
-	ManyToOne,
-	JoinColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../user/user.entity'; // Adjust the path to your User entity
 import { IsNotEmpty, IsString } from 'class-validator';
 
@@ -29,5 +23,5 @@ export class AuthToken {
 	token: string;
 
 	@Column({ nullable: true })
-    twoFactorAuthenticationSecret?: string;
+	TFASecret?: string;
 }
