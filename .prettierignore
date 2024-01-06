@@ -1,0 +1,4 @@
+.eslintrc.yaml
+.prettierrc.yaml
+backend/dist
+frontend/index.html

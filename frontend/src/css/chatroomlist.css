@@ -57,7 +57,9 @@
 	transition-duration: 0.4s;
 	cursor: pointer;
 	border-radius: 4px;
-	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.24), 0 0 2px 0 rgba(0, 0, 0, 0.12);
+	box-shadow:
+		0 2px 2px 0 rgba(0, 0, 0, 0.24),
+		0 0 2px 0 rgba(0, 0, 0, 0.12);
 }
 
 .join-room-button:hover {
@@ -161,7 +163,9 @@
 	font-weight: normal; /* No bold */
 	text-transform: none; /* Normal casing */
 	font-size: 0.75rem; /* Slightly smaller font */
-	transition: background-color 0.3s ease, transform 0.1s ease;
+	transition:
+		background-color 0.3s ease,
+		transform 0.1s ease;
 	margin-left: 8px; /* Spacing from the owner label */
 	align-self: center; /* Vertically align with the owner label */
 }
