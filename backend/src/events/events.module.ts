@@ -8,12 +8,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatMessage } from 'src/chat/chat.entity';
 import { Match } from 'src/matchmaking/matchmaking.entity';
 import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
+import { GameModule } from 'src/game/game.module';
 
 @Module({
 	imports: [
 		UserModule,
 		ChatModule,
 		MatchmakingModule,
+		GameModule,
 		TypeOrmModule.forFeature([ChatMessage, Match]),
 		JwtModule.register({
 			secret: process.env.JWT_SECRET, // The secret key to sign the JWTs

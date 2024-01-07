@@ -12,7 +12,7 @@ import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
 @Module({
 	imports: [TypeOrmModule.forFeature([Game, User, Match]), UserModule, MatchmakingModule],
 	controllers: [GameController],
-	providers: [GameService, EventsModule],
+	providers: [GameService],
 	exports: [GameService],
 })
 export class GameModule {}
