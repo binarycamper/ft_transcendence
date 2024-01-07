@@ -12,11 +12,7 @@ export default function Prompt({ message, when }: Props) {
 		if (block) {
 			return !window.confirm(message);
 		}
-		//console.log('pressed no?');
 		return false;
 	});
-
 	return <div />;
-
-	//return <div key={block} />;
 }

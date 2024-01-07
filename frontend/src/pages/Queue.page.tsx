@@ -4,6 +4,9 @@ import Prompt from '../components/Prompt';
 
 export const MatchmakingQueuePage = () => {
 	const [isInQueue, setIsInQueue] = useState(false);
+	const [queueTime, setQueueTime] = useState(
+		parseInt(localStorage.getItem('queueTime') || '0', 10),
+	);
 	const [info, setinfo] = useState('');
 	const navigate = useNavigate();
 
@@ -55,6 +58,23 @@ export const MatchmakingQueuePage = () => {
 		};
 	}, []);
 
+	useEffect(() => {
+		setQueueTime(0);
+		let interval = 0;
+		if (isInQueue) {
+			interval = setInterval(() => {
+				setQueueTime((prevTime) => {
+					const newTime = prevTime + 1;
+					return newTime;
+				});
+			}, 1000);
+		} else {
+			clearInterval(interval);
+		}
+
+		return () => clearInterval(interval);
+	}, [isInQueue]);
+
 	return (
 		<div>
 			<h2>Matchmaking Queue</h2>
@@ -69,6 +89,7 @@ export const MatchmakingQueuePage = () => {
 				<button onClick={handleJoinQueue}>Join Queue</button>
 			) : (
 				<div>
+					<p>Time in Queue: {queueTime} Seconds</p>
 					<p>Waiting in queue...</p>
 					<button onClick={leaveQueue}>Leave Queue</button>
 				</div>
