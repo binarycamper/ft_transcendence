@@ -5,15 +5,14 @@ import { GameController } from './game.controller';
 import { GameService } from './game.service';
 import { User } from 'src/user/user.entity';
 import { Match } from 'src/matchmaking/matchmaking.entity';
-// Import other necessary modules and services
+import { EventsModule } from 'src/events/events.module';
+import { UserModule } from 'src/user/user.module';
+import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
 
 @Module({
-	imports: [
-		TypeOrmModule.forFeature([Game, User, Match]), // Add other entities if needed, e.g., User
-		// Other modules required by GameModule, e.g., UserModule if you need user-related operations
-	],
-	controllers: [GameController], // Your game controller
-	providers: [GameService], // Your game service
-	exports: [GameService], // Export GameService if it will be used outside of this module
+	imports: [TypeOrmModule.forFeature([Game, User, Match]), UserModule, MatchmakingModule],
+	controllers: [GameController],
+	providers: [GameService, EventsModule],
+	exports: [GameService],
 })
 export class GameModule {}
