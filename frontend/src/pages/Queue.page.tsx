@@ -24,6 +24,8 @@ export const MatchmakingQueuePage = () => {
 				setIsInQueue(true);
 			} else if (!response.ok) {
 				setinfo('Invalid QUEUE!!!');
+				setIsInQueue(false);
+				leaveQueue();
 				//throw new Error('Network response was not ok');
 			}
 			// Update UI to reflect the user has joined the queue
