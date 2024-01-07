@@ -381,7 +381,7 @@ export class UserController {
 		const stringNum = number.toString();
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
-			name: 'DebugUser_' + stringNum,
+			name: 'deb' + stringNum,
 			nickname: 'Debugger_' + stringNum,
 			email: stringNum + '@debuguser.com',
 			password: '1',
