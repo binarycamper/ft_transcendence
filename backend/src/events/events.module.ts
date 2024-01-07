@@ -6,17 +6,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { ChatModule } from 'src/chat/chat.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatMessage } from 'src/chat/chat.entity';
-import { Match } from 'src/matchmaking/matchmaking.entity';
-import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
 import { GameModule } from 'src/game/game.module';
 
 @Module({
 	imports: [
 		UserModule,
 		ChatModule,
-		MatchmakingModule,
 		GameModule,
-		TypeOrmModule.forFeature([ChatMessage, Match]),
+		TypeOrmModule.forFeature([ChatMessage]),
 		JwtModule.register({
 			secret: process.env.JWT_SECRET, // The secret key to sign the JWTs
 			signOptions: { expiresIn: '1d' }, // Set an appropriate expiration time for the tokens

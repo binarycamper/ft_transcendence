@@ -10,8 +10,6 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EventsService } from './events.service';
 import { ChatService } from 'src/chat/chat.service';
-import { MatchmakingService } from 'src/matchmaking/matchmaking.service';
-import { Match } from '../matchmaking/matchmaking.entity';
 import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Mute } from 'src/chat/mute.entity';
@@ -31,7 +29,6 @@ export class EventsGateway {
 		private chatService: ChatService,
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
-		private matchmakingService: MatchmakingService,
 		private userService: UserService,
 	) {}
 
@@ -116,100 +113,6 @@ export class EventsGateway {
 			});
 		} catch (error) {
 			console.error('Error in handleMessage:', error.message);
-		}
-	}
-
-	@SubscribeMessage('joinQueue')
-	async joinQueue(@ConnectedSocket() client: Socket) {
-		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
-			if (!isAuthenticated.isAuthenticated) {
-				console.log('Invalid credentials');
-				return;
-			}
-			const match = await this.matchmakingService.addToQueue(client.data.user.id);
-			if (match) {
-				this.proposeMatchToPlayers(match, client);
-			} else {
-				client.emit('joinedQueue', { message: 'You have joined the matchmaking queue.' });
-			}
-		} catch (error) {
-			console.error('Error in handleMessage:', error.message);
-		}
-	}
-
-	private async proposeMatchToPlayers(match: Match, client: Socket) {
-		this.server.to(`user_${match.playerOne.id}`).emit('matchProposal', match);
-		this.server.to(`user_${match.playerTwo.id}`).emit('matchProposal', match);
-
-		// Set a timeout for match acceptance
-		const matchAcceptanceTimeout = 20 * 1000; // 20 seconds
-		setTimeout(async () => {
-			const { accepted, rematchPlayerId } = await this.matchmakingService.checkMatchResponses(
-				match.id,
-			);
-			if (!accepted) {
-				// Benachrichtigung an die Clients senden
-				this.server.to(`user_${match.playerOne.id}`).emit('matchProposalExpired');
-				this.server.to(`user_${match.playerTwo.id}`).emit('matchProposalExpired');
-
-				// Spieler, der ein Rematch benötigt, wieder in die Queue einreihen
-				if (rematchPlayerId) {
-					// await this.matchmakingService.removeFromQueue(rematchPlayerId);
-					await this.matchmakingService.addToQueue(rematchPlayerId);
-					console.log('queue after response times end: ', this.matchmakingService.queue);
-				}
-			}
-		}, matchAcceptanceTimeout);
-	}
-
-	//TODO: DTO here pls
-	@SubscribeMessage('respondToMatch')
-	async respondToMatch(
-		@MessageBody() data: { matchId: number; accept: boolean },
-		@ConnectedSocket() client: Socket,
-	) {
-		try {
-			console.log(
-				`Respond to match received, matchId: ${data.matchId}, accept: ${data.accept}, userId: ${client.data.user.id}`,
-			);
-			const userId = client.data.user.id;
-			const response = await this.matchmakingService.handleMatchResponse(
-				data.matchId,
-				userId,
-				data.accept,
-			);
-			console.log('response: ', response);
-			if (response.matchStarted) {
-				// Navigiere beide Spieler zum Spiel
-				console.log('Match started, navigating players to game');
-				this.server
-					.to(`user_${response.playerOneId}`)
-					.emit('matchStart', { matchId: data.matchId });
-				this.server
-					.to(`user_${response.playerTwoId}`)
-					.emit('matchStart', { matchId: data.matchId });
-			} else if (!response.matchStarted && response.rematchPlayerId) {
-				// Der andere Spieler bleibt in der Queue
-				this.server.to(`user_${response.rematchPlayerId}`).emit('remainInQueue');
-			}
-		} catch (error) {
-			console.error('Error in respondToMatch:', error.message);
-		}
-	}
-
-	@SubscribeMessage('leaveQueue')
-	async handleLeaveQueue(@ConnectedSocket() client: Socket) {
-		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
-			if (!isAuthenticated.isAuthenticated) {
-				console.log('Invalid credentials');
-				return;
-			}
-
-			await this.matchmakingService.removeFromQueue(isAuthenticated.userId);
-		} catch (error) {
-			console.error('Error in handleLeaveQueue:', error.message);
 		}
 	}
 

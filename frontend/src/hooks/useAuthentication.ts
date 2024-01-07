@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { redirect } from 'react-router-dom';
+import { redirect, useNavigate } from 'react-router-dom';
 
 export default function useAuthentication() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		async function checkAuthStatus() {
@@ -33,8 +34,8 @@ export default function useAuthentication() {
 			});
 			if (response.ok) {
 				setIsAuthenticated(false);
-				redirect('/');
-				window.location.reload(); //refresh page, then socket set user status, if anybody is requesting anything socket will track anything and sleeps so we refresh
+				navigate('/');
+				//window.location.reload(); //refresh page, then socket set user status, if anybody is requesting anything socket will track anything and sleeps so we refresh
 			} else {
 				console.error('Logout failed');
 			}

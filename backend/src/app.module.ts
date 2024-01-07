@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
+import { MatchmakingModule } from './Matchmaking/matchmaking.module';
 
 @Module({
 	imports: [
@@ -23,6 +24,7 @@ import { ChatModule } from './chat/chat.module';
 		AuthModule,
 		UserModule,
 		ChatModule,
+		MatchmakingModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

@@ -19,6 +19,7 @@ import { ChatRoomList } from './pages/ChatRoomList.page';
 import ResetPassword from './pages/ResetPassword.page';
 import ResetAccount from './pages/ResetAccount.page';
 import VerifyResetToken from './pages/VerifyResetToken.page';
+import { MatchmakingQueuePage } from './pages/Queue.page';
 
 const router = createBrowserRouter([
 	{
@@ -45,7 +46,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'play',
-				element: <Play />,
+				element: <MatchmakingQueuePage />,
 			},
 			{
 				path: 'profile',
