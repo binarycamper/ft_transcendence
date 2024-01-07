@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import useAuthentication from '../../hooks/useAuthentication';
 import { Button, Container, Group, Tabs } from '@mantine/core';
 
@@ -12,9 +12,9 @@ export default function Header() {
 			<Group justify="space-between">
 				<Group>
 					<h1 className="site-title">
-						<a href="/" style={{ textDecoration: 'none' }}>
+						<Link to="/" style={{ textDecoration: 'none' }}>
 							pong
-						</a>
+						</Link>
 					</h1>
 					<Tabs mt={8} onChange={(value) => navigate(`${value}`)} value={pathname}>
 						<Tabs.List>
@@ -29,7 +29,7 @@ export default function Header() {
 					</Tabs>
 				</Group>
 				{!isAuthenticated ? (
-					<Button component="a" href="/login">
+					<Button component="a" onClick={() => navigate('/login')}>
 						SIGN IN
 					</Button>
 				) : (

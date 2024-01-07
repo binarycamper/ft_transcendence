@@ -26,6 +26,7 @@ export default function useLogin() {
 			} else {
 				navigate('/profile');
 			}
+			window.location.reload();
 		} catch (error) {
 			console.error('Failed to initiate login', error);
 		}
