@@ -54,7 +54,7 @@ export class MatchmakingService {
 
 			// Get the first two users from the sorted queue
 			const playerOne = activeQueues[0];
-			console.log('playerOne: ', playerOne);
+			//console.log('playerOne: ', playerOne);
 			const playerTwo = activeQueues[1];
 
 			// Notify the two users via WebSocket that they've been matched
@@ -66,8 +66,8 @@ export class MatchmakingService {
 				.emit('matchFound', { enemyUserName: playerOne.user.name });
 
 			// Update their matchmaking entries as no longer active
-			await this.matchmakingRepository.save({ ...playerOne, isActive: false });
-			await this.matchmakingRepository.save({ ...playerTwo, isActive: false });
+			//await this.matchmakingRepository.save({ ...playerOne, isActive: false });
+			//await this.matchmakingRepository.save({ ...playerTwo, isActive: false });
 
 			// Here you can create a game entity, or do any other logic needed when a match is found
 		}

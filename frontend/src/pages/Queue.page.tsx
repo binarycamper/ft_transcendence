@@ -82,15 +82,17 @@ export const MatchmakingQueuePage = () => {
 	}, [isInQueue]);
 
 	useEffect(() => {
-		const handleMatch = (enemyUserName: string) => {
-			setinfo(`Match found against ${enemyUserName}`);
-			setEnemyUserName(enemyUserName);
-			setMatchFound(true);
+		const handleMatch = (data: any) => {
+			if (data && data.enemyUserName) {
+				setinfo(`Match found against ${data.enemyUserName}`);
+				setEnemyUserName(data.enemyUserName);
+				setMatchFound(true);
+			}
 		};
 
-		socket.on('receiveMatch', handleMatch);
+		socket.on('matchFound', handleMatch);
 		return () => {
-			socket.off('receiveMatch', handleMatch);
+			socket.off('matchFound', handleMatch);
 		};
 	}, [socket]);
 
