@@ -132,4 +132,9 @@ export class MatchmakingService {
 	async getAll() {
 		return await this.matchmakingRepository.find({ relations: ['user'] });
 	}
+
+	async deleteAll(): Promise<void> {
+		const queues = await this.matchmakingRepository.find();
+		await this.matchmakingRepository.remove(queues);
+	}
 }

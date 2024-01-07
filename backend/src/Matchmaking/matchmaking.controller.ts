@@ -79,4 +79,9 @@ export class MatchmakingController {
 	async getAll() {
 		return await this.matchmakingService.getAll();
 	}
+
+	@Delete('deleteAll')
+	async deleteAll() {
+		return await this.matchmakingService.deleteAll();
+	}
 }
