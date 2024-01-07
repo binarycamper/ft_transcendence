@@ -73,6 +73,12 @@ export class MatchmakingController {
 		}
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Post('acceptMatch')
+	async acceptMatch(@Req() req, @Res() res) {
+		console.log('triggert!');
+	}
+
 	//########################Debug#############################
 
 	@Get('getAll')

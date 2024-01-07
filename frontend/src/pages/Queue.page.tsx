@@ -96,10 +96,38 @@ export const MatchmakingQueuePage = () => {
 		};
 	}, [socket]);
 
-	const handleAcceptMatch = () => {
-		socket.emit('acceptMatch', { enemyUserName });
-		//navigate('/spiel'); // Navigate to the game page
-		window.location.href = 'http://localhost:5173/spiel';
+	const handleAcceptMatch = async () => {
+		try {
+			// Construct the payload
+			const payload = {
+				playerTwoName: enemyUserName,
+			};
+
+			// Make the HTTP request to the backend
+			const response = await fetch('http://localhost:8080/matchmaking/acceptMatch', {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(payload),
+			});
+
+			// Check if the request was successful
+			if (response.ok) {
+				// Handle successful match acceptance
+				// Navigate to the game page
+				window.location.href = 'http://localhost:5173/spiel';
+			} else {
+				// Handle errors
+				const errorData = await response.json();
+				console.error('Failed to accept match:', errorData.message);
+				// You might want to update the UI to show an error message
+			}
+		} catch (error) {
+			console.error('Error accepting match:', error);
+			// Update UI to show error message if needed
+		}
 	};
 
 	const handleDeclineMatch = () => {
