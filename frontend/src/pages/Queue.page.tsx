@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Prompt from '../components/Prompt';
+import { SocketContext } from './context/socketContext';
 
 export const MatchmakingQueuePage = () => {
+	const socket = useContext(SocketContext);
 	const [isInQueue, setIsInQueue] = useState(false);
 	const [queueTime, setQueueTime] = useState(
 		parseInt(localStorage.getItem('queueTime') || '0', 10),
 	);
+	const [matchFound, setMatchFound] = useState(false);
+	const [enemyUserName, setEnemyUserName] = useState('');
 	const [info, setinfo] = useState('');
 	const navigate = useNavigate();
 
@@ -77,10 +81,35 @@ export const MatchmakingQueuePage = () => {
 		return () => clearInterval(interval);
 	}, [isInQueue]);
 
+	useEffect(() => {
+		const handleMatch = (enemyUserName: string) => {
+			setinfo(`Match found against ${enemyUserName}`);
+			setEnemyUserName(enemyUserName);
+			setMatchFound(true);
+		};
+
+		socket.on('receiveMatch', handleMatch);
+		return () => {
+			socket.off('receiveMatch', handleMatch);
+		};
+	}, [socket]);
+
+	const handleAcceptMatch = () => {
+		socket.emit('acceptMatch', { enemyUserName });
+		//navigate('/spiel'); // Navigate to the game page
+		window.location.href = 'http://localhost:5173/spiel';
+	};
+
+	const handleDeclineMatch = () => {
+		socket.emit('declineMatch', { enemyUserName });
+		leaveQueue(); // will also set isInQueue to false
+		setMatchFound(false);
+	};
+
 	return (
 		<div>
 			<h2>Matchmaking Queue</h2>
-			<h3>If you refresh or disconnect to that site then matchmaking stops</h3>
+			<h3>If you refresh or disconnect from this page, matchmaking will stop.</h3>
 			{info && <div className="info">{info}</div>}
 
 			<Prompt
@@ -89,6 +118,12 @@ export const MatchmakingQueuePage = () => {
 			/>
 			{!isInQueue ? (
 				<button onClick={handleJoinQueue}>Join Queue</button>
+			) : matchFound ? (
+				<div>
+					<p>Match found against {enemyUserName}</p>
+					<button onClick={handleAcceptMatch}>Accept Match</button>
+					<button onClick={handleDeclineMatch}>Decline Match</button>
+				</div>
 			) : (
 				<div>
 					<p>Time in Queue: {queueTime} Seconds</p>
@@ -96,8 +131,6 @@ export const MatchmakingQueuePage = () => {
 					<button onClick={leaveQueue}>Leave Queue</button>
 				</div>
 			)}
-
-			{/* Add more UI elements here as needed, like displaying the queue status */}
 		</div>
 	);
 };

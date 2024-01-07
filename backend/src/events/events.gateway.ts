@@ -13,6 +13,7 @@ import { ChatService } from 'src/chat/chat.service';
 import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Mute } from 'src/chat/mute.entity';
+import { MatchmakingService } from 'src/Matchmaking/matchmaking.service';
 
 @WebSocketGateway({
 	cors: {
@@ -30,6 +31,7 @@ export class EventsGateway {
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 		private userService: UserService,
+		private matchService: MatchmakingService,
 	) {}
 
 	async verifyAuthentication(
@@ -52,6 +54,8 @@ export class EventsGateway {
 		}
 		return { isAuthenticated: false, userId: '' };
 	}
+
+	//########################UserStatus#############################
 
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {
@@ -76,6 +80,8 @@ export class EventsGateway {
 			console.log('User without account detected');
 		}
 	}
+
+	//########################ChatMessages#############################
 
 	//TODO: DTO here pls
 	@SubscribeMessage('sendMessage')
@@ -202,6 +208,37 @@ export class EventsGateway {
 			}
 		} catch (error) {
 			console.error('Error in handleMessage:', error.message); //TODO: del before eval.
+		}
+	}
+
+	//########################Game#############################
+	@SubscribeMessage('matchFound')
+	async handleMatchFound(
+		@MessageBody() data: { enemyUserName: string },
+		@ConnectedSocket() client: Socket,
+	) {
+		try {
+			const isAuthenticated = await this.verifyAuthentication(client);
+			if (!isAuthenticated.isAuthenticated) {
+				console.log('Invalid credentials');
+				return;
+			}
+
+			// Here, you can add additional logic if needed
+			//TODO: if we need more atributes of user.service functions we need to add inside these:
+			const userOne = await this.userService.findProfileById(isAuthenticated.userId);
+			const userTwo = await this.userService.findProfileByName(data.enemyUserName);
+
+			// For example, creating a game session, updating user status, etc.
+			console.log('FINE!');
+			//const gameSession = await this.matchService.createGameSession(userOne, userTwo);
+
+			// Emit the event to the client to notify them about their match
+			this.server.to(`user_${isAuthenticated.userId}`).emit('matchReady', {
+				enemyUserName: data.enemyUserName,
+			});
+		} catch (error) {
+			console.error('Error in handleMatchFound:', error.message);
 		}
 	}
 }

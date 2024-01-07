@@ -1,17 +1,16 @@
-//matchmaking.module.ts
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Matchmaking } from './matchmaking.entity';
 import { MatchmakingService } from './matchmaking.service';
 import { UserModule } from 'src/user/user.module';
 import { MatchmakingController } from './matchmaking.controller';
-import { UserService } from 'src/user/user.service';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([Matchmaking]),
 		UserModule,
-		// Other necessary modules
+		forwardRef(() => EventsModule), // Use forwardRef here
 	],
 	providers: [MatchmakingService],
 	controllers: [MatchmakingController],

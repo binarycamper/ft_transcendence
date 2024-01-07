@@ -1,20 +1,77 @@
 // src/matchmaking/matchmaking.service.ts
 
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+	forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Matchmaking } from './matchmaking.entity';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { NotFoundError } from 'rxjs';
+import { EventsGateway } from 'src/events/events.gateway';
 
 @Injectable()
 export class MatchmakingService {
+	private readonly matchmakingInterval = 10000;
+	private matchmakingQueue: Matchmaking[] = [];
 	constructor(
 		@InjectRepository(Matchmaking)
 		private matchmakingRepository: Repository<Matchmaking>,
 		private userService: UserService,
-	) {}
+		@Inject(forwardRef(() => EventsGateway))
+		private eventsGateway: EventsGateway,
+	) {
+		this.startMatchmakingLoop();
+	}
+
+	private startMatchmakingLoop() {
+		setInterval(() => {
+			this.runMatchmakingLogic();
+		}, this.matchmakingInterval);
+	}
+
+	private async runMatchmakingLogic() {
+		console.log('runMatchmakingLogic...!');
+
+		// Fetch active matchmaking entries from the database
+		const activeQueues = await this.matchmakingRepository.find({
+			where: { isActive: true },
+			relations: ['user'],
+		});
+
+		//console.log('Active queues:', activeQueues.length);
+
+		if (activeQueues.length >= 2) {
+			console.log('Match Found!');
+
+			// Sort the queue by joinedAt to get the longest waiting users
+			activeQueues.sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime());
+
+			// Get the first two users from the sorted queue
+			const playerOne = activeQueues[0];
+			console.log('playerOne: ', playerOne);
+			const playerTwo = activeQueues[1];
+
+			// Notify the two users via WebSocket that they've been matched
+			this.eventsGateway.server
+				.to(`user_${playerOne.user.id}`)
+				.emit('matchFound', { enemyUserName: playerTwo.user.name });
+			this.eventsGateway.server
+				.to(`user_${playerTwo.user.id}`)
+				.emit('matchFound', { enemyUserName: playerOne.user.name });
+
+			// Update their matchmaking entries as no longer active
+			await this.matchmakingRepository.save({ ...playerOne, isActive: false });
+			await this.matchmakingRepository.save({ ...playerTwo, isActive: false });
+
+			// Here you can create a game entity, or do any other logic needed when a match is found
+		}
+	}
 
 	async findMyQueue(user: User): Promise<Matchmaking | null> {
 		const activeQueueEntry = await this.matchmakingRepository.findOne({
@@ -35,11 +92,12 @@ export class MatchmakingService {
 		const matchmakingEntry = this.matchmakingRepository.create({
 			user: user,
 			isActive: true,
+			joinedAt: new Date(),
 		});
 		// Save the entry to the database
 		await this.matchmakingRepository.save(matchmakingEntry);
 		console.log(`User ${user.name} joined the matchmaking queue`);
-
+		this.matchmakingQueue.push(matchmakingEntry);
 		return matchmakingEntry;
 	}
 
@@ -57,7 +115,7 @@ export class MatchmakingService {
 
 			const queue = await this.findMyQueue(user);
 			if (!queue) throw new NotFoundException(`Queue entry for user with ID ${userId} not found.`);
-
+			this.matchmakingQueue = this.matchmakingQueue.filter((u) => u.id !== user.id);
 			await this.matchmakingRepository.remove(queue);
 		} catch (error) {
 			if (error instanceof NotFoundException) {
