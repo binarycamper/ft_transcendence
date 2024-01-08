@@ -18,7 +18,7 @@ import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class MatchmakingService {
-	private readonly matchmakingInterval = 10000;
+	private readonly matchmakingInterval = 10_000;
 	private matchmakingQueue: Matchmaking[] = [];
 	constructor(
 		@InjectRepository(Matchmaking)

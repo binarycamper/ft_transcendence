@@ -33,14 +33,15 @@ export class GameService {
 			.getOne();
 	}
 
-	async createNewGame(playerOne: User, playerTwo: User): Promise<Game> {
+	async createNewGame(player: User, opponent: User): Promise<Game> {
 		try {
-			const existingGame = await this.findExistingGame(playerOne.id, playerTwo.id);
+			const existingGame = await this.findExistingGame(player.id, opponent.id);
 			await console.log('Existing Game: ', existingGame);
 			if (!existingGame) {
+				console.log('Inside !existing Game...');
 				const game = this.gameRepository.create({
-					playerOne: playerOne,
-					playerTwo: playerTwo,
+					playerOne: player,
+					playerTwo: opponent,
 					scorePlayerOne: 0,
 					scorePlayerTwo: 0,
 					startTime: new Date(),
@@ -49,23 +50,22 @@ export class GameService {
 				});
 
 				await this.gameRepository.save(game);
-				console.log('game.accepted: ', game.accepted);
 				return game;
 			} else {
 				//TODO join the pending game enemy is waiting for you!
+				console.log('Inside else, accepted status: ', existingGame.accepted);
 
-				if (!existingGame.accepted) {
-					existingGame.accepted = true;
-					await this.gameRepository.save(existingGame);
-					console.log('SEND EMIT TO WAITING USER:::', playerTwo.name);
+				existingGame.accepted = true;
+				await this.gameRepository.save(existingGame);
+				console.log('SEND EMIT TO WAITING USER:::', opponent.name);
 
-					console.log('ID check:', existingGame.playerOne.id);
-					// Emit an event to the specific user letting them know the game is ready
-					this.eventsGateway.server.to(`user_${existingGame.playerOne.id}`).emit('gameReady', {
-						gameId: existingGame.id,
-						message: 'The other player has joined. The game is ready to start.',
-					});
-				}
+				console.log('I AM PLAYER: ', player);
+				console.log('check:', opponent);
+				// Emit an event to the specific user letting them know the game is ready
+				this.eventsGateway.server.to(`user_${opponent.id}`).emit('gameReady', {
+					enemyUserName: player.name,
+				});
+
 				return existingGame;
 			}
 		} catch (error) {

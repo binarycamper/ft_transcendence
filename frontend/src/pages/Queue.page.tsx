@@ -83,7 +83,7 @@ export const MatchmakingQueuePage = () => {
 
 	useEffect(() => {
 		const handleMatch = (data) => {
-			if (data && data.enemyUserName && !matchFound) {
+			if (data?.enemyUserName && !matchFound) {
 				// Check if matchFound is already set
 				setinfo(`Match found against ${data.enemyUserName}`);
 				setEnemyUserName(data.enemyUserName);
