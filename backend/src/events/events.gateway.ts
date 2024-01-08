@@ -212,33 +212,4 @@ export class EventsGateway {
 	}
 
 	//########################Game#############################
-	@SubscribeMessage('matchFound')
-	async handleMatchFound(
-		@MessageBody() data: { enemyUserName: string },
-		@ConnectedSocket() client: Socket,
-	) {
-		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
-			if (!isAuthenticated.isAuthenticated) {
-				console.log('Invalid credentials');
-				return;
-			}
-
-			// Here, you can add additional logic if needed
-			//TODO: if we need more atributes of user.service functions we need to add inside these:
-			const userOne = await this.userService.findProfileById(isAuthenticated.userId);
-			const userTwo = await this.userService.findProfileByName(data.enemyUserName);
-
-			// For example, creating a game session, updating user status, etc.
-			console.log('FINE!');
-			//const gameSession = await this.matchService.createGameSession(userOne, userTwo);
-
-			// Emit the event to the client to notify them about their match
-			this.server.to(`user_${isAuthenticated.userId}`).emit('matchReady', {
-				enemyUserName: data.enemyUserName,
-			});
-		} catch (error) {
-			console.error('Error in handleMatchFound:', error.message);
-		}
-	}
 }

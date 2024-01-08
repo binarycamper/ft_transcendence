@@ -1,3 +1,4 @@
+//game.controller.ts
 import { Body, Controller, Delete, Get, Req, UseGuards } from '@nestjs/common';
 import { GameService } from './game.service';
 import { UserService } from 'src/user/user.service';

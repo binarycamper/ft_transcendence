@@ -45,7 +45,7 @@ export class MatchmakingController {
 			} else {
 				res.status(HttpStatus.BAD_REQUEST).json({
 					statusCode: HttpStatus.BAD_REQUEST,
-					message: 'Invalid queue!',
+					message: 'Invalid queue open!',
 				});
 			}
 		} catch (error) {
@@ -63,17 +63,19 @@ export class MatchmakingController {
 	@Post('leave')
 	async leaveQueue(@Req() req, @Res() res) {
 		try {
-			await this.matchmakingService.leaveQueue(req.user.id);
-			res.status(HttpStatus.OK).json({ message: 'Successfully left the queue.' });
-		} catch (error) {
-			if (error instanceof NotFoundException) {
-				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
+			const queue = await this.matchmakingService.findMyQueue(req.user);
+			if (queue) {
+				await this.matchmakingService.leaveQueue(req.user.id);
+				res.status(HttpStatus.OK).json({ message: 'Successfully left the queue.' });
 			} else {
-				res
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.json({ message: 'Failed to leave queue due to an unexpected error.' });
-				console.error('Error leaving queue:', error);
+				// User was not in the queue, but is fine
+				res.status(HttpStatus.OK).json({ message: 'You were not in the queue.' });
 			}
+		} catch (error) {
+			console.error('Error leaving queue:', error);
+			res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Failed to leave queue due to an unexpected error.' });
 		}
 	}
 
@@ -86,6 +88,15 @@ export class MatchmakingController {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Requesting user not found.' });
 			}
 			const queue = await this.matchmakingService.findMyQueue(user);
+			if (!queue) {
+				if (user.status === 'online') {
+					this.joinQueue(req, res);
+					return res.status(HttpStatus.ACCEPTED).json({ message: 'Queue restarted.' });
+				}
+				return res
+					.status(HttpStatus.FORBIDDEN)
+					.json({ message: 'You are already ingame! Or Wrong User-Status.' }); //>TODO: delete  Or Wrong User-Status. before eval
+			}
 			queue.isActive = false;
 			await this.matchmakingService.saveQueue(queue);
 			const enemy = await this.userService.findProfileByName(enemyName);

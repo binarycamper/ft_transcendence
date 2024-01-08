@@ -76,7 +76,7 @@ export class MatchmakingService {
 
 	async findMyQueue(user: User): Promise<Matchmaking | null> {
 		const activeQueueEntry = await this.matchmakingRepository.findOne({
-			where: { user: { id: user.id }, isActive: true },
+			where: { user: { id: user.id } },
 			relations: ['user'],
 		});
 		if (!activeQueueEntry) return null;

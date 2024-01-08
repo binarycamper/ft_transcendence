@@ -1,14 +1,17 @@
+//game.service.ts
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Game } from './game.entity';
 import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
+import { EventsGateway } from 'src/events/events.gateway';
 
 @Injectable()
 export class GameService {
 	constructor(
 		@InjectRepository(Game)
 		private gameRepository: Repository<Game>,
+		private eventsGateway: EventsGateway,
 	) {}
 
 	async findExistingGame(playerOneId: string, playerTwoId: string): Promise<Game | undefined> {
@@ -33,7 +36,7 @@ export class GameService {
 	async createNewGame(playerOne: User, playerTwo: User): Promise<Game> {
 		try {
 			const existingGame = await this.findExistingGame(playerOne.id, playerTwo.id);
-			console.log('Existing Game: ', existingGame);
+			await console.log('Existing Game: ', existingGame);
 			if (!existingGame) {
 				const game = this.gameRepository.create({
 					playerOne: playerOne,
@@ -50,9 +53,18 @@ export class GameService {
 				return game;
 			} else {
 				//TODO join the pending game enemy is waiting for you!
+
 				if (!existingGame.accepted) {
 					existingGame.accepted = true;
 					await this.gameRepository.save(existingGame);
+					console.log('SEND EMIT TO WAITING USER:::', playerTwo.name);
+
+					console.log('ID check:', existingGame.playerOne.id);
+					// Emit an event to the specific user letting them know the game is ready
+					this.eventsGateway.server.to(`user_${existingGame.playerOne.id}`).emit('gameReady', {
+						gameId: existingGame.id,
+						message: 'The other player has joined. The game is ready to start.',
+					});
 				}
 				return existingGame;
 			}
