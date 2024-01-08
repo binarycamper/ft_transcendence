@@ -53,7 +53,7 @@ export class GameService {
 				return game;
 			} else {
 				//TODO join the pending game opponent is waiting for you!
-				console.log('Inside else, accepted status: ', existingGame.accepted);
+				//console.log('Inside else, accepted status: ', existingGame.accepted);
 
 				existingGame.accepted = true;
 				await this.gameRepository.save(existingGame);

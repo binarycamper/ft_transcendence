@@ -31,7 +31,7 @@ export class User {
 	resetPasswordUrl: string;
 
 	@Column({ default: 'fresh' })
-	status: 'fresh' | 'online' | 'offline' | 'ingame';
+	status: 'fresh' | 'online' | 'offline' | 'ingame' | 'inqueue';
 
 	@ManyToMany(() => User)
 	@JoinTable()
