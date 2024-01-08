@@ -13,8 +13,6 @@ import { Matchmaking } from './matchmaking.entity';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { EventsGateway } from 'src/events/events.gateway';
-import { Game } from 'src/game/game.entity';
-import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class MatchmakingService {

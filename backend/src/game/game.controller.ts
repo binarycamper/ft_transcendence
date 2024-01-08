@@ -1,15 +1,11 @@
 //game.controller.ts
 import { Body, Controller, Delete, Get, Req, UseGuards } from '@nestjs/common';
 import { GameService } from './game.service';
-import { UserService } from 'src/user/user.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('game')
 export class GameController {
-	constructor(
-		private readonly gameService: GameService,
-		private userService: UserService,
-	) {}
+	constructor(private readonly gameService: GameService) {}
 
 	@UseGuards(JwtAuthGuard)
 	@Get('mygames')

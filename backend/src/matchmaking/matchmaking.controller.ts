@@ -5,12 +5,10 @@ import {
 	Post,
 	Get,
 	Delete,
-	Param,
 	Req,
 	UseGuards,
 	Res,
 	HttpStatus,
-	NotFoundException,
 	Body,
 } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';

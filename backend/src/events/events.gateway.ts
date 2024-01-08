@@ -31,7 +31,6 @@ export class EventsGateway {
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 		private userService: UserService,
-		private matchService: MatchmakingService,
 	) {}
 
 	async verifyAuthentication(
