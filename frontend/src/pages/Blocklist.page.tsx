@@ -9,9 +9,9 @@ export default function Blocklist() {
 	const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [userNameToBlock, setUserNameToBlock] = useState('');
-	const [info, setinfo] = useState('');
+	const [info, setInfo] = useState('');
 
-	const fetchBlockedUsers = async () => {
+	async function fetchBlockedUsers() {
 		setIsLoading(true);
 		try {
 			const response = await fetch('http://localhost:8080/user/blockedUsers', {
@@ -27,14 +27,14 @@ export default function Blocklist() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}
 
 	// Call fetchBlockedUsers on component mount
 	useEffect(() => {
 		fetchBlockedUsers();
 	}, []);
 
-	const unblockUser = async (userId: string) => {
+	async function unblockUser(userId: string) {
 		try {
 			const response = await fetch(`http://localhost:8080/user/unblockUser?userid=${userId}`, {
 				method: 'POST',
@@ -53,9 +53,9 @@ export default function Blocklist() {
 		} catch (error) {
 			console.error('Error unblocking user:', error);
 		}
-	};
+	}
 
-	const blockUser = async () => {
+	async function blockUser() {
 		try {
 			const response = await fetch(
 				`http://localhost:8080/user/blockUser/?userName=${userNameToBlock}`,
@@ -74,14 +74,14 @@ export default function Blocklist() {
 				setUserNameToBlock('');
 				fetchBlockedUsers();
 			} else {
-				setinfo(data.message);
+				setInfo(data.message);
 				//console.error('Failed to block user:', data.message);
 			}
 		} catch (error) {
-			setinfo(error as string);
+			setInfo(error as string);
 			//console.error('Error while blocking user:', error);
 		}
-	};
+	}
 
 	return (
 		<div>

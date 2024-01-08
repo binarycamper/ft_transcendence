@@ -78,11 +78,11 @@ export class MatchmakingController {
 
 	//TODO: dto for Body!
 	@UseGuards(JwtAuthGuard)
-	@Post('acceptMatch')
+	@Post('accept-match')
 	async acceptMatch(
 		@Req() req: Request,
 		@Res() res: Response,
-		@Body('playerTwoName') enemyName: string,
+		@Body('playerTwoName') opponentName: string,
 	) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
@@ -101,12 +101,12 @@ export class MatchmakingController {
 			}
 			queue.isActive = false;
 			await this.matchmakingService.saveQueue(queue);
-			const enemy = await this.userService.findProfileByName(enemyName);
-			if (!enemy) {
-				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Enemy user not found.' });
+			const opponent = await this.userService.findProfileByName(opponentName);
+			if (!opponent) {
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Opponent user not found.' });
 			}
 
-			const game = await this.gameService.createNewGame(user, enemy);
+			const game = await this.gameService.createNewGame(user, opponent);
 			const statusMessage = game.accepted
 				? 'Both players are ready. Game can start.'
 				: 'Waiting for the other player to join.';
@@ -126,12 +126,12 @@ export class MatchmakingController {
 
 	//########################Debug#############################
 
-	@Get('getAll')
+	@Get('all-queues')
 	async getAll() {
 		return await this.matchmakingService.getAll();
 	}
 
-	@Delete('deleteAll')
+	@Delete('all-queues')
 	async deleteAll() {
 		return await this.matchmakingService.deleteAll();
 	}

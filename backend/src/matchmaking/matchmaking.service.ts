@@ -61,10 +61,10 @@ export class MatchmakingService {
 			// Notify the two users via WebSocket that they've been matched
 			this.eventsGateway.server
 				.to(`user_${playerOne.user.id}`)
-				.emit('matchFound', { enemyUserName: playerTwo.user.name });
+				.emit('match-found', { opponentName: playerTwo.user.name });
 			this.eventsGateway.server
 				.to(`user_${playerTwo.user.id}`)
-				.emit('matchFound', { enemyUserName: playerOne.user.name });
+				.emit('match-found', { opponentName: playerOne.user.name });
 		}
 	}
 

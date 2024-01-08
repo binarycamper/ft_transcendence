@@ -10,12 +10,12 @@ export function CompleteProfile() {
 	const [passwordWarning, setPasswordWarning] = useState<Array<string>>([]);
 	const [isProfileComplete, setIsProfileComplete] = useState(false);
 	const [setup2FA, setSetup2FA] = useState(false);
-	const [info, setinfo] = useState('');
+	const [info, setInfo] = useState('');
 
 	const navigate = useNavigate();
 
 	/*
-  const validatePassword = (password: string) => {
+  function validatePassword(password: string) {
 		const minLength = 8;
 		const hasUpperCase = /[A-Z]/.test(password);
 		const hasLowerCase = /[a-z]/.test(password);
@@ -42,7 +42,7 @@ export function CompleteProfile() {
 		return errorMessage;
 	};
   */
-	const validatePassword = (password: string) => {
+	function validatePassword(password: string) {
 		let error = false;
 		const options = {
 			translations: zxcvbnEnPackage.translations,
@@ -69,10 +69,10 @@ export function CompleteProfile() {
 			return false;
 		}
 		return true;
-	};
+	}
 
 	useEffect(() => {
-		const checkProfileStatus = async () => {
+		async function checkProfileStatus() {
 			try {
 				const response = await fetch('http://localhost:8080/user/isProfileComplete', {
 					credentials: 'include',
@@ -83,14 +83,14 @@ export function CompleteProfile() {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
 			} catch (error) {
-				setinfo(error as string);
+				setInfo(error as string);
 				//console.error('Error checking profile status:', error);
 			}
-		};
+		}
 		checkProfileStatus();
 	}, [navigate]);
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		//TOdo: Validate the password
@@ -122,21 +122,21 @@ export function CompleteProfile() {
 					navigate('/profile'); // Weiterleitung zur Profilseite
 				}
 			} else if (response.status === 400 || response.status === 303) {
-				setinfo(data.message);
+				setInfo(data.message);
 			} else {
 				// Assuming that 'message' is an array of objects and you want to display 'isStrongPassword' constraint
 				const messages = data.message
 					.map((item: any) => item.constraints.isStrongPassword)
 					.join(' ');
-				setinfo(messages || 'An error occurred');
+				setInfo(messages || 'An error occurred');
 			}
 		} catch (error) {
 			console.log('test 2');
-			setinfo('failed setting pw: ' + error);
+			setInfo('failed setting pw: ' + error);
 		}
-	};
+	}
 
-	const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	function handlePasswordChange(event: React.ChangeEvent<HTMLInputElement>) {
 		setPassword(event.target.value);
 		if (event.target.value.length > 0) {
 			validatePassword(event.target.value);
@@ -144,7 +144,7 @@ export function CompleteProfile() {
 			setPasswordError('');
 			setPasswordWarning([]);
 		}
-	};
+	}
 
 	return (
 		<div>

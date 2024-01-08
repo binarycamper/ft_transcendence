@@ -52,7 +52,7 @@ export class GameService {
 				await this.gameRepository.save(game);
 				return game;
 			} else {
-				//TODO join the pending game enemy is waiting for you!
+				//TODO join the pending game opponent is waiting for you!
 				console.log('Inside else, accepted status: ', existingGame.accepted);
 
 				existingGame.accepted = true;
@@ -62,8 +62,8 @@ export class GameService {
 				console.log('I AM PLAYER: ', player);
 				console.log('check:', opponent);
 				// Emit an event to the specific user letting them know the game is ready
-				this.eventsGateway.server.to(`user_${opponent.id}`).emit('gameReady', {
-					enemyUserName: player.name,
+				this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
+					opponentName: player.name,
 				});
 
 				return existingGame;
@@ -88,9 +88,9 @@ export class GameService {
 		});
 	}
 
-	async getEnemyGame(enemyName: string): Promise<Game | undefined> {
+	async getOpponentGame(opponentName: string): Promise<Game | undefined> {
 		return await this.gameRepository.findOne({
-			where: [{ playerOne: { name: enemyName } }, { playerTwo: { name: enemyName } }],
+			where: [{ playerOne: { name: opponentName } }, { playerTwo: { name: opponentName } }],
 			order: {
 				startTime: 'DESC',
 			},
