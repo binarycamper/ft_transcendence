@@ -7,7 +7,7 @@ export default function ResetPassword() {
 	const { token } = useParams();
 	const navigate = useNavigate();
 
-	const handleSubmit = async (event: FormEvent) => {
+	async function handleSubmit(event: FormEvent) {
 		event.preventDefault();
 		if (password !== confirmPassword) {
 			alert("Passwords don't match!");
@@ -29,7 +29,7 @@ export default function ResetPassword() {
 		} catch (error) {
 			console.error('Error:', error);
 		}
-	};
+	}
 
 	return (
 		<div>

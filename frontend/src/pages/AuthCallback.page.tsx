@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const AuthCallback = () => {
+export default function AuthCallback() {
 	const location = useLocation();
 
 	useEffect(() => {
@@ -18,5 +18,4 @@ const AuthCallback = () => {
 	}, [location]);
 
 	return <div>Loading...</div>;
-};
-export default AuthCallback;
+}

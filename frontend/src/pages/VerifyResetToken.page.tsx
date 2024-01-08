@@ -8,7 +8,7 @@ export default function VerifyResetToken() {
 	const [isValidToken, setIsValidToken] = useState(false);
 
 	useEffect(() => {
-		const verifyToken = async () => {
+		async function verifyToken() {
 			try {
 				const response = await fetch(`http://localhost:8080/auth/verify-reset-token/${token}`);
 				if (response.ok) {
@@ -19,7 +19,7 @@ export default function VerifyResetToken() {
 			} catch (error) {
 				console.error('Error verifying token:', error);
 			}
-		};
+		}
 
 		verifyToken();
 	}, [token, navigate]);

@@ -22,11 +22,11 @@ export default function useQue() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const handleMatchProposal = (matchDetails: MatchDetails) => {
+		function handleMatchProposal(matchDetails: MatchDetails) {
 			console.log('Match proposal received:', matchDetails);
 			setCurrentMatch(matchDetails);
 			// TODO: Implement a modal or some UI element to show the match proposal
-		};
+		}
 
 		socket.on('matchProposal', handleMatchProposal);
 		return () => {
@@ -34,15 +34,15 @@ export default function useQue() {
 		};
 	}, [socket]);
 
-	const acceptMatch = () => {
+	function acceptMatch() {
 		if (currentMatch) {
 			console.log('Match accepted:', currentMatch.id);
 			socket.emit('respondToMatch', { matchId: currentMatch.id, accept: true });
 			setCurrentMatch(null);
 		}
-	};
+	}
 
-	const rejectMatch = () => {
+	function rejectMatch() {
 		if (currentMatch) {
 			socket.emit('respondToMatch', { matchId: currentMatch.id, accept: false });
 			setCurrentMatch(null);
@@ -51,23 +51,23 @@ export default function useQue() {
 			setQueueTime(0);
 			localStorage.setItem('queueTime', '0');
 		}
-	};
+	}
 
 	useEffect(() => {
-		const handleMatchStart = (data: MatchDetails) => {
+		function handleMatchStart(data: MatchDetails) {
 			setInQueue(false);
 			localStorage.setItem('inQueue', 'false');
 			setQueueTime(0);
 			localStorage.setItem('queueTime', '0');
 			console.log('Match start:', data.id);
 			navigate('/spiel');
-		};
+		}
 
-		const handleRemainInQueue = () => {
+		function handleRemainInQueue() {
 			console.log('Remain in queue');
 			setInQueue(true);
 			localStorage.setItem('inQueue', 'true');
-		};
+		}
 
 		socket.on('matchStart', handleMatchStart);
 		socket.on('remainInQueue', handleRemainInQueue);
@@ -79,7 +79,7 @@ export default function useQue() {
 	}, [navigate, socket]);
 
 	useEffect(() => {
-		const handleMatchProposalExpired = async () => {
+		async function handleMatchProposalExpired() {
 			try {
 				const response = await fetch(`http://localhost:8080/matchmaking/user-status`, {
 					method: 'GET',
@@ -103,7 +103,7 @@ export default function useQue() {
 				setInQueue(false);
 				localStorage.setItem('inQueue', 'false');
 			}
-		};
+		}
 
 		socket.on('matchProposalExpired', handleMatchProposalExpired);
 		return () => {
@@ -112,7 +112,7 @@ export default function useQue() {
 	}, [socket]);
 
 	useEffect(() => {
-		const checkInitialQueueStatus = async () => {
+		async function checkInitialQueueStatus() {
 			try {
 				const response = await fetch(`http://localhost:8080/matchmaking/user-status`, {
 					method: 'GET',
@@ -138,7 +138,7 @@ export default function useQue() {
 				setInQueue(false);
 				localStorage.setItem('inQueue', 'false');
 			}
-		};
+		}
 
 		checkInitialQueueStatus();
 	}, []);
@@ -190,23 +190,23 @@ export default function useQue() {
 		return () => clearInterval(intervalId);
 	}, [inQueue]);
 
-	const joinQueue = async () => {
+	async function joinQueue() {
 		console.log('Joining queue...');
 		setInQueue(true);
 		localStorage.setItem('inQueue', 'true');
 		setQueueTime(0);
 		localStorage.setItem('queueTime', '0');
 		socket.emit('joinQueue');
-	};
+	}
 
-	const leaveQueue = async () => {
+	async function leaveQueue() {
 		console.log('Leaving queue...');
 		setInQueue(false);
 		localStorage.removeItem('inQueue');
 		localStorage.removeItem('queueTime');
 		setQueueTime(0);
 		socket.emit('leaveQueue');
-	};
+	}
 
 	return {
 		acceptMatch,

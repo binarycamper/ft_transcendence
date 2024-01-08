@@ -3,7 +3,7 @@ import { FormEvent, useState } from 'react';
 export default function ResetAccount() {
 	const [email, setEmail] = useState('');
 
-	const handleSubmit = async (event: FormEvent) => {
+	async function handleSubmit(event: FormEvent) {
 		event.preventDefault();
 		try {
 			const response = await fetch('http://localhost:8080/auth/reset-password', {
@@ -19,7 +19,7 @@ export default function ResetAccount() {
 		} catch (error) {
 			console.error('Error:', error);
 		}
-	};
+	}
 
 	return (
 		<div>

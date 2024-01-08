@@ -36,7 +36,7 @@ const buttonStyle = {
 	cursor: 'pointer',
 };
 
-export const ChatRoom = () => {
+export function ChatRoom() {
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
 
@@ -59,7 +59,7 @@ export const ChatRoom = () => {
 	const [notification, setNotification] = useState('');
 
 	useEffect(() => {
-		const getCurrentUserId = async () => {
+		async function getCurrentUserId() {
 			try {
 				const response = await fetch('http://localhost:8080/user/id', {
 					credentials: 'include',
@@ -75,13 +75,13 @@ export const ChatRoom = () => {
 				showNotification('not authenticated... :' + error);
 				return;
 			}
-		};
+		}
 		getCurrentUserId();
 	}, []);
 
 	useEffect(() => {
 		// Fetch friends list when component mounts
-		const fetchFriends = async () => {
+		async function fetchFriends() {
 			try {
 				const response = await fetch('http://localhost:8080/user/friends', {
 					credentials: 'include',
@@ -96,19 +96,19 @@ export const ChatRoom = () => {
 				showNotification('cant load Friendlist: ' + error);
 				return;
 			}
-		};
+		}
 
 		fetchFriends();
 	}, []);
 
-	const handleSelectFriend = (friend: Friend) => {
+	function handleSelectFriend(friend: Friend) {
 		if (selectedChatRoom) {
 			setselectedChatRoom(null); // Unselect the chat room if any is selected
 		}
 		setSelectedFriend(friend); // Select the friend
 		setChatMessages([]); // Clear previous chat history
 		fetchChatHistory(friend.id); // Fetch the chat history for the selected friend
-	};
+	}
 
 	// Effect for fetching chat history when a friend is selected
 	useEffect(() => {
@@ -117,7 +117,7 @@ export const ChatRoom = () => {
 		}
 	}, [selectedFriend]);
 
-	const fetchChatHistory = async (selectedFriendId: string) => {
+	async function fetchChatHistory(selectedFriendId: string) {
 		try {
 			const response = await fetch(
 				`http://localhost:8080/chat/history/?friendId=${selectedFriendId}`,
@@ -137,10 +137,10 @@ export const ChatRoom = () => {
 			showNotification('Failed to fetch chat history ');
 			return;
 		}
-	};
+	}
 
 	useEffect(() => {
-		const handleNewMessage = (message: ChatMessage) => {
+		function handleNewMessage(message: ChatMessage) {
 			// First, handle the case where the message is for a chat with a friend
 			if (
 				(selectedFriend && //Here we check if selectedFriend is not null...
@@ -160,7 +160,7 @@ export const ChatRoom = () => {
 				showNotification('pls select a friend or room');
 				return;
 			}
-		};
+		}
 
 		socket.on('receiveMessage', handleNewMessage);
 		return () => {
@@ -168,7 +168,7 @@ export const ChatRoom = () => {
 		};
 	}, [socket, currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
 
-	const handleSendMessage = () => {
+	function handleSendMessage() {
 		if (!newMessage.trim()) return;
 
 		if (selectedFriend) {
@@ -188,9 +188,9 @@ export const ChatRoom = () => {
 			socket.emit('sendMessageToChatRoom', messageToSend);
 		}
 		setNewMessage('');
-	};
+	}
 
-	const handleClearChat = async (id: string, isRoom: boolean) => {
+	async function handleClearChat(id: string, isRoom: boolean) {
 		const url = isRoom
 			? `http://localhost:8080/chat/clearchatroom?chatroomId=${id}`
 			: `http://localhost:8080/chat/deletechat?friendId=${id}`;
@@ -221,13 +221,13 @@ export const ChatRoom = () => {
 				return;
 			}
 		}
-	};
+	}
 
-	const navigateToFriendProfile = (friendName: string) => {
+	function navigateToFriendProfile(friendName: string) {
 		navigate(`/publicprofile`, { state: { friendName: friendName } });
-	};
+	}
 
-	const inviteToPongGame = async (friendId: string) => {
+	async function inviteToPongGame(friendId: string) {
 		try {
 			const response = await fetch(`http://localhost:8080/chat/invite?friendId=${friendId}`, {
 				method: 'POST',
@@ -248,10 +248,10 @@ export const ChatRoom = () => {
 			showNotification('Error while sending invitation: ' + error);
 			return;
 		}
-	};
+	}
 
 	// Function to handle the creation of a new chat room
-	const handleCreateChatRoom = async () => {
+	async function handleCreateChatRoom() {
 		if (!chatRoomName) {
 			alert('Please enter a name for the chat room.');
 			return;
@@ -307,11 +307,11 @@ export const ChatRoom = () => {
 		} catch (error) {
 			setChatRoomError('ChatRoom creation failed');
 		}
-	};
+	}
 
 	// Fetch chat rooms when component mounts
 	useEffect(() => {
-		const fetchChatRooms = async () => {
+		async function fetchChatRooms() {
 			try {
 				const response = await fetch('http://localhost:8080/chat/mychatrooms', {
 					credentials: 'include',
@@ -325,12 +325,12 @@ export const ChatRoom = () => {
 			} catch (error) {
 				showNotification('cant load chatrooms...');
 			}
-		};
+		}
 
 		fetchChatRooms();
 	}, []);
 
-	const fetchChatRoomHistory = async (chatRoomId: string) => {
+	async function fetchChatRoomHistory(chatRoomId: string) {
 		try {
 			const response = await fetch(
 				`http://localhost:8080/chat/chatroomhistory/?chatroomId=${chatRoomId}`,
@@ -350,22 +350,22 @@ export const ChatRoom = () => {
 			showNotification('Error fetching chatroom history: ' + error);
 			return;
 		}
-	};
+	}
 
-	const handleChatRoomSelect = (chatRoom: ChatRoom) => {
+	function handleChatRoomSelect(chatRoom: ChatRoom) {
 		if (selectedFriend) {
 			setSelectedFriend(null); // Unselect the friend if any is selected
 		}
 		setselectedChatRoom(chatRoom);
 		setChatMessages([]);
 		fetchChatRoomHistory(chatRoom.id); // Fetch the chat history for the selected chat room
-	};
+	}
 
-	const handleRoomSettings = async () => {
+	async function handleRoomSettings() {
 		window.location.href = 'http://localhost:5173/chatroomlist';
-	};
+	}
 
-	const handleDeleteChatRoom = async (chatRoomId: string) => {
+	async function handleDeleteChatRoom(chatRoomId: string) {
 		const confirmation = window.confirm(
 			'Are you sure you want to delete this chat room? This cannot be undone.',
 		);
@@ -388,9 +388,9 @@ export const ChatRoom = () => {
 		} catch (error) {
 			setChatRoomError('You cannot delete that chatroom: ' + error);
 		}
-	};
+	}
 
-	const handleInviteSubmit = async (event, roomId: string) => {
+	async function handleInviteSubmit(event, roomId: string) {
 		event.preventDefault();
 		if (!inviteUsername.trim()) {
 			alert('Please enter a username.');
@@ -437,12 +437,12 @@ export const ChatRoom = () => {
 			showNotification('Failed to invite user. Please try again.');
 			return;
 		}
-	};
+	}
 
-	const showNotification = (message: string) => {
+	function showNotification(message: string) {
 		setNotification(message);
 		setTimeout(() => setNotification(''), 5000); // Clear notification after 5 seconds
-	};
+	}
 
 	return (
 		<div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
@@ -654,4 +654,4 @@ export const ChatRoom = () => {
 			) : null}
 		</div>
 	);
-};
+}

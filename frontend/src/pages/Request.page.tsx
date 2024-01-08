@@ -108,7 +108,7 @@ export function FriendRequest() {
 		fetchFriends();
 	}, []);
 
-	const fetchPendingRequests = async () => {
+	async function fetchPendingRequests() {
 		setIsLoading(true);
 		try {
 			const response = await fetch('http://localhost:8080/chat/pendingrequests', {
@@ -128,9 +128,9 @@ export function FriendRequest() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}
 
-	const fetchMyRequests = async () => {
+	async function fetchMyRequests() {
 		setIsLoading(true);
 		try {
 			const response = await fetch('http://localhost:8080/chat/myrequests', {
@@ -147,9 +147,9 @@ export function FriendRequest() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}
 
-	const fetchFriends = async () => {
+	async function fetchFriends() {
 		setIsLoading(true);
 		try {
 			// Update the URL with the correct endpoint for fetching friends
@@ -174,9 +174,9 @@ export function FriendRequest() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}
 
-	const handleAction = async (messageId: string, action: string) => {
+	async function handleAction(messageId: string, action: string) {
 		try {
 			const response = await fetch(`http://localhost:8080/chat/${action}/?messageid=${messageId}`, {
 				method: 'POST',
@@ -188,7 +188,7 @@ export function FriendRequest() {
 		} catch (error) {
 			console.error('Error updating message:', error);
 		}
-	};
+	}
 
 	const handleFriendClick = useCallback(
 		(friend: Friend, event: React.MouseEvent<HTMLLIElement>) => {

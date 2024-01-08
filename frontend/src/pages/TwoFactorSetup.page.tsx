@@ -10,7 +10,7 @@ export function TwoFactorSetup() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const fetchProfile = async () => {
+		async function fetchProfile() {
 			const response = await fetch(`http://localhost:8080/user/id`, {
 				method: 'GET',
 				credentials: 'include',
@@ -20,7 +20,7 @@ export function TwoFactorSetup() {
 			if (data.id) {
 				setUserId(data.id);
 			}
-		};
+		}
 		fetchProfile();
 	}, [userId]);
 
@@ -33,7 +33,7 @@ export function TwoFactorSetup() {
 		}
 	}, [userId]);
 
-	const handle2FASetup = async () => {
+	async function handle2FASetup() {
 		try {
 			const response = await fetch(`http://localhost:8080/auth/2fa/setup`, {
 				method: 'GET',
@@ -45,9 +45,9 @@ export function TwoFactorSetup() {
 		} catch (error) {
 			console.error('Error setting up 2FA:', error);
 		}
-	};
+	}
 
-	const verify2FACode = async () => {
+	async function verify2FACode() {
 		const url = 'http://localhost:8080/auth/2fa/verify-2fa';
 		try {
 			const response = await fetch(url, {
@@ -70,7 +70,7 @@ export function TwoFactorSetup() {
 		} catch (error) {
 			console.error('Error verifying 2FA code:', error);
 		}
-	};
+	}
 
 	return (
 		<div>

@@ -18,14 +18,14 @@ type Friend = {
 // 	friendName: string;
 // };
 
-export const PublicProfile = () => {
+export function PublicProfile() {
 	const [friendProfile, setFriendProfile] = useState<Friend | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const location = useLocation();
 	const friendName = location.state?.friendName;
 
 	useEffect(() => {
-		const fetchFriendProfile = async () => {
+		async function fetchFriendProfile() {
 			setIsLoading(true);
 			try {
 				const response = await fetch(
@@ -50,7 +50,7 @@ export const PublicProfile = () => {
 			} finally {
 				setIsLoading(false);
 			}
-		};
+		}
 
 		fetchFriendProfile();
 	}, [friendName]);
@@ -77,4 +77,4 @@ export const PublicProfile = () => {
 			)}
 		</div>
 	);
-};
+}

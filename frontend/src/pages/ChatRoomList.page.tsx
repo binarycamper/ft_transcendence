@@ -24,7 +24,7 @@ type ChatRoom = {
 	mutes: Mute[];
 };
 
-export const ChatRoomList = () => {
+export function ChatRoomList() {
 	const [currentUser, setCurrentUser] = useState<{ id: string; name: string } | null>(null);
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
@@ -34,7 +34,7 @@ export const ChatRoomList = () => {
 	const [mutedUsers, setMutedUsers] = useState<{ [userId: string]: boolean }>({});
 
 	useEffect(() => {
-		const getCurrentUser = async () => {
+		async function getCurrentUser() {
 			try {
 				const response = await fetch('http://localhost:8080/user/id', {
 					credentials: 'include',
@@ -48,13 +48,13 @@ export const ChatRoomList = () => {
 			} catch (error: any) {
 				setError('Failed to fetch current user: ' + error.message);
 			}
-		};
+		}
 		getCurrentUser();
 	}, []);
 
 	useEffect(() => {
 		if (currentUser) {
-			const fetchChatRooms = async () => {
+			async function fetchChatRooms() {
 				try {
 					const response = await fetch('http://localhost:8080/chat/allchatrooms', {
 						credentials: 'include',
@@ -98,13 +98,13 @@ export const ChatRoomList = () => {
 				} finally {
 					setLoading(false);
 				}
-			};
+			}
 
 			fetchChatRooms();
 		}
 	}, [currentUser]);
 
-	const handleJoinRoom = async (roomId: string, roomType: 'private' | 'public') => {
+	async function handleJoinRoom(roomId: string, roomType: 'private' | 'public') {
 		try {
 			let password = '';
 			if (roomType === 'public') {
@@ -130,9 +130,9 @@ export const ChatRoomList = () => {
 		} catch (error) {
 			setJoinError('An error occurred while attempting to join the room.');
 		}
-	};
+	}
 
-	const handleKickUser = async (roomId: string, userId: string, ownerId: string) => {
+	async function handleKickUser(roomId: string, userId: string, ownerId: string) {
 		try {
 			if (userId === currentUser?.id && userId === ownerId) {
 				const isConfirmed = window.confirm('Are you sure you want to delete this chat room?');
@@ -184,9 +184,9 @@ export const ChatRoomList = () => {
 		} catch (error) {
 			setJoinError('Error while attempting to kick user: ' + error);
 		}
-	};
+	}
 
-	const handleMakeAdmin = async (roomId: string, userId: string) => {
+	async function handleMakeAdmin(roomId: string, userId: string) {
 		try {
 			const response = await fetch(`http://localhost:8080/chat/upgradeToAdmin`, {
 				method: 'POST',
@@ -206,9 +206,9 @@ export const ChatRoomList = () => {
 		} catch (error) {
 			setJoinError('Error while attempting to make user admin: ' + error);
 		}
-	};
+	}
 
-	const handleRevokeAdmin = async (roomId: string, userId: string) => {
+	async function handleRevokeAdmin(roomId: string, userId: string) {
 		if (!window.confirm("Are you sure you want to revoke this user's admin status?")) {
 			return;
 		}
@@ -244,9 +244,9 @@ export const ChatRoomList = () => {
 		} catch (error) {
 			setJoinError('Error while attempting to revoke admin status: ' + error);
 		}
-	};
+	}
 
-	const handleChangePassword = async (roomId: string) => {
+	async function handleChangePassword(roomId: string) {
 		const oldPassword = prompt('Enter the current password for the chat room:');
 		if (oldPassword === null) {
 			return; // User cancelled the prompt
@@ -281,13 +281,13 @@ export const ChatRoomList = () => {
 		} catch (error) {
 			alert('Error while attempting to update password: ' + error);
 		}
-	};
+	}
 
-	const handleMuteDurationChange = (userId: string, value: string) => {
+	function handleMuteDurationChange(userId: string, value: string) {
 		// Assert that e.target.value is a key of MuteDurationOptions
 		const duration = MuteDurationOptions[value as keyof typeof MuteDurationOptions];
 		setMuteDurations((prevDurations) => ({ ...prevDurations, [userId]: duration }));
-	};
+	}
 
 	const MuteDurationOptions = {
 		'5min': 5 * 60 * 1000, // 5 minutes in milliseconds
@@ -297,7 +297,7 @@ export const ChatRoomList = () => {
 		'1d': 24 * 60 * 60 * 1000, // 1 day
 	};
 
-	const handleMuteUser = async (roomId: string, userIdToMute: string, muteDuration: number) => {
+	async function handleMuteUser(roomId: string, userIdToMute: string, muteDuration: number) {
 		// Only allow the owner or an admin to mute users
 		const room = chatRooms.find((room) => room.id === roomId);
 		if (
@@ -330,9 +330,9 @@ export const ChatRoomList = () => {
 		} catch (error) {
 			alert('Error while attempting to mute user: ' + error);
 		}
-	};
+	}
 
-	const handleUnmuteUser = async (roomId: string, userIdToUnMute: string) => {
+	async function handleUnmuteUser(roomId: string, userIdToUnMute: string) {
 		try {
 			console.log('USERID: ', userIdToUnMute);
 			console.log('roomId: ', roomId);
@@ -359,7 +359,7 @@ export const ChatRoomList = () => {
 			// Handle network error or other unexpected errors
 			alert('Error while attempting to unmute user: ' + error);
 		}
-	};
+	}
 
 	if (loading) {
 		return <div>Loading chat rooms...</div>;
@@ -584,4 +584,4 @@ export const ChatRoomList = () => {
 			</div>
 		</div>
 	);
-};
+}
