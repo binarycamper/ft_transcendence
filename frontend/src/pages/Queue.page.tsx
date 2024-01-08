@@ -82,8 +82,9 @@ export const MatchmakingQueuePage = () => {
 	}, [isInQueue]);
 
 	useEffect(() => {
-		const handleMatch = (data: any) => {
-			if (data && data.enemyUserName) {
+		const handleMatch = (data) => {
+			if (data && data.enemyUserName && !matchFound) {
+				// Check if matchFound is already set
 				setinfo(`Match found against ${data.enemyUserName}`);
 				setEnemyUserName(data.enemyUserName);
 				setMatchFound(true);
@@ -91,17 +92,16 @@ export const MatchmakingQueuePage = () => {
 		};
 
 		socket.on('matchFound', handleMatch);
+
+		// Clean up the event listener when the component unmounts or if the effect is re-run
 		return () => {
 			socket.off('matchFound', handleMatch);
 		};
-	}, [socket]);
+	}, [socket, matchFound]); // Add matchFound to the dependency array
 
 	const handleAcceptMatch = async () => {
 		try {
-			// Construct the payload
 			const payload = { playerTwoName: enemyUserName };
-
-			// Make the HTTP request to the backend
 			const response = await fetch('http://localhost:8080/matchmaking/acceptMatch', {
 				method: 'POST',
 				credentials: 'include',
@@ -111,16 +111,17 @@ export const MatchmakingQueuePage = () => {
 
 			if (response.ok) {
 				const data = await response.json();
-
 				if (data.game && data.game.accepted === true) {
-					// Both players are ready, navigate to the game page
 					window.location.href = 'http://localhost:5173/spiel';
+				} else if (response.status === 202) {
+					// Queue reactivated, update UI to indicate re-joining the queue
+					setIsInQueue(true);
+					setinfo('You have been re-entered into the matchmaking queue.');
 				} else {
-					// Waiting for the other player, update UI to show waiting message
+					// Waiting for the other player
 					setinfo('Waiting for the other player to join...');
 				}
 			} else {
-				// Handle errors
 				const errorData = await response.json();
 				console.error('Failed to accept match:', errorData.message);
 				setinfo('Error accepting match. Please try again.');
@@ -133,9 +134,38 @@ export const MatchmakingQueuePage = () => {
 
 	const handleDeclineMatch = () => {
 		socket.emit('declineMatch', { enemyUserName });
+		setinfo('');
 		leaveQueue(); // will also set isInQueue to false
 		setMatchFound(false);
 	};
+
+	useEffect(() => {
+		const handleGameReady = () => {
+			console.log('Try redirect player!');
+			// Navigate to the game page if the gameId is received
+			window.location.href = `http://localhost:5173/spiel`;
+		};
+
+		socket.on('gameReady', handleGameReady);
+
+		return () => {
+			socket.off('gameReady', handleGameReady); // Corrected cleanup
+		};
+	}, [socket]);
+
+	useEffect(() => {
+		const handleGameLeave = () => {
+			// Handle the scenario when a player leaves the game
+			// Maybe navigate back to the queue or show a message
+			// Example: window.location.href = 'http://localhost:5173/queue';
+		};
+
+		socket.on('playerLeft', handleGameLeave);
+
+		return () => {
+			socket.off('playerLeft', handleGameLeave); // Cleanup for playerLeft event
+		};
+	}, [socket]);
 
 	return (
 		<div>
