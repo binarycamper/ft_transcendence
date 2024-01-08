@@ -12,8 +12,9 @@ import { Repository } from 'typeorm';
 import { Matchmaking } from './matchmaking.entity';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
-import { NotFoundError } from 'rxjs';
 import { EventsGateway } from 'src/events/events.gateway';
+import { Game } from 'src/game/game.entity';
+import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class MatchmakingService {
@@ -80,6 +81,10 @@ export class MatchmakingService {
 		});
 		if (!activeQueueEntry) return null;
 		return activeQueueEntry;
+	}
+
+	async saveQueue(queue: Matchmaking): Promise<Matchmaking> {
+		return await this.matchmakingRepository.save(queue);
 	}
 
 	async joinQueue(user: User): Promise<Matchmaking> {

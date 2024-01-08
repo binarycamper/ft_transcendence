@@ -28,4 +28,7 @@ export class Game {
 
 	@Column({ nullable: true })
 	winnerId: string;
+
+	@Column({})
+	accepted: boolean;
 }

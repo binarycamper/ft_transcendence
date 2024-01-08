@@ -5,11 +5,13 @@ import { MatchmakingService } from './matchmaking.service';
 import { UserModule } from 'src/user/user.module';
 import { MatchmakingController } from './matchmaking.controller';
 import { EventsModule } from 'src/events/events.module';
+import { GameModule } from 'src/game/game.module';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([Matchmaking]),
 		UserModule,
+		GameModule,
 		forwardRef(() => EventsModule), // Use forwardRef here
 	],
 	providers: [MatchmakingService],

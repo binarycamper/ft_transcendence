@@ -99,34 +99,35 @@ export const MatchmakingQueuePage = () => {
 	const handleAcceptMatch = async () => {
 		try {
 			// Construct the payload
-			const payload = {
-				playerTwoName: enemyUserName,
-			};
+			const payload = { playerTwoName: enemyUserName };
 
 			// Make the HTTP request to the backend
 			const response = await fetch('http://localhost:8080/matchmaking/acceptMatch', {
 				method: 'POST',
 				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),
 			});
 
-			// Check if the request was successful
 			if (response.ok) {
-				// Handle successful match acceptance
-				// Navigate to the game page
-				window.location.href = 'http://localhost:5173/spiel';
+				const data = await response.json();
+
+				if (data.game && data.game.accepted === true) {
+					// Both players are ready, navigate to the game page
+					window.location.href = 'http://localhost:5173/spiel';
+				} else {
+					// Waiting for the other player, update UI to show waiting message
+					setinfo('Waiting for the other player to join...');
+				}
 			} else {
 				// Handle errors
 				const errorData = await response.json();
 				console.error('Failed to accept match:', errorData.message);
-				// You might want to update the UI to show an error message
+				setinfo('Error accepting match. Please try again.');
 			}
 		} catch (error) {
 			console.error('Error accepting match:', error);
-			// Update UI to show error message if needed
+			setinfo('Error accepting match. Please try again.');
 		}
 	};
 

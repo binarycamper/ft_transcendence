@@ -11,16 +11,20 @@ import {
 	Res,
 	HttpStatus,
 	NotFoundException,
+	Body,
 } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserService } from 'src/user/user.service';
 import { error } from 'console';
 import { StatusGuard } from 'src/auth/guards/status.guard';
+import { Game } from 'src/game/game.entity';
+import { GameService } from 'src/game/game.service';
 
 @Controller('matchmaking')
 export class MatchmakingController {
 	constructor(
+		private gameService: GameService,
 		private readonly matchmakingService: MatchmakingService,
 		private userService: UserService,
 	) {}
@@ -75,8 +79,36 @@ export class MatchmakingController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('acceptMatch')
-	async acceptMatch(@Req() req, @Res() res) {
-		console.log('triggert!');
+	async acceptMatch(@Req() req, @Res() res, @Body('playerTwoName') enemyName: string) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			if (!user) {
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Requesting user not found.' });
+			}
+			const queue = await this.matchmakingService.findMyQueue(user);
+			queue.isActive = false;
+			await this.matchmakingService.saveQueue(queue);
+			const enemy = await this.userService.findProfileByName(enemyName);
+			if (!enemy) {
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Enemy user not found.' });
+			}
+
+			const game = await this.gameService.createNewGame(user, enemy);
+			const statusMessage = game.accepted
+				? 'Both players are ready. Game can start.'
+				: 'Waiting for the other player to join.';
+
+			console.log('status: ', statusMessage);
+			return res.status(HttpStatus.CREATED).json({
+				message: `Match accepted. ${statusMessage}`,
+				game: game,
+			});
+		} catch (error) {
+			console.error('ERROR in acceptMatch:', error);
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error accepting match.' });
+		}
 	}
 
 	//########################Debug#############################
