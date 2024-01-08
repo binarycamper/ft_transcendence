@@ -101,11 +101,10 @@ export class MatchmakingController {
 			}
 			const queue = await this.matchmakingService.findMyQueue(user);
 			if (!queue) {
-				if (user.status === 'online') {
+				if (user.status === 'online' || user.status === 'inqueue') {
 					this.joinQueue(req, res);
 					user.status = 'inqueue';
 					await this.userService.updateUser(user);
-					//await this.matchmakingService.leaveQueue(req.user.id);
 					return res.status(HttpStatus.ACCEPTED).json({ message: 'Queue restarted.' }); //TODO: Frontend needs to render restarting queue!
 				}
 				return res

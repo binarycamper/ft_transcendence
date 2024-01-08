@@ -9,6 +9,9 @@ export class Matchmaking {
 	@ManyToOne(() => User)
 	user: User;
 
+	@Column()
+	userId: string;
+
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	joinedAt: Date;
 

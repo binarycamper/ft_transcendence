@@ -5,6 +5,7 @@ import {
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
+	UnauthorizedException,
 	forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -68,6 +69,17 @@ export class MatchmakingService {
 		}
 	}
 
+	//can be null doesnt throw.
+	async findQueueWithId(userId: string): Promise<Matchmaking | null> {
+		const activeQueueEntry = await this.matchmakingRepository.findOne({
+			where: { user: { id: userId } },
+			relations: ['user'],
+		});
+		if (!activeQueueEntry) return null;
+		return activeQueueEntry;
+	}
+
+	//can be null doesnt throw.
 	async findMyQueue(user: User): Promise<Matchmaking | null> {
 		const activeQueueEntry = await this.matchmakingRepository.findOne({
 			where: { user: { id: user.id } },
@@ -90,6 +102,7 @@ export class MatchmakingService {
 		// Create a new matchmaking queue entry
 		const matchmakingEntry = this.matchmakingRepository.create({
 			user: user,
+			userId: user.id,
 			isActive: true,
 			joinedAt: new Date(),
 		});
@@ -107,20 +120,19 @@ export class MatchmakingService {
 		return { message: `Current matchmaking queue` };
 	}
 
-	async leaveQueue(userId: string): Promise<void> {
+	async leaveQueue(thisUserId: string): Promise<void> {
 		try {
-			const user = await this.userService.findProfileById(userId);
-			if (!user) throw new NotFoundException(`User with ID ${userId} not found.`);
-
-			const queue = await this.findMyQueue(user);
-			if (!queue) throw new NotFoundException(`Queue entry for user with ID ${userId} not found.`);
-			this.matchmakingQueue = this.matchmakingQueue.filter((u) => u.id !== user.id);
+			const queue = await this.findQueueWithId(thisUserId);
+			this.matchmakingQueue = this.matchmakingQueue.filter((u) => u.id !== thisUserId);
+			if (!queue) {
+				return;
+			}
 			await this.matchmakingRepository.remove(queue);
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw error;
 			} else {
-				console.error(`Failed to leave queue: ${error.message}`, error.stack);
+				console.error(`Failed to leave queue: ${error.message}`, error.stack); //TODO: comment during eval.
 				throw new InternalServerErrorException(`Failed to leave queue: ${error.message}`);
 			}
 		}
