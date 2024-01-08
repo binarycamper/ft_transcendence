@@ -125,17 +125,8 @@ export function MatchmakingQueuePage() {
 		}
 	}
 
-	function handleDeclineMatch() {
-		socket.emit('decline-match', { opponentName });
-		setInfo('');
-		leaveQueue(); // will also set isInQueue to false
-		setMatchFound(false);
-	}
-
 	useEffect(() => {
 		function handleGameReady() {
-			console.log('Try redirect player!');
-			// Navigate to the game page if the gameId is received
 			window.location.href = `http://localhost:5173/spiel`;
 		}
 
@@ -147,18 +138,45 @@ export function MatchmakingQueuePage() {
 	}, [socket]);
 
 	useEffect(() => {
-		function handleGameLeave() {
+		async function handleGameLeave() {
+			//await leaveQueue();
+
+			//TODO: join queue again write new fetch and set variable.
+
+			setIsInQueue(true);
 			// Handle the scenario when a player leaves the game
 			// Maybe navigate back to the queue or show a message
-			// Example: window.location.href = 'http://localhost:5173/queue';
+			// Example: window.location.href = 'http://localhost:5173/play';
 		}
 
-		socket.on('player-has-left', handleGameLeave);
+		socket.on('matchDeclined', handleGameLeave);
 
 		return () => {
-			socket.off('player-has-left', handleGameLeave); // Cleanup for player-has-left event
+			socket.off('matchDeclined', handleGameLeave); // Cleanup for player-has-left event
 		};
 	}, [socket]);
+
+	//will call the socket call to the function above.
+	async function handleDeclineMatch() {
+		try {
+			const payload = { playerTwoName: opponentName };
+			const response = await fetch('http://localhost:8080/matchmaking/decline-match', {
+				method: 'POST',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+			if (response.ok) {
+				const data = await response.json();
+				console.log('response: ', data);
+				setIsInQueue(false);
+			}
+		} catch (error) {}
+		/*socket.emit('decline-match', { opponentName });
+		setInfo('');
+		leaveQueue(); // will also set isInQueue to false
+		setMatchFound(false);*/
+	}
 
 	return (
 		<>

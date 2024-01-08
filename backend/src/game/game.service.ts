@@ -36,9 +36,9 @@ export class GameService {
 	async createNewGame(player: User, opponent: User): Promise<Game> {
 		try {
 			const existingGame = await this.findExistingGame(player.id, opponent.id);
-			await console.log('Existing Game: ', existingGame);
+			//await console.log('Existing Game: ', existingGame);
 			if (!existingGame) {
-				console.log('Inside !existing Game...');
+				//console.log('Inside !existing Game...');
 				const game = this.gameRepository.create({
 					playerOne: player,
 					playerTwo: opponent,
@@ -52,15 +52,11 @@ export class GameService {
 				await this.gameRepository.save(game);
 				return game;
 			} else {
-				//TODO join the pending game opponent is waiting for you!
-				//console.log('Inside else, accepted status: ', existingGame.accepted);
-
 				existingGame.accepted = true;
 				await this.gameRepository.save(existingGame);
-				console.log('SEND EMIT TO WAITING USER:::', opponent.name);
-
-				console.log('I AM PLAYER: ', player);
-				console.log('check:', opponent);
+				//console.log('SEND EMIT TO WAITING USER:::', opponent.name);
+				//console.log('I AM PLAYER: ', player);
+				//console.log('check:', opponent);
 				// Emit an event to the specific user letting them know the game is ready
 				this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
 					opponentName: player.name,

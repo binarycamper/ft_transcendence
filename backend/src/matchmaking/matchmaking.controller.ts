@@ -10,6 +10,8 @@ import {
 	Res,
 	HttpStatus,
 	Body,
+	forwardRef,
+	Inject,
 } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -17,6 +19,7 @@ import { UserService } from 'src/user/user.service';
 import { StatusGuard } from 'src/auth/guards/status.guard';
 import { GameService } from 'src/game/game.service';
 import { Request, Response } from 'express';
+import { EventsGateway } from 'src/events/events.gateway';
 
 @Controller('matchmaking')
 export class MatchmakingController {
@@ -24,6 +27,8 @@ export class MatchmakingController {
 		private gameService: GameService,
 		private readonly matchmakingService: MatchmakingService,
 		private userService: UserService,
+		@Inject(forwardRef(() => EventsGateway))
+		private eventsGateway: EventsGateway,
 	) {}
 
 	@UseGuards(JwtAuthGuard, StatusGuard)
@@ -65,22 +70,20 @@ export class MatchmakingController {
 		try {
 			const queue = await this.matchmakingService.findMyQueue(req.user);
 			const user = await this.userService.findProfileById(req.user.id);
+
 			if (queue) {
 				user.status = 'online';
 				await this.userService.updateUser(user);
 				await this.matchmakingService.leaveQueue(req.user.id);
-				res.status(HttpStatus.OK).json({ message: 'Successfully left the queue.' });
+				return res.status(HttpStatus.OK).json({ message: 'Successfully left the queue.' });
 			} else {
-				if (user.status !== 'online') {
-					user.status = 'online';
-					await this.userService.updateUser(user);
-				}
-				// User was not in the queue, but is fine
-				res.status(HttpStatus.OK).json({ message: 'You were not in the queue.' });
+				user.status = 'online';
+				await this.userService.updateUser(user);
+				return res.status(HttpStatus.OK).json({ message: 'You were not in the queue.' });
 			}
 		} catch (error) {
 			console.error('Error leaving queue:', error);
-			res
+			return res
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.json({ message: 'Failed to leave queue due to an unexpected error.' });
 		}
@@ -129,10 +132,39 @@ export class MatchmakingController {
 				game: game,
 			});
 		} catch (error) {
+			//TODO send more errror codes to handle diffrent stuff... Not only 500
 			console.error('ERROR in acceptMatch:', error);
 			return res
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.json({ message: 'Error accepting match.' });
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('decline-match')
+	async declineMatch(
+		@Req() req: Request,
+		@Res() res: Response,
+		@Body('playerTwoName') opponentName: string,
+	) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			const opponent = await this.userService.findProfileByName(opponentName);
+			//const opponentQueue = await this.matchmakingService.findQueueWithId(opponent.id);
+			//opponentQueue.isActive = true;
+			//await this.matchmakingService.saveQueue(opponentQueue);
+			//const myqueue = await this.matchmakingService.findQueueWithId(req.user.id);
+			await this.matchmakingService.leaveQueue(req.user.id);
+
+			user.status = 'online';
+			await this.userService.updateUser(user);
+			this.eventsGateway.server.to(`user_${opponent.id}`).emit('matchDeclined', {});
+			return res.status(HttpStatus.OK).json({ message: 'Match declined.' });
+		} catch (error) {
+			console.error('ERROR in declineMatch:', error);
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error declining match.' });
 		}
 	}
 
