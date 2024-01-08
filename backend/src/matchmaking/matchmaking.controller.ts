@@ -34,12 +34,15 @@ export class MatchmakingController {
 			const myqueue = await this.matchmakingService.findMyQueue(user);
 			if (!myqueue) {
 				const queue = await this.matchmakingService.joinQueue(user);
+				user.status = 'inqueue';
+				await this.userService.updateUser(user);
 				res.status(HttpStatus.OK).json({
 					statusCode: HttpStatus.OK,
 					message: 'queue started!',
 					queue,
 				});
 			} else {
+				//TODO: frontend site should restart the queue
 				res.status(HttpStatus.BAD_REQUEST).json({
 					statusCode: HttpStatus.BAD_REQUEST,
 					message: 'Invalid queue open!',
@@ -61,10 +64,17 @@ export class MatchmakingController {
 	async leaveQueue(@Req() req: Request, @Res() res: Response) {
 		try {
 			const queue = await this.matchmakingService.findMyQueue(req.user);
+			const user = await this.userService.findProfileById(req.user.id);
 			if (queue) {
+				user.status = 'online';
+				await this.userService.updateUser(user);
 				await this.matchmakingService.leaveQueue(req.user.id);
 				res.status(HttpStatus.OK).json({ message: 'Successfully left the queue.' });
 			} else {
+				if (user.status !== 'online') {
+					user.status = 'online';
+					await this.userService.updateUser(user);
+				}
 				// User was not in the queue, but is fine
 				res.status(HttpStatus.OK).json({ message: 'You were not in the queue.' });
 			}
@@ -93,7 +103,10 @@ export class MatchmakingController {
 			if (!queue) {
 				if (user.status === 'online') {
 					this.joinQueue(req, res);
-					return res.status(HttpStatus.ACCEPTED).json({ message: 'Queue restarted.' });
+					user.status = 'inqueue';
+					await this.userService.updateUser(user);
+					//await this.matchmakingService.leaveQueue(req.user.id);
+					return res.status(HttpStatus.ACCEPTED).json({ message: 'Queue restarted.' }); //TODO: Frontend needs to render restarting queue!
 				}
 				return res
 					.status(HttpStatus.FORBIDDEN)
