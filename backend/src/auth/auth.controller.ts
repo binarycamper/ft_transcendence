@@ -15,7 +15,7 @@ import {
 	UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserService } from '../user/user.service';
@@ -38,14 +38,14 @@ export class AuthController {
 		private readonly userRepository: Repository<User>,
 	) {}
 
-	@UseGuards(JwtAuthGuard)
 	@Get('status')
-	async checkAuthStatus() {
+	@UseGuards(JwtAuthGuard)
+	checkAuthStatus() {
 		return { isAuthenticated: true };
 	}
 
 	@Get('signup')
-	async signup(@Res() res: Response) {
+	signup(@Res() res: Response) {
 		const clientId = this.configService.get<string>('INTRA_UID');
 		const url = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=http://localhost:8080/auth/callback&response_type=code`;
 		return res.json({ url });
@@ -125,7 +125,7 @@ export class AuthController {
 				});
 
 				const redirectUrl = new URL('http://localhost:5173/completeprofile');
-				redirectUrl.searchParams.append('require2FA', result.require2FA ? 'true' : 'false');
+				redirectUrl.searchParams.append('require2FA', String(result.require2FA));
 				redirectUrl.searchParams.append('token', result.access_token);
 				redirectUrl.searchParams.append('userId', result.userId);
 
@@ -136,19 +136,17 @@ export class AuthController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('logout')
-	async logout(@Res() res: Response) {
-		res.clearCookie('token', {
-			sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
-			secure: true,
-		});
+	@UseGuards(JwtAuthGuard)
+	logout(@Res() res: Response) {
+		// TODO: overhaul cookie sameSite errors --> clientside
+		res.clearCookie('token', { sameSite: 'none', secure: true });
 		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 
+	@Post('2fa/verify-2fa')
 	@UseGuards(JwtAuthGuard)
-	@Post('/2fa/verify-2fa')
-	async verify2FA(@Req() req, @Body() verifyDto: Verify2FADto, @Res() response: Response) {
+	async verify2FA(@Req() req: Request, @Body() verifyDto: Verify2FADto, @Res() response: Response) {
 		const userId = req.user.id;
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
@@ -177,9 +175,9 @@ export class AuthController {
 		}
 	}
 
+	@Get('2fa/setup')
 	@UseGuards(JwtAuthGuard)
-	@Get('/2fa/setup')
-	async setup2FA(@Req() req) {
+	async setup2FA(@Req() req: Request): Promise<{ qrCodeUrl: string }> {
 		const userId = req.user.id;
 
 		const user = await this.userService.findProfileById(userId);
@@ -190,24 +188,19 @@ export class AuthController {
 		return { qrCodeUrl };
 	}
 
+	@Post('toggle-2fa')
 	@UseGuards(JwtAuthGuard)
-	@Post('/toggle-2fa')
-	async toggle2FA(
-		@Req() req: any,
-		@Res() res: Response,
-		@Body() body: { has2FA: boolean },
-	): Promise<any> {
+	async toggle2FA(@Req() req: Request, @Res() res: Response, @Body() body: { has2FA: boolean }) {
 		try {
 			const user = await this.userRepository.findOne({ where: { id: req.user.id } });
 			const response = await this.authService.toggle2FA(body.has2FA, user);
-			console.log;
 			return res.status(HttpStatus.OK).json({ has2FA: response.newStatus });
 		} catch (error) {
 			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
 		}
 	}
 
-	@Post('/reset-password')
+	@Post('reset-password')
 	async resetPassword(@Body() body: { email: string }, @Res() res: Response) {
 		try {
 			console.log('body.email= ', body.email);
@@ -218,7 +211,7 @@ export class AuthController {
 		}
 	}
 
-	@Post('/update-password')
+	@Post('update-password')
 	async updatePassword(@Body() body: { token: string; password: string }, @Res() res: Response) {
 		try {
 			const response = await this.authService.updatePassword(body.token, body.password);
@@ -228,7 +221,7 @@ export class AuthController {
 		}
 	}
 
-	@Get('/verify-reset-token/:token')
+	@Get('verify-reset-token/:token')
 	async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
 		const isValid = await this.authService.verifyResetToken(token);
 		if (!isValid) {

@@ -8,7 +8,7 @@ import { ChatModule } from 'src/chat/chat.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatMessage } from 'src/chat/chat.entity';
 import { GameModule } from 'src/game/game.module';
-import { MatchmakingModule } from 'src/Matchmaking/matchmaking.module';
+import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
 
 @Module({
 	imports: [

@@ -20,7 +20,7 @@ export class EventsService {
 				// Wenn der Benutzer wieder verbunden ist, löschen Sie das Timeout, falls vorhanden
 				if (this.userConnectionMap.has(userId)) {
 					clearTimeout(this.userConnectionMap.get(userId));
-					await this.userConnectionMap.delete(userId);
+					this.userConnectionMap.delete(userId);
 				}
 			} else {
 				console.log('User not found for email: ', email);
@@ -31,16 +31,21 @@ export class EventsService {
 	}
 
 	async userDisconnected(email: string) {
-		const userId = await this.userService.findUserIdByMail(email);
-		if (userId) {
-			const timeout = setTimeout(async () => {
-				console.log('User tracked offline ', userId);
-				await this.userService.setUserOffline(userId);
-			}, 2000); // 2 Sekunden Verzögerung
+		try {
+			const userId = await this.userService.findUserIdByMail(email);
 
-			this.userConnectionMap.set(userId, timeout);
-		} else {
-			console.log('User not found: ', email);
+			if (userId) {
+				const timeout = setTimeout(async () => {
+					console.log('User tracked offline: ', userId);
+					await this.userService.setUserOffline(userId);
+				}, 2_000);
+
+				this.userConnectionMap.set(userId, timeout);
+			} else {
+				console.log('User not found: ', email);
+			}
+		} catch (error) {
+			console.error('Error occurred: ', error);
 		}
 	}
 }

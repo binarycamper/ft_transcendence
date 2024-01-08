@@ -24,7 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusGuard } from 'src/auth/guards/status.guard';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
@@ -52,9 +52,9 @@ export class UserController {
 	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
-	@UseGuards(JwtAuthGuard)
 	@Get('id')
-	async getId(@Req() req): Promise<{ id: string; name: string }> {
+	@UseGuards(JwtAuthGuard)
+	getId(@Req() req: Request) {
 		const id = req.user.id;
 		const name = req.user.name;
 		return { id: id, name: name };
@@ -62,19 +62,18 @@ export class UserController {
 
 	@Get('isProfileComplete')
 	@UseGuards(JwtAuthGuard)
-	async isProfileComplete(@Req() req): Promise<{ isComplete: boolean }> {
+	async isProfileComplete(@Req() req: Request): Promise<{ isComplete: boolean }> {
 		const userId = req.user?.id;
 		const isComplete = await this.userService.isProfilecreated(userId);
 		return { isComplete };
 	}
 
-	//complete Profile and set your first Password
-	@UseGuards(JwtAuthGuard)
 	@Post('complete')
+	@UseGuards(JwtAuthGuard)
 	@UsePipes(new ValidationPipe())
 	async completeProfile(
 		@Body() completeProfileDto: CompleteProfileDto,
-		@Req() req,
+		@Req() req: Request,
 		@Res() res: Response,
 	) {
 		const userId = req.user?.id;
@@ -113,9 +112,9 @@ export class UserController {
 	}
 
 	//Get the profile, must be complete user, render own profile, or redirect to signup if client has no account
-	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Get('profile')
-	async getProfile(@Req() req) {
+	@UseGuards(JwtAuthGuard, StatusGuard)
+	async getProfile(@Req() req: Request) {
 		const userId = req.user.id;
 		const userProfileData = await this.userService.findProfileById(userId);
 
@@ -126,9 +125,9 @@ export class UserController {
 		return result;
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Delete('delete')
-	async deleteUser(@Req() req): Promise<{ message: string }> {
+	@UseGuards(JwtAuthGuard)
+	async deleteUser(@Req() req: Request): Promise<{ message: string }> {
 		try {
 			await this.userService.deleteUserById(req.user.id, req.user.customImage);
 			req.res.clearCookie('token', { sameSite: 'none', secure: true });
@@ -149,12 +148,12 @@ export class UserController {
 		}
 	}
 
+	@Post('uploadImage')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('customImage'))
-	@Post('uploadImage')
 	async uploadImage(
 		@UploadedFile() file: Express.Multer.File,
-		@Req() req,
+		@Req() req: Request,
 	): Promise<{ message: string }> {
 		if (!file || file.size === 0) {
 			throw new BadRequestException('No file uploaded or file is empty.');
@@ -195,7 +194,7 @@ export class UserController {
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
-	async getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
+	getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
 		// Construct the full file path
 		const fullPath = UPLOAD_PATH + getImageDto.filename;
 		//console.log('FilePath= ', fullPath);
@@ -209,9 +208,13 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('editName')
-	async editNickName(@Body() editNicknameDto: EditNicknameDto, @Req() req, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async editNickName(
+		@Body() editNicknameDto: EditNicknameDto,
+		@Req() req: Request,
+		@Res() res: Response,
+	) {
 		const userId = req.user.id;
 		const newName = editNicknameDto.nickname;
 
@@ -235,9 +238,9 @@ export class UserController {
 	}
 
 	//Get List of friends of that user
-	@UseGuards(JwtAuthGuard)
 	@Get('friends')
-	async getFriends(@Req() req, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async getFriends(@Req() req: Request, @Res() res: Response) {
 		const userId = req.user.id;
 		try {
 			const user = await this.userService.findProfileById(userId);
@@ -260,9 +263,13 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Delete('friends')
-	async removeFriend(@Query() removeFriendDto: RemoveFriendDto, @Req() req, @Res() res) {
+	@UseGuards(JwtAuthGuard)
+	async removeFriend(
+		@Query() removeFriendDto: RemoveFriendDto,
+		@Req() req: Request,
+		@Res() res: Response,
+	) {
 		try {
 			await this.userService.removeFriend(req.user.id, removeFriendDto.friendid);
 			return res.status(HttpStatus.NO_CONTENT).send();
@@ -276,9 +283,9 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('addFriend')
-	async addFriend(@Req() req, @Body() addFriendDto: AddFriendDto, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async addFriend(@Req() req: Request, @Body() addFriendDto: AddFriendDto, @Res() res: Response) {
 		const user = req.user;
 		try {
 			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
@@ -293,9 +300,9 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('blockUser')
-	async blockUser(@Req() req, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async blockUser(@Req() req: Request, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
 		const user = req.user;
 		const userToBlock = await this.userService.findUserbyName(blockUserDto.userName);
 		if (!userToBlock) {
@@ -323,9 +330,9 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Get('blockedUsers')
-	async blockedUsers(@Req() req, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async blockedUsers(@Req() req: Request, @Res() res: Response) {
 		try {
 			const blockedUsers = await this.userService.findBlockedUsers(req.user.id);
 			res.status(HttpStatus.OK).json(blockedUsers);
@@ -340,9 +347,13 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('unblockUser')
-	async unblockUser(@Req() req, @Query() unblockUserDto: UnblockUserDto, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async unblockUser(
+		@Req() req: Request,
+		@Query() unblockUserDto: UnblockUserDto,
+		@Res() res: Response,
+	) {
 		const user = req.user;
 		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
@@ -361,8 +372,8 @@ export class UserController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Get('publicprofile')
+	@UseGuards(JwtAuthGuard)
 	async getPublicProfile(@Query() getPublicProfileDto: GetPublicProfileDto) {
 		const friendProfile = await this.userService.findProfileByName(getPublicProfileDto.friendname);
 		// Exclude password and other sensitive fields from the result
@@ -381,7 +392,7 @@ export class UserController {
 		const stringNum = number.toString();
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
-			name: 'DebugUser_' + stringNum,
+			name: 'deb' + stringNum,
 			nickname: 'Debugger_' + stringNum,
 			email: stringNum + '@debuguser.com',
 			password: '1',

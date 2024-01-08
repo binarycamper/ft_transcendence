@@ -13,7 +13,7 @@ import { ChatService } from 'src/chat/chat.service';
 import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Mute } from 'src/chat/mute.entity';
-import { MatchmakingService } from 'src/Matchmaking/matchmaking.service';
+import { MatchmakingService } from 'src/matchmaking/matchmaking.service';
 
 @WebSocketGateway({
 	cors: {
@@ -37,7 +37,7 @@ export class EventsGateway {
 	async verifyAuthentication(
 		client: Socket,
 	): Promise<{ isAuthenticated: boolean; userId: string }> {
-		const cookies = await cookie.parse(client.handshake.headers.cookie || '');
+		const cookies = cookie.parse(client.handshake.headers.cookie || '');
 		if (!cookies.token) {
 			console.log('No cookies provided');
 			return { isAuthenticated: false, userId: null };
@@ -73,7 +73,7 @@ export class EventsGateway {
 		}
 	}
 
-	async handleDisconnect(client: any) {
+	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
 			await this.eventsService.userDisconnected(client.data.user.email);
 		} else {

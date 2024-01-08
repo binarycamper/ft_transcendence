@@ -7,8 +7,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Request as ExpressRequest } from 'express';
 
+export type JwtPayload = {
+	id: string;
+	intraId: string;
+};
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 	constructor(
 		private readonly configService: ConfigService,
 		@InjectRepository(User)
@@ -16,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	) {
 		super({
 			jwtFromRequest: ExtractJwt.fromExtractors([
-				(request: ExpressRequest | any) => {
+				(request: ExpressRequest) => {
 					let jwt = null;
 					if (request && request.headers && request.headers.cookie) {
 						const cookies = request.headers.cookie.split(';');
@@ -34,13 +39,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 
-	async validate(payload: any) {
+	async validate(payload: JwtPayload) {
 		const user = await this.userRepository.findOne({
 			where: { id: payload.id },
 		});
+
 		if (!user) {
-			throw new UnauthorizedException();
+			throw new UnauthorizedException('Please sign in to continue');
 		}
+
 		return user; // This will be available in your route handlers as `req.user`
 	}
 }

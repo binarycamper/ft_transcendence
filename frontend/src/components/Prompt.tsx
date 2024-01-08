@@ -1,8 +1,8 @@
 import { useBlocker } from 'react-router-dom';
 
 interface Props {
-	when: boolean;
 	message: string;
+	when: boolean;
 }
 
 export default function Prompt({ message, when }: Props) {
@@ -14,5 +14,6 @@ export default function Prompt({ message, when }: Props) {
 		}
 		return false;
 	});
-	return <div />;
+
+	return null;
 }

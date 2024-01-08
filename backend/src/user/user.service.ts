@@ -403,7 +403,7 @@ export class UserService {
 		}
 
 		//block User
-		await userWithRelations.blocklist.push(userToBlock);
+		userWithRelations.blocklist.push(userToBlock);
 		await this.userRepository.save(userWithRelations);
 		return await this.userRepository.save(userWithRelations);
 	}

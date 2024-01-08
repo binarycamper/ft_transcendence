@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import {
 	ChangePasswordDto,
@@ -77,7 +77,7 @@ export class ChatController {
 	//create a new Chatroom
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Post('chatroom')
-	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req) {
+	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req: Request) {
 		try {
 			const userId = req.user.id; // Get the user ID from the request
 			const user = await this.userService.findProfileById(userId);
@@ -127,9 +127,9 @@ export class ChatController {
 	}
 
 	//get all Chatrooms of that user
-	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Get('mychatrooms')
-	async myChatRooms(@Req() req, @Res() res) {
+	@UseGuards(JwtAuthGuard, StatusGuard)
+	async myChatRooms(@Req() req: Request, @Res() res: Response) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			res.status(HttpStatus.OK).json(user.chatRooms);
@@ -142,9 +142,9 @@ export class ChatController {
 	}
 
 	//delivers the Chathistory of a chatroom.
-	@UseGuards(JwtAuthGuard)
 	@Get('chatroomhistory')
-	async getChatRoomChat(@Req() req, @Query() clearChatRoomDto: ClearChatRoomDto) {
+	@UseGuards(JwtAuthGuard)
+	async getChatRoomChat(@Req() req: Request, @Query() clearChatRoomDto: ClearChatRoomDto) {
 		try {
 			const userId = req.user.id;
 			const user = await this.userService.findProfileById(userId);
@@ -172,18 +172,18 @@ export class ChatController {
 	}
 
 	//clears Chathistory in the Chatroom.
+	@Delete('clearchatroom')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	@Delete('clearchatroom')
-	async clearChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req) {
+	async clearChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req: Request) {
 		return await this.chatService.clearChatRoom(clearChatRoomDto.chatroomId, req.user.id);
 	}
 
 	//delete your ChatROom (only owner)
+	@Delete('deletechatroom')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	@Delete('deletechatroom')
-	async deleteChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req) {
+	async deleteChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req: Request) {
 		try {
 			await this.chatService.deleteChatRoom(clearChatRoomDto.chatroomId, req.user.id);
 		} catch (error) {
@@ -197,9 +197,12 @@ export class ChatController {
 	}
 
 	//adds a player to a chatroom.
-	@UseGuards(JwtAuthGuard)
 	@Post('invitetoroom')
-	async inviteToRoom(@Body() inviteRoomDto: InviteRoomDto, @Req() req): Promise<any> {
+	@UseGuards(JwtAuthGuard)
+	async inviteToRoom(
+		@Body() inviteRoomDto: InviteRoomDto,
+		@Req() req: Request,
+	): Promise<{ message: string }> {
 		const { roomId, userNameToInvite } = inviteRoomDto;
 		//console.log('roomId: ', roomId);
 		//console.log('userNameToInvite: ', userNameToInvite);
@@ -252,9 +255,12 @@ export class ChatController {
 	}
 
 	//join a public chatroom + pw if set
-	@UseGuards(JwtAuthGuard)
 	@Post('joinroom')
-	async joinChatRoom(@Req() req, @Body() inviteRoomDto: InviteRoomDto): Promise<any> {
+	@UseGuards(JwtAuthGuard)
+	async joinChatRoom(
+		@Req() req: Request,
+		@Body() inviteRoomDto: InviteRoomDto,
+	): Promise<{ message: string }> {
 		const userId = req.user.id;
 		const roomId = inviteRoomDto.roomId;
 		// Get the chat room details
@@ -302,9 +308,9 @@ export class ChatController {
 	}
 
 	//kick a user in a chatroom, if you are owner. //TODO: kick as admin normal members.
-	@UseGuards(JwtAuthGuard)
 	@Post('kickuser')
-	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req) {
+	@UseGuards(JwtAuthGuard)
+	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
 			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId, req.user.id);
 			return { message: 'User successfully kicked' };
@@ -324,9 +330,9 @@ export class ChatController {
 		}
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Post('upgradeToAdmin')
-	async upgradeToAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
+	@UseGuards(JwtAuthGuard)
+	async upgradeToAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
 			await this.chatService.upgradeToAdmin(
 				roomIdUserIdDto.roomId,
@@ -351,9 +357,10 @@ export class ChatController {
 			);
 		}
 	}
-	@UseGuards(JwtAuthGuard)
+
 	@Post('revokeadmin')
-	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req) {
+	@UseGuards(JwtAuthGuard)
+	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
 			const chatRoom = await this.chatService.getChatRoomById(roomIdUserIdDto.roomId);
 			if (!chatRoom) {
@@ -396,9 +403,9 @@ export class ChatController {
 	}
 
 	//change ChatROom password as owner
-	@UseGuards(JwtAuthGuard)
 	@Post('changepassword')
-	async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
+	@UseGuards(JwtAuthGuard)
+	async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto) {
 		const userId = req.user.id;
 		const { roomId, oldPassword, newPassword } = changePasswordDto;
 
@@ -437,9 +444,9 @@ export class ChatController {
 	//########################CHatMessages#############################
 
 	//delivers chathistory between two friends, or between chatroom and memebers.
-	@UseGuards(JwtAuthGuard)
 	@Get('history')
-	async getFriendChat(@Req() req, @Query('friendId') friendId: string) {
+	@UseGuards(JwtAuthGuard)
+	async getFriendChat(@Req() req: Request, @Query('friendId') friendId: string) {
 		try {
 			const userId = req.user.id;
 			return await this.chatService.findFriendChat(userId, friendId);
@@ -449,19 +456,19 @@ export class ChatController {
 	}
 
 	//deletes chat between two friends.
+	@Delete('deletechat')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	@Delete('deletechat')
-	async deleteMyChats(@Query('friendId') friendId: string, @Req() req) {
+	async deleteMyChats(@Query('friendId') friendId: string, @Req() req: Request) {
 		return await this.chatService.deleteChat(friendId, req.user.id);
 	}
 
 	//########################FrienRequests#############################
 
 	// Endpoint to send a friendrequest
-	@UseGuards(JwtAuthGuard)
 	@Post('friendrequest')
-	async create(@Body() createChatDto: FriendRequestDto, @Req() req, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async create(@Body() createChatDto: FriendRequestDto, @Req() req: Request, @Res() res: Response) {
 		//console.log('friendrequest arrived, dto: ', createChatDto);
 		if (createChatDto.recipient === req.user.name) {
 			res.status(HttpStatus.BAD_REQUEST).json({
@@ -482,22 +489,26 @@ export class ChatController {
 	}
 
 	// Endpoint to get all pending requests for the logged-in user
-	@UseGuards(JwtAuthGuard)
 	@Get('pendingrequests')
-	async findAllPending(@Req() req) {
+	@UseGuards(JwtAuthGuard)
+	async findAllPending(@Req() req: Request) {
 		return this.chatService.findAllPending(req.user.id);
 	}
 
-	@UseGuards(JwtAuthGuard)
 	@Get('myrequests')
-	async MyRequests(@Req() req) {
+	@UseGuards(JwtAuthGuard)
+	async MyRequests(@Req() req: Request) {
 		return this.chatService.findMyRequests(req.user.id);
 	}
 
 	//accept a friend-request and save the friendships
-	@UseGuards(JwtAuthGuard)
 	@Post('accept')
-	async acceptRequest(@Query('messageid') messageId: string, @Req() req, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async acceptRequest(
+		@Query('messageid') messageId: string,
+		@Req() req: Request,
+		@Res() res: Response,
+	) {
 		//console.log(`Accepting request with messageId: ${messageId}`);
 		try {
 			await this.chatService.acceptRequest(messageId, req.user);
@@ -508,9 +519,13 @@ export class ChatController {
 	}
 
 	//decline a friend-request && deletes it
-	@UseGuards(JwtAuthGuard)
 	@Post('decline')
-	async declineRequest(@Query('messageid') messageId: string, @Req() req, @Res() res: Response) {
+	@UseGuards(JwtAuthGuard)
+	async declineRequest(
+		@Query('messageid') messageId: string,
+		@Req() req: Request,
+		@Res() res: Response,
+	) {
 		try {
 			await this.chatService.declineRequest(messageId, req.user);
 			return res.status(HttpStatus.NO_CONTENT).send('friend request declined!');
