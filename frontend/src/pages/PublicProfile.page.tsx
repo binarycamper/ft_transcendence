@@ -29,7 +29,7 @@ export function PublicProfile() {
 			setIsLoading(true);
 			try {
 				const response = await fetch(
-					`http://localhost:8080/user/publicprofile?friendname=${friendName}`,
+					`http://localhost:8080/user/public-profile?friendname=${friendName}`,
 					{
 						method: 'GET',
 						credentials: 'include',

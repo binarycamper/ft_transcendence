@@ -83,7 +83,7 @@ export class EventsGateway {
 	//########################ChatMessages#############################
 
 	//TODO: DTO here pls
-	@SubscribeMessage('sendMessage')
+	@SubscribeMessage('send-message')
 	async handleMessage(
 		@MessageBody() data: { receiverId: string; content: string },
 		@ConnectedSocket() client: Socket,
@@ -101,7 +101,7 @@ export class EventsGateway {
 				data.content,
 			);
 			// Emit the message to the recipient if they're online
-			this.server.to(`user_${data.receiverId}`).emit('receiveMessage', {
+			this.server.to(`user_${data.receiverId}`).emit('receive-message', {
 				content: message.content,
 				senderName: message.senderName,
 				senderId: message.senderId,
@@ -110,7 +110,7 @@ export class EventsGateway {
 			});
 
 			// Emit the message to the sender, update the chat display
-			this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
+			this.server.to(`user_${isAuthenticated.userId}`).emit('receive-message', {
 				content: message.content,
 				senderId: message.senderId,
 				receiverId: message.receiverId,
@@ -122,7 +122,7 @@ export class EventsGateway {
 	}
 
 	//TODO: DTO here pls
-	@SubscribeMessage('sendMessageToChatRoom')
+	@SubscribeMessage('send-message-to-chatroom')
 	async handleMessageToChatRoom(
 		@MessageBody() data: { chatRoomId: string; content: string },
 		@ConnectedSocket() client: Socket,
@@ -156,7 +156,7 @@ export class EventsGateway {
 					timeMessage = `${remainingMinutes} minute(s)`;
 				}
 				// Emit a message to the user informing them they are muted with the remaining time
-				this.server.to(`user_${isAuthenticated.userId}`).emit('receiveMessage', {
+				this.server.to(`user_${isAuthenticated.userId}`).emit('receive-message', {
 					content: `You are currently muted and cannot send messages. Time left: ${timeMessage}.`,
 					senderId: isAuthenticated.userId,
 					senderName: 'System',
@@ -187,7 +187,7 @@ export class EventsGateway {
 				if (recipient.blocklist.some((blockedUser) => blockedUser.id === currUser.id)) {
 					//console.log('User is blocked!');
 					// If the sender is on the recipient's blocklist, censor the message
-					this.server.to(`user_${user.id}`).emit('receiveMessage', {
+					this.server.to(`user_${user.id}`).emit('receive-message', {
 						content: '[Message Hidden]',
 						senderId: message.senderId,
 						senderName: 'Blocked User',
@@ -196,7 +196,7 @@ export class EventsGateway {
 					});
 				} else {
 					// Emit the message to each user's individual socket room
-					this.server.to(`user_${user.id}`).emit('receiveMessage', {
+					this.server.to(`user_${user.id}`).emit('receive-message', {
 						content: message.content,
 						senderId: message.senderId,
 						senderName: message.senderName,

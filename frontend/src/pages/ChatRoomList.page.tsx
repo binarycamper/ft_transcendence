@@ -56,7 +56,7 @@ export function ChatRoomList() {
 		if (currentUser) {
 			async function fetchChatRooms() {
 				try {
-					const response = await fetch('http://localhost:8080/chat/allchatrooms', {
+					const response = await fetch('http://localhost:8080/chat/all-chatrooms', {
 						credentials: 'include',
 					});
 
@@ -111,7 +111,7 @@ export function ChatRoomList() {
 				password = prompt('Enter the password for this room:') || '';
 			}
 			const placeholder = 'OOO'; //usernameToInvite = jwt infos , dont need to request
-			const response = await fetch(`http://localhost:8080/chat/joinroom`, {
+			const response = await fetch(`http://localhost:8080/chat/join-room`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -139,7 +139,7 @@ export function ChatRoomList() {
 				if (!isConfirmed) return;
 
 				const deleteResponse = await fetch(
-					`http://localhost:8080/chat/deletechatroom?chatroomId=${roomId}`,
+					`http://localhost:8080/chat/delete-chatroom?chatroomId=${roomId}`,
 					{
 						method: 'DELETE',
 						credentials: 'include',
@@ -157,7 +157,7 @@ export function ChatRoomList() {
 				}
 				return;
 			}
-			const response = await fetch(`http://localhost:8080/chat/kickuser`, {
+			const response = await fetch(`http://localhost:8080/chat/kick-user`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -188,7 +188,7 @@ export function ChatRoomList() {
 
 	async function handleMakeAdmin(roomId: string, userId: string) {
 		try {
-			const response = await fetch(`http://localhost:8080/chat/upgradeToAdmin`, {
+			const response = await fetch(`http://localhost:8080/chat/upgrade-to-admin`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -214,7 +214,7 @@ export function ChatRoomList() {
 		}
 
 		try {
-			const response = await fetch(`http://localhost:8080/chat/revokeadmin`, {
+			const response = await fetch(`http://localhost:8080/chat/revoke-admin`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -258,7 +258,7 @@ export function ChatRoomList() {
 		// Note: If the user enters nothing and confirms, newPassword will be an empty string
 
 		try {
-			const response = await fetch(`http://localhost:8080/chat/changepassword`, {
+			const response = await fetch(`http://localhost:8080/chat/change-password`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {

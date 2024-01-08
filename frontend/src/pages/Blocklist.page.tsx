@@ -14,7 +14,7 @@ export default function Blocklist() {
 	async function fetchBlockedUsers() {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/user/blockedUsers', {
+			const response = await fetch('http://localhost:8080/user/blocked-users', {
 				credentials: 'include',
 			});
 			if (!response.ok) {
@@ -36,7 +36,7 @@ export default function Blocklist() {
 
 	async function unblockUser(userId: string) {
 		try {
-			const response = await fetch(`http://localhost:8080/user/unblockUser?userid=${userId}`, {
+			const response = await fetch(`http://localhost:8080/user/unblock-user?userid=${userId}`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -58,7 +58,7 @@ export default function Blocklist() {
 	async function blockUser() {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/user/blockUser/?userName=${userNameToBlock}`,
+				`http://localhost:8080/user/block-user/?userName=${userNameToBlock}`,
 				{
 					method: 'POST',
 					credentials: 'include',

@@ -38,7 +38,7 @@ export default function useFetchFriendList() {
 		async function fetchPendingRequestsCount() {
 			setIsLoading(true);
 			try {
-				const response = await fetch('http://localhost:8080/chat/pendingrequests', {
+				const response = await fetch('http://localhost:8080/chat/pending-requests', {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -103,7 +103,7 @@ export default function useFetchFriendList() {
 			messageType: 'friend_request',
 		};
 		try {
-			const response = await fetch('http://localhost:8080/chat/friendrequest', {
+			const response = await fetch('http://localhost:8080/chat/friend-request', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -130,7 +130,7 @@ export default function useFetchFriendList() {
 	async function handleFriendClick(friendName: string) {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/user/publicprofile?friendname=${friendName}`,
+				`http://localhost:8080/user/public-profile?friendname=${friendName}`,
 				{
 					method: 'GET',
 					credentials: 'include',

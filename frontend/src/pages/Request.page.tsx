@@ -111,7 +111,7 @@ export function FriendRequest() {
 	async function fetchPendingRequests() {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/chat/pendingrequests', {
+			const response = await fetch('http://localhost:8080/chat/pending-requests', {
 				credentials: 'include',
 			});
 			if (!response.ok) {
@@ -133,7 +133,7 @@ export function FriendRequest() {
 	async function fetchMyRequests() {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/chat/myrequests', {
+			const response = await fetch('http://localhost:8080/chat/my-requests', {
 				credentials: 'include',
 			});
 			if (!response.ok) {

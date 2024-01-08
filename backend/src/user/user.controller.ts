@@ -60,7 +60,7 @@ export class UserController {
 		return { id: id, name: name };
 	}
 
-	@Get('isProfileComplete')
+	@Get('is-profile-complete')
 	@UseGuards(JwtAuthGuard)
 	async isProfileComplete(@Req() req: Request): Promise<{ isComplete: boolean }> {
 		const userId = req.user?.id;
@@ -148,7 +148,7 @@ export class UserController {
 		}
 	}
 
-	@Post('uploadImage')
+	@Post('upload-image')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('customImage'))
 	async uploadImage(
@@ -208,7 +208,7 @@ export class UserController {
 		}
 	}
 
-	@Post('editName')
+	@Post('edit-name')
 	@UseGuards(JwtAuthGuard)
 	async editNickName(
 		@Body() editNicknameDto: EditNicknameDto,
@@ -283,7 +283,7 @@ export class UserController {
 		}
 	}
 
-	@Post('addFriend')
+	@Post('add-friend')
 	@UseGuards(JwtAuthGuard)
 	async addFriend(@Req() req: Request, @Body() addFriendDto: AddFriendDto, @Res() res: Response) {
 		const user = req.user;
@@ -300,7 +300,7 @@ export class UserController {
 		}
 	}
 
-	@Post('blockUser')
+	@Post('block-user')
 	@UseGuards(JwtAuthGuard)
 	async blockUser(@Req() req: Request, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
 		const user = req.user;
@@ -330,7 +330,7 @@ export class UserController {
 		}
 	}
 
-	@Get('blockedUsers')
+	@Get('blocked-users')
 	@UseGuards(JwtAuthGuard)
 	async blockedUsers(@Req() req: Request, @Res() res: Response) {
 		try {
@@ -347,7 +347,7 @@ export class UserController {
 		}
 	}
 
-	@Post('unblockUser')
+	@Post('unblock-user')
 	@UseGuards(JwtAuthGuard)
 	async unblockUser(
 		@Req() req: Request,
@@ -372,7 +372,7 @@ export class UserController {
 		}
 	}
 
-	@Get('publicprofile')
+	@Get('public-profile')
 	@UseGuards(JwtAuthGuard)
 	async getPublicProfile(@Query() getPublicProfileDto: GetPublicProfileDto) {
 		const friendProfile = await this.userService.findProfileByName(getPublicProfileDto.friendname);
@@ -385,7 +385,7 @@ export class UserController {
 
 	//Debug: TODO: Delete for eval
 	//This is a hypothetical service method that you would call to create a debug user.
-	@Post('createDebugUser')
+	@Post('create-debug-user')
 	async createDebugUser(@Res() res: Response) {
 		const debugUserId = uuidv4();
 		number++;

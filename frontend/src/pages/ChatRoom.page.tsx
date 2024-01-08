@@ -162,9 +162,9 @@ export function ChatRoom() {
 			}
 		}
 
-		socket.on('receiveMessage', handleNewMessage);
+		socket.on('receive-message', handleNewMessage);
 		return () => {
-			socket.off('receiveMessage', handleNewMessage);
+			socket.off('receive-message', handleNewMessage);
 		};
 	}, [socket, currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
 
@@ -178,22 +178,22 @@ export function ChatRoom() {
 			};
 
 			// Send the message to the gateway and then to the friend (socket)
-			socket.emit('sendMessage', messageToSend);
+			socket.emit('send-message', messageToSend);
 		} else if (selectedChatRoom) {
 			const messageToSend = {
 				content: newMessage,
 				chatRoomId: selectedChatRoom.id,
 			};
 			// Send the message to the chat room over gateway socket
-			socket.emit('sendMessageToChatRoom', messageToSend);
+			socket.emit('send-message-to-chatroom', messageToSend);
 		}
 		setNewMessage('');
 	}
 
 	async function handleClearChat(id: string, isRoom: boolean) {
 		const url = isRoom
-			? `http://localhost:8080/chat/clearchatroom?chatroomId=${id}`
-			: `http://localhost:8080/chat/deletechat?friendId=${id}`;
+			? `http://localhost:8080/chat/clear-chatroom?chatroomId=${id}`
+			: `http://localhost:8080/chat/delete-chat?friendId=${id}`;
 		//console.log('url: ', url);
 		const confirmation = window.confirm(
 			'Clearing this chat will delete all messages. Do you want to proceed?',
@@ -313,7 +313,7 @@ export function ChatRoom() {
 	useEffect(() => {
 		async function fetchChatRooms() {
 			try {
-				const response = await fetch('http://localhost:8080/chat/mychatrooms', {
+				const response = await fetch('http://localhost:8080/chat/my-chatrooms', {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -333,7 +333,7 @@ export function ChatRoom() {
 	async function fetchChatRoomHistory(chatRoomId: string) {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/chat/chatroomhistory/?chatroomId=${chatRoomId}`,
+				`http://localhost:8080/chat/chatroom-history/?chatroomId=${chatRoomId}`,
 				{
 					method: 'GET',
 					credentials: 'include',
@@ -373,7 +373,7 @@ export function ChatRoom() {
 
 		try {
 			const response = await fetch(
-				`http://localhost:8080/chat/deletechatroom?chatroomId=${chatRoomId}`,
+				`http://localhost:8080/chat/delete-chatroom?chatroomId=${chatRoomId}`,
 				{
 					method: 'DELETE',
 					credentials: 'include',
@@ -397,7 +397,7 @@ export function ChatRoom() {
 			return;
 		}
 		try {
-			const response = await fetch(`http://localhost:8080/chat/invitetoroom`, {
+			const response = await fetch(`http://localhost:8080/chat/invite-to-room`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {

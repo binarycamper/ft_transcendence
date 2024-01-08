@@ -37,14 +37,14 @@ export default function useQue() {
 	function acceptMatch() {
 		if (currentMatch) {
 			console.log('Match accepted:', currentMatch.id);
-			socket.emit('respondToMatch', { matchId: currentMatch.id, accept: true });
+			socket.emit('respond-to-match', { matchId: currentMatch.id, accept: true });
 			setCurrentMatch(null);
 		}
 	}
 
 	function rejectMatch() {
 		if (currentMatch) {
-			socket.emit('respondToMatch', { matchId: currentMatch.id, accept: false });
+			socket.emit('respond-to-match', { matchId: currentMatch.id, accept: false });
 			setCurrentMatch(null);
 			setInQueue(false);
 			localStorage.setItem('inQueue', 'false');
@@ -196,7 +196,7 @@ export default function useQue() {
 		localStorage.setItem('inQueue', 'true');
 		setQueueTime(0);
 		localStorage.setItem('queueTime', '0');
-		socket.emit('joinQueue');
+		socket.emit('join-queue');
 	}
 
 	async function leaveQueue() {
@@ -205,7 +205,7 @@ export default function useQue() {
 		localStorage.removeItem('inQueue');
 		localStorage.removeItem('queueTime');
 		setQueueTime(0);
-		socket.emit('leaveQueue');
+		socket.emit('leave-queue');
 	}
 
 	return {

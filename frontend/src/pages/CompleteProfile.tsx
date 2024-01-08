@@ -74,7 +74,7 @@ export function CompleteProfile() {
 	useEffect(() => {
 		async function checkProfileStatus() {
 			try {
-				const response = await fetch('http://localhost:8080/user/isProfileComplete', {
+				const response = await fetch('http://localhost:8080/user/is-profile-complete', {
 					credentials: 'include',
 				});
 				const data = await response.json();

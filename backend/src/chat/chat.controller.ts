@@ -69,7 +69,7 @@ export class ChatController {
 
 	//TODO: avoid getting private rooms here!
 	@UseGuards(JwtAuthGuard)
-	@Get('allchatrooms')
+	@Get('all-chatrooms')
 	async getChatRooms() {
 		return await this.chatService.getAllChatRooms();
 	}
@@ -127,7 +127,7 @@ export class ChatController {
 	}
 
 	//get all Chatrooms of that user
-	@Get('mychatrooms')
+	@Get('my-chatrooms')
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	async myChatRooms(@Req() req: Request, @Res() res: Response) {
 		try {
@@ -142,7 +142,7 @@ export class ChatController {
 	}
 
 	//delivers the Chathistory of a chatroom.
-	@Get('chatroomhistory')
+	@Get('chatroom-history')
 	@UseGuards(JwtAuthGuard)
 	async getChatRoomChat(@Req() req: Request, @Query() clearChatRoomDto: ClearChatRoomDto) {
 		try {
@@ -172,7 +172,7 @@ export class ChatController {
 	}
 
 	//clears Chathistory in the Chatroom.
-	@Delete('clearchatroom')
+	@Delete('clear-chatroom')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async clearChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req: Request) {
@@ -180,7 +180,7 @@ export class ChatController {
 	}
 
 	//delete your ChatROom (only owner)
-	@Delete('deletechatroom')
+	@Delete('delete-chatroom')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteChatRoom(@Query() clearChatRoomDto: ClearChatRoomDto, @Req() req: Request) {
@@ -197,7 +197,7 @@ export class ChatController {
 	}
 
 	//adds a player to a chatroom.
-	@Post('invitetoroom')
+	@Post('invite-to-room')
 	@UseGuards(JwtAuthGuard)
 	async inviteToRoom(
 		@Body() inviteRoomDto: InviteRoomDto,
@@ -255,7 +255,7 @@ export class ChatController {
 	}
 
 	//join a public chatroom + pw if set
-	@Post('joinroom')
+	@Post('join-room')
 	@UseGuards(JwtAuthGuard)
 	async joinChatRoom(
 		@Req() req: Request,
@@ -308,7 +308,7 @@ export class ChatController {
 	}
 
 	//kick a user in a chatroom, if you are owner. //TODO: kick as admin normal members.
-	@Post('kickuser')
+	@Post('kick-user')
 	@UseGuards(JwtAuthGuard)
 	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
@@ -330,7 +330,7 @@ export class ChatController {
 		}
 	}
 
-	@Post('upgradeToAdmin')
+	@Post('upgrade-to-admin')
 	@UseGuards(JwtAuthGuard)
 	async upgradeToAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
@@ -358,7 +358,7 @@ export class ChatController {
 		}
 	}
 
-	@Post('revokeadmin')
+	@Post('revoke-admin')
 	@UseGuards(JwtAuthGuard)
 	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
@@ -403,7 +403,7 @@ export class ChatController {
 	}
 
 	//change ChatROom password as owner
-	@Post('changepassword')
+	@Post('change-password')
 	@UseGuards(JwtAuthGuard)
 	async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto) {
 		const userId = req.user.id;
@@ -456,7 +456,7 @@ export class ChatController {
 	}
 
 	//deletes chat between two friends.
-	@Delete('deletechat')
+	@Delete('delete-chat')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteMyChats(@Query('friendId') friendId: string, @Req() req: Request) {
@@ -466,7 +466,7 @@ export class ChatController {
 	//########################FrienRequests#############################
 
 	// Endpoint to send a friendrequest
-	@Post('friendrequest')
+	@Post('friend-request')
 	@UseGuards(JwtAuthGuard)
 	async create(@Body() createChatDto: FriendRequestDto, @Req() req: Request, @Res() res: Response) {
 		//console.log('friendrequest arrived, dto: ', createChatDto);
@@ -489,13 +489,13 @@ export class ChatController {
 	}
 
 	// Endpoint to get all pending requests for the logged-in user
-	@Get('pendingrequests')
+	@Get('pending-requests')
 	@UseGuards(JwtAuthGuard)
 	async findAllPending(@Req() req: Request) {
 		return this.chatService.findAllPending(req.user.id);
 	}
 
-	@Get('myrequests')
+	@Get('my-requests')
 	@UseGuards(JwtAuthGuard)
 	async MyRequests(@Req() req: Request) {
 		return this.chatService.findMyRequests(req.user.id);
@@ -537,29 +537,29 @@ export class ChatController {
 	//########################Debug#############################	//TODO: delete before eval
 
 	// Endpoint to get all pending Mutes
-	@Get('allmutes')
+	@Get('all-mutes')
 	async getMutes() {
 		return await this.chatService.getAllMutes();
 	}
 
-	@Delete('allmutes')
+	@Delete('all-mutes')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAllMutes() {
 		return await this.chatService.deleteAllMutes();
 	}
 
 	// Endpoint to get all pending requests
-	@Get('allrequests')
+	@Get('all-requests')
 	async getAll() {
 		return await this.chatService.getAllRequests();
 	}
 
-	@Get('allchats')
+	@Get('all-chats')
 	async findAllChats() {
 		return await this.chatService.findAllChats();
 	}
 
-	@Delete('allchats')
+	@Delete('all-chats')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAllChats() {
 		return await this.chatService.deleteAllChats();

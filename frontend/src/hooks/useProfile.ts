@@ -109,7 +109,7 @@ export default function useProfile() {
 		const formData = new FormData();
 		formData.append('customImage', selectedFile);
 		try {
-			const response = await fetch('http://localhost:8080/user/uploadImage', {
+			const response = await fetch('http://localhost:8080/user/upload-image', {
 				method: 'POST',
 				credentials: 'include',
 				body: formData,
@@ -147,7 +147,7 @@ export default function useProfile() {
 		setErrorProfile(''); // Reset error message
 
 		try {
-			const response = await fetch('http://localhost:8080/user/editName', {
+			const response = await fetch('http://localhost:8080/user/edit-name', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
