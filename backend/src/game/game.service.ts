@@ -59,9 +59,9 @@ export class GameService {
 					await this.gameRepository.save(existingGame);
 					console.log('SEND EMIT TO WAITING USER:::', playerTwo.name);
 
-					console.log('ID check:', existingGame.playerTwo.id);
+					console.log('ID check:', existingGame.playerOne.id);
 					// Emit an event to the specific user letting them know the game is ready
-					this.eventsGateway.server.to(`user_${existingGame.playerTwo.id}`).emit('gameReady', {
+					this.eventsGateway.server.to(`user_${existingGame.playerOne.id}`).emit('gameReady', {
 						gameId: existingGame.id,
 						message: 'The other player has joined. The game is ready to start.',
 					});
