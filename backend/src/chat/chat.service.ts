@@ -276,7 +276,11 @@ export class ChatService {
 		return { message: `User with ID ${userIdToKick} has been kicked from room ${roomId}` };
 	}
 
-	async upgradeToAdmin(roomId: string, userId: string, requesterId: string): Promise<any> {
+	async upgradeToAdmin(
+		roomId: string,
+		userId: string,
+		requesterId: string,
+	): Promise<{ message: string }> {
 		const chatRoom = await this.chatRoomRepository.findOne({
 			where: { id: roomId },
 			relations: ['users'],
@@ -388,7 +392,7 @@ export class ChatService {
 		return friendRequest;
 	}
 
-	async create(friendRequestDto: FriendRequestDto, user): Promise<FriendRequest> {
+	async create(friendRequestDto: FriendRequestDto, user: User): Promise<FriendRequest> {
 		const currUser = await this.userService.findProfileByName(user.name);
 		if (!currUser) {
 			throw new NotFoundException('User not found.');

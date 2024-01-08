@@ -149,7 +149,7 @@ export class MatchmakingService {
 		}
 	}
 
-	async removeFromQueue(userId: string): Promise<void> {
+	removeFromQueue(userId: string) {
 		console.log(`Removing user ${userId} from queue`);
 		const index = this.queue.indexOf(userId);
 		if (index !== -1) {
@@ -237,7 +237,7 @@ export class MatchmakingService {
 		return { matchStarted: false };
 	}
 
-	async getQueueTime(userId: string): Promise<number> {
+	getQueueTime(userId: string) {
 		const entryTime = this.queueEntryTimes.get(userId);
 		if (!entryTime) {
 			return 0;
@@ -245,7 +245,7 @@ export class MatchmakingService {
 		return Math.floor((new Date().getTime() - entryTime.getTime()) / 1000);
 	}
 
-	async isInQueue(userId: string): Promise<boolean> {
+	isInQueue(userId: string) {
 		return this.queue.includes(userId);
 	}
 }

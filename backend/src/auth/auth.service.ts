@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcryptjs';
 import { MoreThan } from 'typeorm';
+import { JwtPayload } from './guards/jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -42,14 +43,14 @@ export class AuthService {
 	}
 
 	/* This method retrieves user data from 42's API. */
-	private async getOAuthUserData(accessToken: string): Promise<any> {
-		const userResponse = await this.httpService
+	private async getOAuthUserData(accessToken: string): Promise<IntraUser> {
+		const response: { data: IntraUser } = await this.httpService
 			.get('https://api.intra.42.fr/v2/me', {
 				headers: { Authorization: `Bearer ${accessToken}` },
 			})
 			.toPromise();
 
-		return userResponse.data;
+		return response.data;
 	}
 
 	/* This method creates a new user or updates it if it already exists. */
@@ -86,7 +87,7 @@ export class AuthService {
 	// 	return user;
 	// }
 
-	private async createUserOrUpdate(intraUser: any): Promise<User> {
+	private async createUserOrUpdate(intraUser: IntraUser): Promise<User> {
 		const user: User = await this.userRepository.findOne({ where: { intraId: intraUser.id } });
 
 		if (!user) {
@@ -141,7 +142,7 @@ export class AuthService {
 	/* This method is used to validate the refresh token and retrieve the user from the database. */
 	private async validateRefreshToken(refreshToken: string): Promise<User> {
 		try {
-			const decoded = this.jwtService.verify(refreshToken);
+			const decoded = this.jwtService.verify<JwtPayload>(refreshToken);
 			const user = await this.userRepository.findOne({ where: { id: decoded.id } });
 
 			if (!user) {
@@ -176,13 +177,11 @@ export class AuthService {
 
 	//This function is used to check the validity of the 2FA token.
 	private is2FATokenValid(user: User, token: string): boolean {
-		const result = speakeasy.totp.verify({
+		return speakeasy.totp.verify({
 			secret: user.unconfirmed2FASecret,
 			encoding: 'base32',
 			token: token,
 		});
-
-		return result;
 	}
 
 	/* Enable 2FA for user and save corresponding changes in the database. */
@@ -214,6 +213,7 @@ export class AuthService {
 		if (isValid && user.unconfirmed2FASecret) {
 			await this.enable2FAForUser(user);
 		}
+
 		return isValid;
 	}
 
@@ -252,7 +252,7 @@ export class AuthService {
 		}
 	}
 
-	async toggle2FA(enable2FA: boolean, user: User): Promise<any> {
+	async toggle2FA(enable2FA: boolean, user: User): Promise<{ newStatus: boolean }> {
 		let redirect = enable2FA;
 		if (!enable2FA && !user.TFASecret) {
 			redirect = true;
@@ -289,11 +289,11 @@ export class AuthService {
 		user.resetPasswordExpires = new Date(Date.now() + 1_200_000); /* 20 minutes */
 		user.resetPasswordUrl = redirectUrl;
 		await this.userRepository.save(user);
-		await this.sendResetPasswordEmail(email, redirectUrl);
+		this.sendResetPasswordEmail(email, redirectUrl);
 		return { message: 'Password reset token generated' };
 	}
 
-	async sendResetPasswordEmail(email: string, resetPasswordUrl: string) {
+	sendResetPasswordEmail(email: string, resetPasswordUrl: string) {
 		const transporter = nodemailer.createTransport({
 			host: 'smtp.gmail.com',
 			port: 465,
@@ -352,3 +352,14 @@ export class AuthService {
 		return !!user;
 	}
 }
+
+type IntraUser = {
+	email: string;
+	id: string;
+	image?: {
+		versions?: {
+			medium?: string;
+		};
+	};
+	login: string;
+};

@@ -38,7 +38,7 @@ export class EventsGateway {
 	async verifyAuthentication(
 		client: Socket,
 	): Promise<{ isAuthenticated: boolean; userId: string }> {
-		const cookies = await cookie.parse(client.handshake.headers.cookie || '');
+		const cookies = cookie.parse(client.handshake.headers.cookie || '');
 		if (!cookies.token) {
 			console.log('No cookies provided');
 			return { isAuthenticated: false, userId: null };
@@ -72,7 +72,7 @@ export class EventsGateway {
 		}
 	}
 
-	async handleDisconnect(client: any) {
+	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
 			await this.eventsService.userDisconnected(client.data.user.email);
 		} else {
@@ -207,7 +207,7 @@ export class EventsGateway {
 				return;
 			}
 
-			await this.matchmakingService.removeFromQueue(isAuthenticated.userId);
+			this.matchmakingService.removeFromQueue(isAuthenticated.userId);
 		} catch (error) {
 			console.error('Error in handleLeaveQueue:', error.message);
 		}
