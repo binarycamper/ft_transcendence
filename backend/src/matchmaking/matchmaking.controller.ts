@@ -16,10 +16,9 @@ import {
 import { MatchmakingService } from './matchmaking.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserService } from 'src/user/user.service';
-import { error } from 'console';
 import { StatusGuard } from 'src/auth/guards/status.guard';
-import { Game } from 'src/game/game.entity';
 import { GameService } from 'src/game/game.service';
+import { Request, Response } from 'express';
 
 @Controller('matchmaking')
 export class MatchmakingController {
@@ -31,7 +30,7 @@ export class MatchmakingController {
 
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Post('join')
-	async joinQueue(@Req() req, @Res() res) {
+	async joinQueue(@Req() req: Request, @Res() res: Response) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			const myqueue = await this.matchmakingService.findMyQueue(user);
@@ -61,7 +60,7 @@ export class MatchmakingController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('leave')
-	async leaveQueue(@Req() req, @Res() res) {
+	async leaveQueue(@Req() req: Request, @Res() res: Response) {
 		try {
 			const queue = await this.matchmakingService.findMyQueue(req.user);
 			if (queue) {
@@ -79,9 +78,14 @@ export class MatchmakingController {
 		}
 	}
 
+	//TODO: dto for Body!
 	@UseGuards(JwtAuthGuard)
 	@Post('acceptMatch')
-	async acceptMatch(@Req() req, @Res() res, @Body('playerTwoName') enemyName: string) {
+	async acceptMatch(
+		@Req() req: Request,
+		@Res() res: Response,
+		@Body('playerTwoName') enemyName: string,
+	) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			if (!user) {
