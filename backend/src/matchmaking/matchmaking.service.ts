@@ -37,7 +37,7 @@ export class MatchmakingService {
 	}
 
 	private async runMatchmakingLogic() {
-		console.log('runMatchmakingLogic...!');
+		//console.log('runMatchmakingLogic...!');
 
 		// Fetch active matchmaking entries from the database
 		const activeQueues = await this.matchmakingRepository.find({
@@ -48,15 +48,17 @@ export class MatchmakingService {
 		//console.log('Active queues:', activeQueues.length);
 
 		if (activeQueues.length >= 2) {
-			console.log('Match Found!');
+			//console.log('Possible Match Found!\nQueue: ', activeQueues);
 
 			// Sort the queue by joinedAt to get the longest waiting users
 			activeQueues.sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime());
 
 			// Get the first two users from the sorted queue
 			const playerOne = activeQueues[0];
-			//console.log('playerOne: ', playerOne);
 			const playerTwo = activeQueues[1];
+
+			//console.log('playerOne: ', playerOne);
+			//console.log('playerTwo: ', playerTwo);
 
 			// Notify the two users via WebSocket that they've been matched
 			this.eventsGateway.server
@@ -65,12 +67,6 @@ export class MatchmakingService {
 			this.eventsGateway.server
 				.to(`user_${playerTwo.user.id}`)
 				.emit('matchFound', { enemyUserName: playerOne.user.name });
-
-			// Update their matchmaking entries as no longer active
-			//await this.matchmakingRepository.save({ ...playerOne, isActive: false });
-			//await this.matchmakingRepository.save({ ...playerTwo, isActive: false });
-
-			// Here you can create a game entity, or do any other logic needed when a match is found
 		}
 	}
 
