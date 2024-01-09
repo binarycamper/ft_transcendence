@@ -45,7 +45,7 @@ export class AuthController {
 	@Get('signup')
 	signup(@Res() res: Response) {
 		const clientId = this.configService.get<string>('INTRA_UID');
-		const url = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=http://localhost:8080/auth/callback&response_type=code`;
+		const url = `https://api.intra.42.fr/oauth/authorize?clientId=${clientId}&redirectUri=http://localhost:8080/auth/callback&response_type=code`;
 		return res.json({ url });
 	}
 
@@ -112,26 +112,21 @@ export class AuthController {
 	async handleCallback(@Query('code') code: string, @Res() res: Response): Promise<void> {
 		if (code === undefined) {
 			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-		} else {
-			try {
-				const result = await this.authService.authenticate(code);
-				res.cookie('token', result.access_token, {
-					httpOnly: true,
-					maxAge: 86_400_000 * 7,
-					sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
-					secure: true,
-				});
-
-				const redirectUrl = new URL('http://localhost:5173/completeprofile');
-				redirectUrl.searchParams.append('require2FA', String(result.require2FA));
-				redirectUrl.searchParams.append('token', result.access_token);
-				redirectUrl.searchParams.append('userId', result.userId);
-
-				res.redirect(redirectUrl.toString());
-			} catch (error) {
-				throw error;
-			}
 		}
+		const result = await this.authService.authenticate(code);
+		res.cookie('token', result.accessToken, {
+			httpOnly: true,
+			maxAge: 86_400_000 * 7,
+			sameSite: 'none', //TODO: overwork cookie sameSite errors --> clientside
+			secure: true,
+		});
+
+		const redirectUrl = new URL('http://localhost:5173/completeprofile');
+		redirectUrl.searchParams.append('require2FA', String(result.require2FA));
+		redirectUrl.searchParams.append('token', result.accessToken);
+		redirectUrl.searchParams.append('userId', result.userId);
+
+		res.redirect(redirectUrl.toString());
 	}
 
 	@Post('logout')
@@ -193,7 +188,12 @@ export class AuthController {
 			const response = await this.authService.toggle2FA(body.has2FA, user);
 			return res.status(HttpStatus.OK).json({ has2FA: response.newStatus });
 		} catch (error) {
-			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+			if (error instanceof HttpException) {
+				return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+			}
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Ein unerwarteter Fehler ist aufgetreten.' });
 		}
 	}
 
@@ -203,8 +203,13 @@ export class AuthController {
 		try {
 			const response = await this.authService.resetPassword(body.email);
 			return res.status(HttpStatus.OK).json({ message: response.message });
-		} catch (error) {
-			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+		} catch (error: unknown) {
+			if (error instanceof HttpException) {
+				return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+			}
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Ein unerwarteter Fehler ist aufgetreten.' });
 		}
 	}
 
@@ -214,8 +219,13 @@ export class AuthController {
 		try {
 			const response = await this.authService.updatePassword(body.token, body.password);
 			return res.status(HttpStatus.OK).json({ message: response.message });
-		} catch (error) {
-			return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+		} catch (error: unknown) {
+			if (error instanceof HttpException) {
+				return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+			}
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Ein unerwarteter Fehler ist aufgetreten.' });
 		}
 	}
 

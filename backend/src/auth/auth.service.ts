@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { User } from '../user/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -12,7 +12,8 @@ import { UserService } from 'src/user/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcryptjs';
-import { MoreThan } from 'typeorm';
+import { OAuthTokenResponse, IntraUser } from './interfaces/auth.interfaces';
+
 import { JwtPayload } from './guards/jwt.strategy';
 
 @Injectable()
@@ -31,15 +32,18 @@ export class AuthService {
 		const clientId = this.configService.get<string>('INTRA_UID');
 		const clientSecret = this.configService.get<string>('INTRA_SECRET');
 
-		const tokenResponse = await axios.post('https://api.intra.42.fr/oauth/token', {
-			grant_type: 'authorization_code',
-			client_id: clientId,
-			client_secret: clientSecret,
-			code,
-			redirect_uri: 'http://localhost:8080/auth/callback',
-		});
+		const tokenResponse = await axios.post<OAuthTokenResponse>(
+			'https://api.intra.42.fr/oauth/token',
+			{
+				grantType: 'authorization_code',
+				clientId: clientId,
+				clientSecret: clientSecret,
+				code,
+				redirectUri: 'http://localhost:8080/auth/callback',
+			},
+		);
 
-		return tokenResponse.data.access_token;
+		return tokenResponse.data.accessToken;
 	}
 
 	/* This method retrieves user data from 42's API. */
@@ -116,7 +120,7 @@ export class AuthService {
 
 	async authenticate(
 		code: string,
-	): Promise<{ access_token?: string; require2FA?: boolean; userId?: string }> {
+	): Promise<{ accessToken?: string; require2FA?: boolean; userId?: string }> {
 		try {
 			//Retrieve OAuth token and query user data
 			const accessToken = await this.getOAuthToken(code);
@@ -126,10 +130,10 @@ export class AuthService {
 
 			// Generate and return JWT token
 			const jwtToken = await this.createAccessToken(user.id);
-			return { access_token: jwtToken, userId: user.id }; //TODO: why userID?? it was id everywhere or?
+			return { accessToken: jwtToken, userId: user.id }; //TODO: why userID?? it was id everywhere or?
 		} catch (error) {
-			console.error(error);
-			if (error.response && error.response.status === 401) {
+			const responseError = error as { response: { status: number } };
+			if (responseError.response?.status === 401) {
 				throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
 			} else {
 				throw new HttpException('Failed authentication', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -151,8 +155,13 @@ export class AuthService {
 
 			return user;
 		} catch (error) {
-			console.error('Invalid refresh token:', error.message);
-			throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+			if (error instanceof Error) {
+				console.error('Invalid refresh token:', error.message);
+				throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+			} else {
+				console.error('An unexpected error occurred');
+				throw new HttpException('An unexpected error occurred', HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 
@@ -243,13 +252,12 @@ export class AuthService {
 			user.unconfirmed2FASecret = secret.base32;
 			await this.userRepository.save(user);
 			return { qrCodeUrl };
-		} else if (user.TFASecret) {
-			const secret = user.TFASecret;
-			const qrCodeUrl = await QRCode.toDataURL(
-				speakeasy.otpauthURL({ secret: secret, label: user.name, encoding: 'base32' }),
-			);
-			return { qrCodeUrl };
 		}
+		const secret = user.TFASecret;
+		const qrCodeUrl = await QRCode.toDataURL(
+			speakeasy.otpauthURL({ secret: secret, label: user.name, encoding: 'base32' }),
+		);
+		return { qrCodeUrl };
 	}
 
 	async toggle2FA(enable2FA: boolean, user: User): Promise<{ newStatus: boolean }> {
@@ -352,14 +360,3 @@ export class AuthService {
 		return !!user;
 	}
 }
-
-type IntraUser = {
-	email: string;
-	id: string;
-	image?: {
-		versions?: {
-			medium?: string;
-		};
-	};
-	login: string;
-};

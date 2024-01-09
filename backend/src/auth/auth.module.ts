@@ -18,7 +18,7 @@ import { StatusGuard } from './guards/status.guard';
 		ConfigModule.forRoot(),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
-			useFactory: async (configService: ConfigService) => ({
+			useFactory: (configService: ConfigService) => ({
 				secret: configService.get<string>('JWT_SECRET'), // Fetch from .env or use a default value
 				signOptions: { expiresIn: '1d' },
 			}),

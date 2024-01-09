@@ -22,24 +22,23 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 		super({
 			jwtFromRequest: ExtractJwt.fromExtractors([
 				(request: ExpressRequest) => {
-					let jwt = null;
 					if (request && request.headers && request.headers.cookie) {
 						const cookies = request.headers.cookie.split(';');
 						const tokenCookie = cookies.find((cookie) => cookie.trim().startsWith('token='));
 						if (tokenCookie) {
-							jwt = tokenCookie.split('=')[1];
-							//print token if u need for postman
+							const [, jwt] = tokenCookie.split('=');
 							// console.log(`Extracted JWT Token: ${jwt}`);
+							return jwt;
 						}
 					}
-					return jwt;
+					return null;
 				},
 			]),
 			secretOrKey: configService.get<string>('JWT_SECRET'),
 		});
 	}
 
-	async validate(payload: JwtPayload) {
+	async validate(payload: JwtPayload): Promise<User> {
 		const user = await this.userRepository.findOne({
 			where: { id: payload.id },
 		});
@@ -48,6 +47,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 			throw new UnauthorizedException('Please sign in to continue');
 		}
 
-		return user; // This will be available in your route handlers as `req.user`
+		return user;
 	}
 }
