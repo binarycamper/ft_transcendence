@@ -147,10 +147,9 @@ export class ChatService {
 			// Save the chat room with the new message
 			await this.chatRoomRepository.save(chatRoom);
 			return message;
-		} else {
-			// Handle the case where the chat room is not found
-			throw new Error('Chat room not found');
 		}
+		// Handle the case where the chat room is not found
+		throw new Error('Chat room not found');
 	}
 
 	async findChatRoomChat(chatRoomId: string): Promise<ChatMessage[]> {

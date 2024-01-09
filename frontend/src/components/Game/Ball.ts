@@ -260,6 +260,7 @@ function degToRad(degrees: number) {
 	return degrees * (Math.PI / 180);
 }
 
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function radToDeg(radians: number) {
 	return radians * (180 / Math.PI);
 }

@@ -82,7 +82,7 @@ export default function createPaddle({
 				ball.right < 0 ||
 				ball.left > 100
 			) {
-				return computerMoveCenter(delta);
+				return void computerMoveCenter(delta);
 			}
 			const ballDiam = ball.bottom - ball.top;
 			const ballCenter = ball.top + ballDiam / 2;
@@ -126,7 +126,7 @@ export default function createPaddle({
 					return { start: { x: this.right, y: this.top }, end: { x: this.right, y: this.bottom } };
 				},
 			},
-		});
+		}) as Paddle;
 		return leftPaddle;
 	}
 	if (side === 'right') {
@@ -146,7 +146,7 @@ export default function createPaddle({
 					return { start: { x: this.left, y: this.top }, end: { x: this.left, y: this.bottom } };
 				},
 			},
-		});
+		}) as Paddle;
 		return rightPaddle;
 	}
 

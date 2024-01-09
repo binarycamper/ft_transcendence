@@ -79,8 +79,8 @@ export default function useGameLoop(props: Props) {
 			// const delta = 16.7 / 1000; /* for debugging */
 
 			/* only for debugging */
-			if (keyState['NumpadAdd']) ball.speed += 1;
-			if (keyState['NumpadSubtract']) ball.speed -= 1;
+			if (keyState.NumpadAdd) ball.speed += 1;
+			if (keyState.NumpadSubtract) ball.speed -= 1;
 
 			ball.update({ delta, lpaddle, rpaddle });
 			lpaddle.update(delta, ball);

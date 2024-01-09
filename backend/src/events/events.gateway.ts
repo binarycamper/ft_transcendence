@@ -40,7 +40,7 @@ export class EventsGateway {
 			console.log('No cookies provided');
 			return { isAuthenticated: false, userId: null };
 		}
-		const token = cookies['token'];
+		const { token } = cookies;
 		if (!token) {
 			console.log('No token provided');
 			return { isAuthenticated: false, userId: null };
@@ -134,7 +134,7 @@ export class EventsGateway {
 			}
 
 			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
-			const mutes: Mute[] = chatRoom.mutes;
+			const { mutes } = chatRoom;
 			const activeMute = mutes.find(
 				(mute) => mute.userId === isAuthenticated.userId && new Date(mute.endTime) > new Date(),
 			);
@@ -163,13 +163,13 @@ export class EventsGateway {
 					id: isAuthenticated.userId,
 				});
 				return;
-			} else {
-				// Check if there are any expired mutes and delete them.
-				const expiredMutes = mutes.filter((mute) => new Date(mute.endTime) <= new Date());
-				for (const expiredMute of expiredMutes) {
-					await this.chatService.deleteMute(expiredMute.id);
-				}
 			}
+			// Check if there are any expired mutes and delete them.
+			const expiredMutes = mutes.filter((mute) => new Date(mute.endTime) <= new Date());
+			for (const expiredMute of expiredMutes) {
+				await this.chatService.deleteMute(expiredMute.id);
+			}
+
 			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
 			const message = await this.chatService.saveChatRoomMessage(
 				data.chatRoomId,

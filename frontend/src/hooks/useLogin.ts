@@ -6,7 +6,7 @@ export default function useLogin() {
 	const [error, setError] = useState(false);
 
 	async function handleLogin(email: string, password: string) {
-		if (!email || !password) return setError(true);
+		if (!email || !password) return void setError(true);
 
 		try {
 			const response = await fetch('http://localhost:8080/auth/login', {
@@ -17,7 +17,7 @@ export default function useLogin() {
 				body: JSON.stringify({ email, password }),
 				credentials: 'include',
 			});
-			if (!response.ok) return setError(true);
+			if (!response.ok) return void setError(true);
 
 			setError(false);
 			const data = await response.json();

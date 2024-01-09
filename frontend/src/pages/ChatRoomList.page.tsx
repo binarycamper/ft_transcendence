@@ -46,7 +46,7 @@ export function ChatRoomList() {
 				const data = await response.json();
 				setCurrentUser(data);
 			} catch (error: any) {
-				setError('Failed to fetch current user: ' + error.message);
+				setError(`Failed to fetch current user: ${error.message}`);
 			}
 		}
 		getCurrentUser();
@@ -94,7 +94,7 @@ export function ChatRoomList() {
 					setMutedUsers(newMutedUsers);
 					setChatRooms(data);
 				} catch (error) {
-					setError('Failed to load chat rooms: ' + error);
+					setError(`Failed to load chat rooms: ${error}`);
 				} finally {
 					setLoading(false);
 				}
@@ -125,7 +125,7 @@ export function ChatRoomList() {
 				window.location.href = 'http://localhost:5173/chatroom';
 			} else {
 				const errorData = await response.json();
-				setJoinError('Failed to join room: ' + errorData.message);
+				setJoinError(`Failed to join room: ${errorData.message}`);
 			}
 		} catch (error) {
 			setJoinError('An error occurred while attempting to join the room.');
@@ -182,7 +182,7 @@ export function ChatRoomList() {
 				setJoinError(errorMessage);
 			}
 		} catch (error) {
-			setJoinError('Error while attempting to kick user: ' + error);
+			setJoinError(`Error while attempting to kick user: ${error}`);
 		}
 	}
 
@@ -201,10 +201,10 @@ export function ChatRoomList() {
 				window.location.href = 'http://localhost:5173/chatroomlist';
 			} else {
 				const errorData = await response.json();
-				setJoinError('Failed to make user admin: ' + errorData.message);
+				setJoinError(`Failed to make user admin: ${errorData.message}`);
 			}
 		} catch (error) {
-			setJoinError('Error while attempting to make user admin: ' + error);
+			setJoinError(`Error while attempting to make user admin: ${error}`);
 		}
 	}
 
@@ -239,10 +239,10 @@ export function ChatRoomList() {
 				);
 			} else {
 				const errorData = await response.json();
-				setJoinError('Failed to revoke admin status: ' + errorData.message);
+				setJoinError(`Failed to revoke admin status: ${errorData.message}`);
 			}
 		} catch (error) {
-			setJoinError('Error while attempting to revoke admin status: ' + error);
+			setJoinError(`Error while attempting to revoke admin status: ${error}`);
 		}
 	}
 
@@ -276,10 +276,10 @@ export function ChatRoomList() {
 				// Additional logic on success
 			} else {
 				const errorData = await response.json();
-				alert('Failed to update password: ' + errorData.message);
+				alert(`Failed to update password: ${errorData.message}`);
 			}
 		} catch (error) {
-			alert('Error while attempting to update password: ' + error);
+			alert(`Error while attempting to update password: ${error}`);
 		}
 	}
 
@@ -325,10 +325,10 @@ export function ChatRoomList() {
 				window.location.href = 'http://localhost:5173/chatroomlist';
 			} else {
 				const errorData = await response.json();
-				alert('Failed to mute user: ' + errorData.message);
+				alert(`Failed to mute user: ${errorData.message}`);
 			}
 		} catch (error) {
-			alert('Error while attempting to mute user: ' + error);
+			alert(`Error while attempting to mute user: ${error}`);
 		}
 	}
 
@@ -353,11 +353,11 @@ export function ChatRoomList() {
 			} else {
 				// There was an error with the unmute operation
 				const errorData = await response.json();
-				alert('Failed to unmute user: ' + errorData.message);
+				alert(`Failed to unmute user: ${errorData.message}`);
 			}
 		} catch (error) {
 			// Handle network error or other unexpected errors
-			alert('Error while attempting to unmute user: ' + error);
+			alert(`Error while attempting to unmute user: ${error}`);
 		}
 	}
 

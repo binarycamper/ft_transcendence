@@ -4,7 +4,7 @@ import { Button, Container, Group, Tabs } from '@mantine/core';
 
 export default function Header() {
 	const navigate = useNavigate();
-	const pathname = useLocation().pathname;
+	const { pathname } = useLocation();
 	const { isAuthenticated, handleLogout } = useAuthentication();
 
 	return (
@@ -28,13 +28,13 @@ export default function Header() {
 						</Tabs.List>
 					</Tabs>
 				</Group>
-				{!isAuthenticated ? (
-					<Button component="a" onClick={() => navigate('/login')}>
-						SIGN IN
-					</Button>
-				) : (
+				{isAuthenticated ? (
 					<Button variant="outline" onClick={handleLogout}>
 						SIGN OUT
+					</Button>
+				) : (
+					<Button component="a" onClick={() => navigate('/login')}>
+						SIGN IN
 					</Button>
 				)}
 			</Group>

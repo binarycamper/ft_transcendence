@@ -72,8 +72,7 @@ export function ChatRoom() {
 				setCurrentUserName(data.name);
 				setCurrentUserId(data.id);
 			} catch (error) {
-				showNotification('not authenticated... :' + error);
-				return;
+				showNotification(`not authenticated... : ${error}`);
 			}
 		}
 		getCurrentUserId();
@@ -93,8 +92,7 @@ export function ChatRoom() {
 				const friendsList: Friend[] = await response.json();
 				setFriends(friendsList);
 			} catch (error) {
-				showNotification('cant load Friendlist: ' + error);
-				return;
+				showNotification(`cant load Friendlist: ${error}`);
 			}
 		}
 
@@ -135,7 +133,6 @@ export function ChatRoom() {
 			setChatMessages(history);
 		} catch (error) {
 			showNotification('Failed to fetch chat history ');
-			return;
 		}
 	}
 
@@ -158,7 +155,6 @@ export function ChatRoom() {
 				setChatMessages((prevMessages) => [...prevMessages, message]);
 			} else {
 				showNotification('pls select a friend or room');
-				return;
 			}
 		}
 
@@ -217,8 +213,7 @@ export function ChatRoom() {
 					setChatMessages([]);
 				}
 			} catch (error) {
-				showNotification('Error clearing chat: ' + error);
-				return;
+				showNotification(`Error clearing chat: ${error}`);
 			}
 		}
 	}
@@ -245,8 +240,7 @@ export function ChatRoom() {
 				// Implement error handling logic
 			}
 		} catch (error) {
-			showNotification('Error while sending invitation: ' + error);
-			return;
+			showNotification(`Error while sending invitation: ${error}`);
 		}
 	}
 
@@ -293,7 +287,7 @@ export function ChatRoom() {
 			} else if (response.status === HttpStatusCode.BadRequest) {
 				setChatRoomError('Chat room name already in use.');
 			} else if (response.status === HttpStatusCode.SeeOther) {
-				setChatRoomError(result.error + ' goto /twofactorsetup');
+				setChatRoomError(`${result.error} goto /twofactorsetup`);
 			} else if (response.ok) {
 				window.location.reload();
 				//console.log('Chat room created:', result);
@@ -347,8 +341,7 @@ export function ChatRoom() {
 			//console.log('res: ', history);
 			setChatMessages(history);
 		} catch (error) {
-			showNotification('Error fetching chatroom history: ' + error);
-			return;
+			showNotification(`Error fetching chatroom history: ${error}`);
 		}
 	}
 
@@ -386,7 +379,7 @@ export function ChatRoom() {
 				showNotification('ChatRoom deleted');
 			} else setChatRoomError('You cannot delete that chatroom');
 		} catch (error) {
-			setChatRoomError('You cannot delete that chatroom: ' + error);
+			setChatRoomError(`You cannot delete that chatroom: ${error}`);
 		}
 	}
 
@@ -435,7 +428,6 @@ export function ChatRoom() {
 			}
 		} catch (error) {
 			showNotification('Failed to invite user. Please try again.');
-			return;
 		}
 	}
 

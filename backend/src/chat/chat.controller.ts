@@ -262,7 +262,7 @@ export class ChatController {
 		@Body() inviteRoomDto: InviteRoomDto,
 	): Promise<{ message: string }> {
 		const userId = req.user.id;
-		const roomId = inviteRoomDto.roomId;
+		const { roomId } = inviteRoomDto;
 		// Get the chat room details
 		const chatRoom = await this.chatService.getChatRoomById(roomId);
 		if (!chatRoom) {
@@ -482,7 +482,7 @@ export class ChatController {
 			} catch (error) {
 				res.status(HttpStatus.BAD_REQUEST).json({
 					statusCode: HttpStatus.BAD_REQUEST,
-					message: '' + error,
+					message: `${error}`,
 				});
 			}
 		}

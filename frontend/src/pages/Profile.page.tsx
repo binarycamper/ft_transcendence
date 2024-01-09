@@ -50,7 +50,7 @@ export function Profile() {
 			<p>Name: {profile.name}</p>
 			<p>Nickname: {profile.nickname}</p>
 			<p>Email: {profile.email}</p>
-			<p>Achievements: {profile.achievements + ', '}</p>
+			<p>Achievements: {`${profile.achievements}, `}</p>
 			<p>Ladder Level: {profile.ladderLevel}</p>
 			<p>Wins: {profile.gamesWon}</p>
 			<p>Losses: {profile.gamesLost}</p>
@@ -66,7 +66,7 @@ export function Profile() {
 			<button onClick={changeNickname}>Change Nickname</button>
 			{errorProfile && <p style={{ color: 'red' }}>{errorProfile}</p>}
 
-			<button onClick={handleToggle2FA}>{(has2FA ? 'Disable' : 'Enable') + '2FA'}</button>
+			<button onClick={handleToggle2FA}>{`${has2FA ? 'Disable' : 'Enable'} 2FA`}</button>
 		</Container>
 	);
 }

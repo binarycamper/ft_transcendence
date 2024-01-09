@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 export class StatusGuard implements CanActivate {
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		const request: Express.Request = context.switchToHttp().getRequest();
-		const user = request.user;
+		const { user } = request;
 
 		//console.log('user:: ', user);
 

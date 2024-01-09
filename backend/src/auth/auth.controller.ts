@@ -150,27 +150,26 @@ export class AuthController {
 		if (!user) {
 			throw new UnauthorizedException('User not found');
 		}
-		const token = verifyDto.token;
+		const { token } = verifyDto;
 		const isValid = await this.authService.verify2FAToken(user, token);
 
 		if (!isValid) {
 			return response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid 2FA token' });
-		} else {
-			const jwtToken = await this.authService.createAccessToken(user.id);
-			if (!jwtToken) {
-				throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-			}
-			response.clearCookie('token');
-			response.cookie('token', jwtToken, {
-				httpOnly: true,
-				maxAge: 86_400_000 * 7,
-				secure: process.env.NODE_ENV !== 'development',
-				sameSite: 'lax',
-			});
-			user.status = 'online';
-			await this.userRepository.save(user);
-			return response.status(HttpStatus.OK).json({ accessToken: jwtToken, userId: user.id });
 		}
+		const jwtToken = await this.authService.createAccessToken(user.id);
+		if (!jwtToken) {
+			throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+		}
+		response.clearCookie('token');
+		response.cookie('token', jwtToken, {
+			httpOnly: true,
+			maxAge: 86_400_000 * 7,
+			secure: process.env.NODE_ENV !== 'development',
+			sameSite: 'lax',
+		});
+		user.status = 'online';
+		await this.userRepository.save(user);
+		return response.status(HttpStatus.OK).json({ accessToken: jwtToken, userId: user.id });
 	}
 
 	@Get('2fa/setup')

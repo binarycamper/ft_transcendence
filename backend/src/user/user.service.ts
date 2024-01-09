@@ -274,7 +274,7 @@ export class UserService {
 				removed = true;
 				message = 'Friend removed successfully.';
 			} else {
-				message = message || 'Friend does not have this user on their list.';
+				message ||= 'Friend does not have this user on their list.';
 			}
 		});
 

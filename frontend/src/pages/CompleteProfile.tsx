@@ -132,7 +132,7 @@ export function CompleteProfile() {
 			}
 		} catch (error) {
 			console.log('test 2');
-			setInfo('failed setting pw: ' + error);
+			setInfo(`failed setting pw: ${error}`);
 		}
 	}
 

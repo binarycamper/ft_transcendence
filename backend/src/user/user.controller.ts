@@ -55,8 +55,7 @@ export class UserController {
 	@Get('id')
 	@UseGuards(JwtAuthGuard)
 	getId(@Req() req: Request) {
-		const id = req.user.id;
-		const name = req.user.name;
+		const { id, name } = req.user;
 		return { id: id, name: name };
 	}
 
@@ -201,16 +200,15 @@ export class UserController {
 		//works not in public profile but in own
 		//TODO: delete me before eval.
 		if (/^deb\d+$/.test(req.user.name)) {
-			fullPath = UPLOAD_PATH + '0_0.png';
+			fullPath = `${UPLOAD_PATH}0_0.png`;
 		}
 
 		// Check if the file exists and send it, otherwise send a 404 response
 		if (fs.existsSync(fullPath) && !fullPath.includes('..')) {
 			return res.status(HttpStatus.OK).sendFile(fullPath);
-		} else {
-			//console.log('ERROR cant find path: ', fullPath);
-			return res.status(HttpStatus.NOT_FOUND).send('File not found');
 		}
+		//console.log('ERROR cant find path: ', fullPath);
+		return res.status(HttpStatus.NOT_FOUND).send('File not found');
 	}
 
 	@Post('edit-name')
@@ -291,7 +289,7 @@ export class UserController {
 	@Post('add-friend')
 	@UseGuards(JwtAuthGuard)
 	async addFriend(@Req() req: Request, @Body() addFriendDto: AddFriendDto, @Res() res: Response) {
-		const user = req.user;
+		const { user } = req;
 		try {
 			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
 			if (!updatedUser) {
@@ -308,7 +306,7 @@ export class UserController {
 	@Post('block-user')
 	@UseGuards(JwtAuthGuard)
 	async blockUser(@Req() req: Request, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
-		const user = req.user;
+		const { user } = req;
 		const userToBlock = await this.userService.findUserbyName(blockUserDto.userName);
 		if (!userToBlock) {
 			res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
@@ -359,7 +357,7 @@ export class UserController {
 		@Query() unblockUserDto: UnblockUserDto,
 		@Res() res: Response,
 	) {
-		const user = req.user;
+		const { user } = req;
 		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
 			await this.userService.removeUserInBlocklist(user, userToBlock.name);
@@ -397,9 +395,9 @@ export class UserController {
 		const stringNum = number.toString();
 		// Create a new User entity
 		const debugUser = await this.userService.createDebugUser({
-			name: 'deb' + stringNum,
-			nickname: 'Debugger_' + stringNum,
-			email: stringNum + '@debuguser.com',
+			name: `deb${stringNum}`,
+			nickname: `Debugger_${stringNum}`,
+			email: `${stringNum}@debuguser.com`,
 			password: '1',
 			intraId: debugUserId,
 			id: debugUserId,
@@ -412,7 +410,7 @@ export class UserController {
 
 		// Respond with the newly created debug user's ID and the fake token
 		res.status(HttpStatus.CREATED).json({
-			message: debugUser.name + ' created',
+			message: `${debugUser.name} created`,
 			id: debugUser.id,
 			token: debugToken, // Include the token in the response
 		});

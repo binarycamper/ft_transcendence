@@ -50,19 +50,18 @@ export class GameService {
 
 				await this.gameRepository.save(game);
 				return game;
-			} else {
-				existingGame.accepted = true;
-				await this.gameRepository.save(existingGame);
-				//console.log('SEND EMIT TO WAITING USER:::', opponent.name);
-				//console.log('I AM PLAYER: ', player);
-				//console.log('check:', opponent);
-				// Emit an event to the specific user letting them know the game is ready
-				this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
-					opponentName: player.name,
-				});
-
-				return existingGame;
 			}
+			existingGame.accepted = true;
+			await this.gameRepository.save(existingGame);
+			//console.log('SEND EMIT TO WAITING USER:::', opponent.name);
+			//console.log('I AM PLAYER: ', player);
+			//console.log('check:', opponent);
+			// Emit an event to the specific user letting them know the game is ready
+			this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
+				opponentName: player.name,
+			});
+
+			return existingGame;
 		} catch (error) {
 			console.error(`Failed to create game: ${error.message}`, error.stack);
 			throw new InternalServerErrorException(`Failed to create game: ${error.message}`);

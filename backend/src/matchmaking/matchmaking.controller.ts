@@ -48,17 +48,16 @@ export class MatchmakingController {
 					message: 'queue started!',
 					queue,
 				});
-			} else {
-				//TODO: frontend site should restart the queue
-				if (myqueue.isActive === false) {
-					myqueue.isActive = true;
-					await this.matchmakingService.saveQueue(myqueue);
-				}
-				console.log('queue already open!');
-				return res.status(HttpStatus.OK).json({
-					message: 'queue already open!',
-				});
 			}
+			//TODO: frontend site should restart the queue
+			if (myqueue.isActive === false) {
+				myqueue.isActive = true;
+				await this.matchmakingService.saveQueue(myqueue);
+			}
+			console.log('queue already open!');
+			return res.status(HttpStatus.OK).json({
+				message: 'queue already open!',
+			});
 		} catch (error) {
 			console.log('ERROR in matchmaking/join: ', error);
 			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -84,11 +83,10 @@ export class MatchmakingController {
 				await this.userService.updateUser(user);
 				await this.matchmakingService.leaveQueue(req.user.id);
 				return res.status(HttpStatus.OK).json({ message: 'Successfully left the queue.' });
-			} else {
-				user.status = 'online';
-				await this.userService.updateUser(user);
-				return res.status(HttpStatus.OK).json({ message: 'You were not in the queue.' });
 			}
+			user.status = 'online';
+			await this.userService.updateUser(user);
+			return res.status(HttpStatus.OK).json({ message: 'You were not in the queue.' });
 		} catch (error) {
 			console.error('Error leaving queue:', error);
 			return res
@@ -199,20 +197,18 @@ export class MatchmakingController {
 				return res
 					.status(HttpStatus.OK)
 					.json({ shouldRejoinQueue: true, message: 'Queue is active.' });
-			} else {
-				return res
-					.status(HttpStatus.OK)
-					.json({ shouldRejoinQueue: false, message: 'No active queue found.' });
 			}
+			return res
+				.status(HttpStatus.OK)
+				.json({ shouldRejoinQueue: false, message: 'No active queue found.' });
 		} catch (error) {
 			console.error('Error checking queue:', error);
 			if (error instanceof NotFoundException) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
-			} else {
-				return res
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.json({ message: 'Error checking queue.' });
 			}
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error checking queue.' });
 		}
 	}
 
@@ -241,20 +237,18 @@ export class MatchmakingController {
 						message: 'Match accepted but not started. Rejoining queue.',
 						inGame: false,
 					});
-				} else {
-					// Player did not accept or decline (AFK)
-					await this.matchmakingService.leaveQueue(user.id);
-					return res.status(HttpStatus.OK).json({
-						message: 'Player did not respond in time. Removed from queue.',
-						inGame: false,
-					});
 				}
-			} else {
+				// Player did not accept or decline (AFK)
+				await this.matchmakingService.leaveQueue(user.id);
 				return res.status(HttpStatus.OK).json({
-					message: 'No queue found for the player.',
+					message: 'Player did not respond in time. Removed from queue.',
 					inGame: false,
 				});
 			}
+			return res.status(HttpStatus.OK).json({
+				message: 'No queue found for the player.',
+				inGame: false,
+			});
 		} catch (error) {
 			console.error('Error handling timeout:', error);
 			return res
@@ -285,11 +279,10 @@ export class MatchmakingController {
 				return res.status(HttpStatus.OK).json({
 					message: 'You have been re-entered into the matchmaking queue.',
 				});
-			} else {
-				return res.status(HttpStatus.NOT_FOUND).json({
-					message: 'Queue entry not found. Please rejoin the queue manually.',
-				});
 			}
+			return res.status(HttpStatus.NOT_FOUND).json({
+				message: 'Queue entry not found. Please rejoin the queue manually.',
+			});
 		} catch (error) {
 			console.error('Error rejoining queue:', error);
 			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
