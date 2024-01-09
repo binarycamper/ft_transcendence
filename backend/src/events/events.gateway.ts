@@ -13,7 +13,6 @@ import { ChatService } from 'src/chat/chat.service';
 import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Mute } from 'src/chat/mute.entity';
-import { MatchmakingService } from 'src/matchmaking/matchmaking.service';
 
 @WebSocketGateway({
 	cors: {

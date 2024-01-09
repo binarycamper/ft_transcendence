@@ -1,11 +1,14 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString, IsNotEmpty, Length, IsBoolean } from 'class-validator';
 
 export class Verify2FADto {
-	@IsString()
-	@IsNotEmpty()
-	readonly token: string; // Der 2FA-Code, den der Benutzer eingibt
+	// If problems delete this
+	@IsString({ message: 'Token must be a string.' })
+	@IsNotEmpty({ message: 'Token is required.' })
+	@Length(6, 6, { message: 'Token must be exactly 6 characters long.' })
+	readonly token: string;
 }
 
 export class Toggle2FADto {
-	readonly enable2FA: string;
+	@IsBoolean({ message: 'enable2FA must be a boolean value.' })
+	readonly enable2FA: boolean;
 }

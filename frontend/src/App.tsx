@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Router } from './Router';
@@ -27,7 +27,7 @@ export default function App() {
 			socket.off('disconnect');
 			socket.off('reconnect_attempt');
 		};
-	}, []);
+	}, [socket]);
 
 	return (
 		<MantineProvider defaultColorScheme="auto" theme={theme}>

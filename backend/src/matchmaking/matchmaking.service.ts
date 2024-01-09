@@ -113,7 +113,7 @@ export class MatchmakingService {
 		return matchmakingEntry;
 	}
 
-	async viewQueue(): Promise<any> {
+	async viewQueue(): Promise<{ message: string }> {
 		// Placeholder logic to view the current matchmaking queue
 		// Implement actual logic to retrieve and return queue information
 		console.log(`Viewing the current matchmaking queue`);

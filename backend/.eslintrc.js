@@ -6,7 +6,11 @@ module.exports = {
 		sourceType: 'module',
 	},
 	plugins: ['@typescript-eslint/eslint-plugin'],
-	extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
+	extends: [
+		'plugin:@typescript-eslint/recommended',
+		'plugin:prettier/recommended',
+		// 'plugin:@typescript-eslint/recommended-requiring-type-checking',
+	],
 	root: true,
 	env: {
 		node: true,
@@ -17,7 +21,8 @@ module.exports = {
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/explicit-module-boundary-types': 'off',
 		'@typescript-eslint/interface-name-prefix': 'off',
-		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-explicit-any': 'warn',
+		'@typescript-eslint/no-unsafe-argument': 'warn',
 		'@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
 	},
 };

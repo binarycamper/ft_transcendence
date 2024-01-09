@@ -21,7 +21,6 @@ export class StatusGuard implements CanActivate {
 				{
 					status: HttpStatus.UNAUTHORIZED,
 					error: 'Please login',
-					location: '/login',
 				},
 				HttpStatus.UNAUTHORIZED,
 			);
@@ -33,7 +32,6 @@ export class StatusGuard implements CanActivate {
 				{
 					status: HttpStatus.SEE_OTHER,
 					error: 'Please complete your profile',
-					location: '/signup', // You might need to adjust this based on how you handle routing on the client side.
 				},
 				HttpStatus.SEE_OTHER,
 			);

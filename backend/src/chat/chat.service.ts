@@ -62,7 +62,7 @@ export class ChatService {
 			await this.muteRepository.save(mute);
 		} catch (error) {
 			console.error('Failed to mute user:', error);
-			throw new InternalServerErrorException('Unable to mute user: ', error);
+			throw new InternalServerErrorException('Unable to mute user: ', error as string);
 		}
 	}
 
@@ -81,7 +81,7 @@ export class ChatService {
 			await this.muteRepository.remove(mute); // To completely remove the mute entry
 		} catch (error) {
 			console.log('Failed to unmute user:', error);
-			throw new InternalServerErrorException('Unable to unmute user: ', error);
+			throw new InternalServerErrorException('Unable to unmute user: ', error as string);
 		}
 	}
 
@@ -240,7 +240,11 @@ export class ChatService {
 		return chatRoom;
 	}
 
-	async kickUserFromRoom(roomId: string, userIdToKick: string, requesterId: string): Promise<any> {
+	async kickUserFromRoom(
+		roomId: string,
+		userIdToKick: string,
+		requesterId: string,
+	): Promise<{ message: string }> {
 		const chatRoom = await this.chatRoomRepository.findOne({
 			where: { id: roomId },
 			relations: ['users'],
