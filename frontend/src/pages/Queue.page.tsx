@@ -177,14 +177,34 @@ export function MatchmakingQueuePage() {
 
 	useEffect(() => {
 		async function handleGameLeave() {
-			//await leaveQueue();
-
-			//TODO: join queue again write new fetch and set variable.
-
-			setIsInQueue(true);
-			// Handle the scenario when a player leaves the game
-			// Maybe navigate back to the queue or show a message
-			// Example: window.location.href = 'http://localhost:5173/play';
+			setMatchFound(false);
+			try {
+				const response = await fetch('http://localhost:8080/matchmaking/check-queue', {
+					method: 'GET',
+					credentials: 'include',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+				const data = await response.json();
+				if (response.ok) {
+					// Update state based on backend response
+					setIsInQueue(data.shouldRejoinQueue);
+					setInfo(data.message);
+					// If the backend says the user is in queue, start the queue timer
+					if (data.shouldRejoinQueue) {
+						// Call a function that handles the re-queue process
+						handleJoinQueue(); // Assuming handleJoinQueue correctly handles rejoining
+					}
+				} else {
+					// Non-200 response, handle according to your application's needs
+					setInfo(data.message || 'An error occurred while checking queue status.');
+				}
+			} catch (error) {
+				// This will handle network errors
+				console.error('Network error while checking queue status', error);
+				setInfo('Network error. Could not check queue status.');
+			}
 		}
 
 		socket.on('matchDeclined', handleGameLeave);
@@ -192,7 +212,7 @@ export function MatchmakingQueuePage() {
 		return () => {
 			socket.off('matchDeclined', handleGameLeave);
 		};
-	}, [socket]);
+	}, [socket]); // Add any additional dependencies if necessary
 
 	//will call the socket call to the function above.
 	async function handleDeclineMatch() {

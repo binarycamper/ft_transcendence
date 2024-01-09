@@ -12,6 +12,7 @@ import {
 	Body,
 	forwardRef,
 	Inject,
+	NotFoundException,
 } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -173,6 +174,41 @@ export class MatchmakingController {
 			return res
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.json({ message: 'Error declining match.' });
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('check-queue')
+	async checkQueue(@Req() req: Request, @Res() res: Response) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			if (!user) {
+				throw new NotFoundException('User not found.');
+			}
+
+			const queue = await this.matchmakingService.findMyQueue(user);
+			if (queue) {
+				if (!queue.isActive) {
+					queue.isActive = true;
+					await this.matchmakingService.saveQueue(queue);
+				}
+				return res
+					.status(HttpStatus.OK)
+					.json({ shouldRejoinQueue: true, message: 'Queue is active.' });
+			} else {
+				return res
+					.status(HttpStatus.OK)
+					.json({ shouldRejoinQueue: false, message: 'No active queue found.' });
+			}
+		} catch (error) {
+			console.error('Error checking queue:', error);
+			if (error instanceof NotFoundException) {
+				return res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
+			} else {
+				return res
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.json({ message: 'Error checking queue.' });
+			}
 		}
 	}
 
