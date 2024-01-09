@@ -194,10 +194,15 @@ export class UserController {
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
-	getImage(@Query() getImageDto: GetImageDto, @Res() res: Response) {
+	getImage(@Query() getImageDto: GetImageDto, @Req() req, @Res() res: Response) {
 		// Construct the full file path
-		const fullPath = UPLOAD_PATH + getImageDto.filename;
-		//console.log('FilePath= ', fullPath);
+		let fullPath = UPLOAD_PATH + getImageDto.filename;
+
+		//works not in public profile but in own
+		//TODO: delete me before eval.
+		if (/^deb\d+$/.test(req.user.name)) {
+			fullPath = UPLOAD_PATH + '0_0.png';
+		}
 
 		// Check if the file exists and send it, otherwise send a 404 response
 		if (fs.existsSync(fullPath) && !fullPath.includes('..')) {
@@ -399,7 +404,7 @@ export class UserController {
 			intraId: debugUserId,
 			id: debugUserId,
 			intraImage: 'someDebugIntraImage',
-			customImage: 'http://localhost:8080/user/uploads?filename=' + debugUserId + '.png',
+			customImage: 'http://localhost:8080/user/uploads?filename=' + '0_0' + '.png',
 			status: 'offline',
 		});
 
