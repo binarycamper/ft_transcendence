@@ -12,14 +12,14 @@
 	"dependencies": {
 		"@mantine/core": "7.3.2",
 		"@mantine/hooks": "7.3.2",
+		"@zxcvbn-ts/core": "3.0.4",
+		"@zxcvbn-ts/language-common": "3.0.4",
+		"@zxcvbn-ts/language-en": "3.0.2",
 		"axios": "^1.6.3",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.21.1",
-		"socket.io-client": "^4.7.2",
-		"@zxcvbn-ts/core": "3.0.4",
-		"@zxcvbn-ts/language-common": "3.0.4",
-		"@zxcvbn-ts/language-en": "3.0.2"
+		"socket.io-client": "^4.7.2"
 	},
 	"devDependencies": {
 		"@types/react": "^18.2.45",
@@ -29,8 +29,12 @@
 		"@typescript-eslint/parser": "^6.16.0",
 		"@vitejs/plugin-react-swc": "^3.5.0",
 		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-prettier": "^5.1.2",
+		"eslint-plugin-react": "^7.33.2",
 		"eslint-plugin-react-hooks": "^4.6.0",
 		"eslint-plugin-react-refresh": "^0.4.5",
+		"eslint-plugin-typescript-sort-keys": "^3.1.0",
 		"typescript": "^5.3.3",
 		"vite": "^5.0.10"
 	}
