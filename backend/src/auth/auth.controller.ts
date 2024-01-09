@@ -25,7 +25,6 @@ import { LoginDto } from './DTO/Login.Dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
-import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
@@ -33,7 +32,6 @@ export class AuthController {
 		private readonly authService: AuthService,
 		private readonly configService: ConfigService,
 		private userService: UserService,
-		private jwtService: JwtService,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 	) {}
@@ -81,7 +79,7 @@ export class AuthController {
 			res.cookie('token', jwtToken, {
 				httpOnly: true,
 				maxAge: 86_400_000 * 7,
-				secure: process.env.NODE_ENV !== 'development',
+				secure: this.configService.get<string>('NODE_ENV') !== 'development',
 				sameSite: 'lax',
 			});
 			return res.status(HttpStatus.OK).json({
@@ -101,7 +99,7 @@ export class AuthController {
 		res.cookie('token', jwtToken, {
 			httpOnly: true,
 			maxAge: 86_400_000 * 7,
-			secure: process.env.NODE_ENV !== 'development',
+			secure: this.configService.get<string>('NODE_ENV') !== 'development',
 			sameSite: 'lax',
 		});
 
@@ -147,7 +145,7 @@ export class AuthController {
 	@Post('2fa/verify-2fa')
 	@UseGuards(JwtAuthGuard)
 	async verify2FA(@Req() req: Request, @Body() verifyDto: Verify2FADto, @Res() response: Response) {
-		const userId = req.user.id;
+		const userId: string = req.user.id;
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
 			throw new UnauthorizedException('User not found');
@@ -178,7 +176,7 @@ export class AuthController {
 	@Get('2fa/setup')
 	@UseGuards(JwtAuthGuard)
 	async setup2FA(@Req() req: Request): Promise<{ qrCodeUrl: string }> {
-		const userId = req.user.id;
+		const userId: string = req.user.id;
 
 		const user = await this.userService.findProfileById(userId);
 		if (!user) {
@@ -200,10 +198,10 @@ export class AuthController {
 		}
 	}
 
+	//dto rk
 	@Post('reset-password')
 	async resetPassword(@Body() body: { email: string }, @Res() res: Response) {
 		try {
-			console.log('body.email= ', body.email);
 			const response = await this.authService.resetPassword(body.email);
 			return res.status(HttpStatus.OK).json({ message: response.message });
 		} catch (error) {
@@ -211,6 +209,7 @@ export class AuthController {
 		}
 	}
 
+	//dto rk
 	@Post('update-password')
 	async updatePassword(@Body() body: { token: string; password: string }, @Res() res: Response) {
 		try {
@@ -221,6 +220,7 @@ export class AuthController {
 		}
 	}
 
+	//dto rk
 	@Get('verify-reset-token/:token')
 	async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
 		const isValid = await this.authService.verifyResetToken(token);
