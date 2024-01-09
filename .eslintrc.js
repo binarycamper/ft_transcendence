@@ -24,7 +24,6 @@ module.exports = {
 		'default-param-last': ['error'],
 		'dot-notation': ['warn'],
 		eqeqeq: ['warn'],
-		'func-style': ['warn', 'declaration', { allowArrowFunctions: false }],
 		'logical-assignment-operators': ['warn', 'always'],
 		'no-constant-binary-expression': ['error'],
 		'no-constructor-return': ['error'],
@@ -34,7 +33,6 @@ module.exports = {
 		'no-lone-blocks': ['error'],
 		'no-lonely-if': ['error'],
 		'no-loop-func': ['error'],
-		/* 'no-magic-numbers': ['warn'], */
 		'no-negated-condition': ['warn'],
 		'no-new-native-nonconstructor': ['error'],
 		'no-new-wrappers': ['error'],
@@ -46,13 +44,10 @@ module.exports = {
 		'no-unneeded-ternary': ['warn'],
 		'no-unreachable-loop': ['error'],
 		'no-unused-expressions': ['error'],
-		'no-unused-private-class-members': ['error'],
 		'no-useless-computed-key': ['error'],
 		'no-useless-concat': ['error'],
-		/* 'no-useless-constructor': ['error'], */
 		'no-useless-return': ['error'],
 		'no-var': ['error'],
-		// 'no-warning-comments': ['warn'],
 		'operator-assignment': ['warn'],
 		'prefer-arrow-callback': ['warn'],
 		'prefer-const': ['error'],
@@ -62,8 +57,15 @@ module.exports = {
 		'prefer-rest-params': ['warn'],
 		'prefer-template': ['warn'],
 		'require-await': ['error'],
-		/* 'sort-imports': ['warn'], */
-		/* 'sort-keys': ['warn'], */
 		yoda: ['warn'],
+		/*
+		'func-style': ['warn', 'declaration', { allowArrowFunctions: false }],
+		'no-magic-numbers': ['warn'],
+		'no-unused-private-class-members': ['error'],
+		'no-useless-constructor': ['error'],
+		'no-warning-comments': ['warn'],
+		'sort-imports': ['warn'],
+		'sort-keys': ['warn'],
+		*/
 	},
 };
