@@ -74,7 +74,7 @@ export class GameService {
 		return await this.gameRepository.find({});
 	}
 
-	async getMyGame(userId: string): Promise<Game | undefined> {
+	async findGameById(userId: string): Promise<Game | undefined> {
 		return await this.gameRepository.findOne({
 			where: [{ playerOne: { id: userId } }, { playerTwo: { id: userId } }],
 			order: {
@@ -82,6 +82,10 @@ export class GameService {
 			},
 			relations: ['playerOne', 'playerTwo'],
 		});
+	}
+
+	async deleteGame(game: Game) {
+		await this.gameRepository.remove(game);
 	}
 
 	async getOpponentGame(opponentName: string): Promise<Game | undefined> {

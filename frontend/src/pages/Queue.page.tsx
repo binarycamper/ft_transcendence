@@ -4,11 +4,19 @@ import Prompt from '../components/Prompt';
 
 export function MatchmakingQueuePage() {
 	const socket = useContext(SocketContext);
+	const [timer, setTimer] = useState<number | null>(null);
 	const [isInQueue, setIsInQueue] = useState(false);
 	const [queueTime, setQueueTime] = useState(0);
 	const [matchFound, setMatchFound] = useState(false);
 	const [opponentName, setOpponentName] = useState('');
 	const [info, setInfo] = useState('');
+
+	const clearMatchTimer = () => {
+		if (timer !== null) {
+			window.clearTimeout(timer);
+			setTimer(null);
+		}
+	};
 
 	async function handleJoinQueue() {
 		try {
@@ -23,7 +31,7 @@ export function MatchmakingQueuePage() {
 				setInfo('Joined Queue');
 				setIsInQueue(true);
 			} else if (!response.ok) {
-				setInfo('Invalid Queue!!!');
+				setInfo('failed to join the queue');
 				setIsInQueue(false);
 				leaveQueue();
 				//throw new Error('Network response was not ok');
@@ -77,23 +85,53 @@ export function MatchmakingQueuePage() {
 	useEffect(() => {
 		function handleMatch(data: any) {
 			if (data?.opponentName && !matchFound) {
-				// Check if matchFound is already set
 				setInfo(`Match found against ${data.opponentName}`);
 				setOpponentName(data.opponentName);
 				setMatchFound(true);
+
+				// Start a countdown timer for match acceptance
+				const countdownTimer = window.setTimeout(async () => {
+					// Notify the backend that the timeout has happened
+					try {
+						const payload = { opponentName }; // or any other info the backend might need
+						const response = await fetch('http://localhost:8080/matchmaking/timeout', {
+							method: 'POST',
+							credentials: 'include',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(payload),
+						});
+
+						if (response.ok) {
+							console.log('Backend notified about the timeout');
+						} else {
+							// Handle errors, if any
+							console.error('Failed to notify backend about the timeout');
+						}
+					} catch (error) {
+						console.error('Network error while notifying backend about the timeout', error);
+					}
+
+					// Additional logic after timeout notification
+					setMatchFound(false);
+					setIsInQueue(true);
+					setInfo('Matchmaking restarted due to no response from the opponent.');
+				}, 15000); // 15 seconds
+
+				setTimer(countdownTimer);
 			}
 		}
 
 		socket.on('match-found', handleMatch);
 
-		// Clean up the event listener when the component unmounts or if the effect is re-run
 		return () => {
 			socket.off('match-found', handleMatch);
+			clearMatchTimer();
 		};
-	}, [socket, matchFound]); // Add matchFound to the dependency array
+	}, [socket, matchFound, timer]);
 
 	async function handleAcceptMatch() {
 		try {
+			clearMatchTimer();
 			const payload = { playerTwoName: opponentName };
 			const response = await fetch('http://localhost:8080/matchmaking/accept-match', {
 				method: 'POST',
@@ -152,13 +190,14 @@ export function MatchmakingQueuePage() {
 		socket.on('matchDeclined', handleGameLeave);
 
 		return () => {
-			socket.off('matchDeclined', handleGameLeave); // Cleanup for player-has-left event
+			socket.off('matchDeclined', handleGameLeave);
 		};
 	}, [socket]);
 
 	//will call the socket call to the function above.
 	async function handleDeclineMatch() {
 		try {
+			clearMatchTimer();
 			const payload = { playerTwoName: opponentName };
 			const response = await fetch('http://localhost:8080/matchmaking/decline-match', {
 				method: 'POST',
@@ -170,6 +209,7 @@ export function MatchmakingQueuePage() {
 				const data = await response.json();
 				console.log('response: ', data);
 				setIsInQueue(false);
+				window.location.reload();
 			}
 		} catch (error) {}
 		/*socket.emit('decline-match', { opponentName });

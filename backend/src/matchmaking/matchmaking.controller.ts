@@ -20,6 +20,7 @@ import { StatusGuard } from 'src/auth/guards/status.guard';
 import { GameService } from 'src/game/game.service';
 import { Request, Response } from 'express';
 import { EventsGateway } from 'src/events/events.gateway';
+import { Game } from 'src/game/game.entity';
 
 @Controller('matchmaking')
 export class MatchmakingController {
@@ -41,20 +42,26 @@ export class MatchmakingController {
 				const queue = await this.matchmakingService.joinQueue(user);
 				user.status = 'inqueue';
 				await this.userService.updateUser(user);
-				res.status(HttpStatus.OK).json({
-					statusCode: HttpStatus.OK,
+				return res.status(HttpStatus.OK).json({
 					message: 'queue started!',
 					queue,
 				});
 			} else {
 				//TODO: frontend site should restart the queue
-				res.status(HttpStatus.BAD_REQUEST).json({
-					statusCode: HttpStatus.BAD_REQUEST,
-					message: 'Invalid queue open!',
+				if (myqueue.isActive === false) {
+					myqueue.isActive = true;
+					await this.matchmakingService.saveQueue(myqueue);
+				}
+				console.log('queue already open!');
+				return res.status(HttpStatus.OK).json({
+					message: 'queue already open!',
 				});
 			}
 		} catch (error) {
 			console.log('ERROR in matchmaking/join: ', error);
+			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+				message: 'New error!',
+			});
 		}
 	}
 
@@ -155,7 +162,8 @@ export class MatchmakingController {
 			//await this.matchmakingService.saveQueue(opponentQueue);
 			//const myqueue = await this.matchmakingService.findQueueWithId(req.user.id);
 			await this.matchmakingService.leaveQueue(req.user.id);
-
+			const game: Game = await this.gameService.findGameById(opponent.id);
+			if (game) await this.gameService.deleteGame(game);
 			user.status = 'online';
 			await this.userService.updateUser(user);
 			this.eventsGateway.server.to(`user_${opponent.id}`).emit('matchDeclined', {});
