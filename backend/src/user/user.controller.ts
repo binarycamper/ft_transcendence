@@ -418,7 +418,9 @@ export class UserController {
 		});
 	}
 
-	//returns all users
+	//DO NOT USE IN FRONTEND CODE!
+	//########################Debug#############################	//TODO: delete before eval
+	//returns all users for debug, TODO delete that function before eval.
 	@Get('users')
 	async getAll(): Promise<User[]> {
 		return this.userService.findAll();

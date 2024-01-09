@@ -534,6 +534,7 @@ export class ChatController {
 		}
 	}
 
+	//DO NOT USE IN FRONTEND CODE!
 	//########################Debug#############################	//TODO: delete before eval
 
 	// Endpoint to get all pending Mutes
