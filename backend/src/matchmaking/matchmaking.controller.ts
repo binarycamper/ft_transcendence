@@ -79,7 +79,6 @@ export class MatchmakingController {
 		try {
 			const queue = await this.matchmakingService.findMyQueue(req.user);
 			const user = await this.userService.findProfileById(req.user.id);
-
 			if (queue) {
 				user.status = 'online';
 				await this.userService.updateUser(user);
@@ -163,9 +162,13 @@ export class MatchmakingController {
 			//opponentQueue.isActive = true;
 			//await this.matchmakingService.saveQueue(opponentQueue);
 			//const myqueue = await this.matchmakingService.findQueueWithId(req.user.id);
+
 			await this.matchmakingService.leaveQueue(req.user.id);
 			const game: Game = await this.gameService.findGameById(opponent.id);
-			if (game) await this.gameService.deleteGame(game);
+			console.log('delete game, if there is an old unaccepted game: ', game);
+			if (game) {
+				await this.gameService.deleteGame(game);
+			}
 			user.status = 'online';
 			await this.userService.updateUser(user);
 			this.eventsGateway.server.to(`user_${opponent.id}`).emit('matchDeclined', {});
@@ -221,7 +224,11 @@ export class MatchmakingController {
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
 			}
-
+			const game = await this.gameService.findGameById(user.id);
+			console.log('delete game, if there is an old unaccepted game: ', game);
+			if (game) {
+				await this.gameService.deleteGame(game);
+			}
 			// Handle the timeout logic here
 			// For example, you might want to set the queue to inactive
 			const queue = await this.matchmakingService.findMyQueue(user);
@@ -266,6 +273,7 @@ export class MatchmakingController {
 			}
 
 			const game = await this.gameService.findGameById(user.id);
+			console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
 			}
