@@ -22,6 +22,7 @@ import { GameService } from 'src/game/game.service';
 import { Request, Response } from 'express';
 import { EventsGateway } from 'src/events/events.gateway';
 import { Game } from 'src/game/game.entity';
+import { RejoinQueueDto } from './dto/matchmaking.dto';
 
 @Controller('matchmaking')
 export class MatchmakingController {
@@ -209,6 +210,83 @@ export class MatchmakingController {
 					.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.json({ message: 'Error checking queue.' });
 			}
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('timeout')
+	async handleTimeout(@Req() req: Request, @Res() res: Response, @Body() body: any) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			if (!user) {
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
+			}
+
+			// Handle the timeout logic here
+			// For example, you might want to set the queue to inactive
+			const queue = await this.matchmakingService.findMyQueue(user);
+			if (queue) {
+				if (queue.accepted) {
+					// Player accepted the match but the game did not start
+					queue.isActive = true;
+					await this.matchmakingService.saveQueue(queue);
+					return res.status(HttpStatus.OK).json({
+						message: 'Match accepted but not started. Rejoining queue.',
+						inGame: false,
+					});
+				} else {
+					// Player did not accept or decline (AFK)
+					await this.matchmakingService.leaveQueue(user.id);
+					return res.status(HttpStatus.OK).json({
+						message: 'Player did not respond in time. Removed from queue.',
+						inGame: false,
+					});
+				}
+			} else {
+				return res.status(HttpStatus.OK).json({
+					message: 'No queue found for the player.',
+					inGame: false,
+				});
+			}
+		} catch (error) {
+			console.error('Error handling timeout:', error);
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error handling timeout.' });
+		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('rejoin-queue')
+	async rejoinQueue(@Req() req: Request, @Res() res: Response, @Body() body: RejoinQueueDto) {
+		try {
+			const user = await this.userService.findProfileById(req.user.id);
+			if (!user) {
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
+			}
+
+			const game = await this.gameService.findGameById(user.id);
+			if (game) {
+				await this.gameService.deleteGame(game);
+			}
+
+			const queue = await this.matchmakingService.findMyQueue(user);
+			if (queue) {
+				queue.isActive = true;
+				await this.matchmakingService.saveQueue(queue);
+				return res.status(HttpStatus.OK).json({
+					message: 'You have been re-entered into the matchmaking queue.',
+				});
+			} else {
+				return res.status(HttpStatus.NOT_FOUND).json({
+					message: 'Queue entry not found. Please rejoin the queue manually.',
+				});
+			}
+		} catch (error) {
+			console.error('Error rejoining queue:', error);
+			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+				message: 'Error rejoining queue.',
+			});
 		}
 	}
 

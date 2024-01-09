@@ -89,11 +89,9 @@ export function MatchmakingQueuePage() {
 				setOpponentName(data.opponentName);
 				setMatchFound(true);
 
-				// Start a countdown timer for match acceptance
 				const countdownTimer = window.setTimeout(async () => {
-					// Notify the backend that the timeout has happened
 					try {
-						const payload = { opponentName }; // or any other info the backend might need
+						const payload = { opponentName };
 						const response = await fetch('http://localhost:8080/matchmaking/timeout', {
 							method: 'POST',
 							credentials: 'include',
@@ -102,19 +100,23 @@ export function MatchmakingQueuePage() {
 						});
 
 						if (response.ok) {
+							const responseData = await response.json();
 							console.log('Backend notified about the timeout');
+							setInfo(responseData.message);
+
+							if (responseData.inGame === false) {
+								setMatchFound(false);
+								setIsInQueue(responseData.shouldRejoinQueue);
+							}
+							// Optionally, handle other scenarios based on responseData
 						} else {
-							// Handle errors, if any
 							console.error('Failed to notify backend about the timeout');
+							// Handle errors, if any
 						}
 					} catch (error) {
 						console.error('Network error while notifying backend about the timeout', error);
+						setInfo('Network error. Could not process timeout.');
 					}
-
-					// Additional logic after timeout notification
-					setMatchFound(false);
-					setIsInQueue(true);
-					setInfo('Matchmaking restarted due to no response from the opponent.');
 				}, 15000); // 15 seconds
 
 				setTimer(countdownTimer);
@@ -144,13 +146,38 @@ export function MatchmakingQueuePage() {
 				const data = await response.json();
 				if (data.game?.accepted === true) {
 					window.location.href = 'http://localhost:5173/spiel';
-				} else if (response.status === 202) {
-					// Queue reactivated, update UI to indicate re-joining the queue
-					setIsInQueue(true);
-					setInfo('You have been re-entered into the matchmaking queue.');
 				} else {
-					// Waiting for the other player
-					setInfo('Waiting for the other player to join...');
+					// Set a timeout to wait for the other player
+					const waitingTimer = setTimeout(async () => {
+						// Notify the server to change queue.isActive to true
+						try {
+							const rejoinPayload = { status: 'rejoin-queue' }; // Adjust payload as needed by your backend
+							const rejoinResponse = await fetch('http://localhost:8080/matchmaking/rejoin-queue', {
+								method: 'POST',
+								credentials: 'include',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify(rejoinPayload),
+							});
+
+							if (rejoinResponse.ok) {
+								const rejoinData = await rejoinResponse.json();
+								setInfo(rejoinData.message || 'Rejoined the queue.');
+							} else {
+								const errorData = await rejoinResponse.json();
+								setInfo(errorData.message || 'Failed to rejoin the queue.');
+							}
+						} catch (error) {
+							console.error('Error requesting to rejoin the queue:', error);
+							setInfo('Network error. Could not rejoin the queue.');
+						}
+
+						setMatchFound(false);
+						setIsInQueue(true);
+						setInfo('The other player did not join. Rejoining the queue...');
+					}, 20000); // Wait for 20 seconds
+
+					// Save the timer ID so you can clear it if needed
+					setTimer(waitingTimer);
 				}
 			} else {
 				const errorData = await response.json();
@@ -165,6 +192,7 @@ export function MatchmakingQueuePage() {
 
 	useEffect(() => {
 		function handleGameReady() {
+			//TODO: DOubleCHeck if User is still in the matchmaking Process // fetch to server and ask!
 			window.location.href = `http://localhost:5173/spiel`;
 		}
 
@@ -194,15 +222,16 @@ export function MatchmakingQueuePage() {
 					// If the backend says the user is in queue, start the queue timer
 					if (data.shouldRejoinQueue) {
 						// Call a function that handles the re-queue process
-						handleJoinQueue(); // Assuming handleJoinQueue correctly handles rejoining
+						setMatchFound(false);
+						setOpponentName('');
+						handleJoinQueue();
 					}
 				} else {
-					// Non-200 response, handle according to your application's needs
 					setInfo(data.message || 'An error occurred while checking queue status.');
 				}
 			} catch (error) {
 				// This will handle network errors
-				console.error('Network error while checking queue status', error);
+				//console.error('Network error while checking queue status', error);
 				setInfo('Network error. Could not check queue status.');
 			}
 		}
@@ -227,15 +256,17 @@ export function MatchmakingQueuePage() {
 			});
 			if (response.ok) {
 				const data = await response.json();
-				console.log('response: ', data);
+				//console.log('response: ', data);
 				setIsInQueue(false);
-				window.location.reload();
+				setMatchFound(false);
+				setOpponentName('');
+				setQueueTime(0);
+				setInfo('');
+				//window.location.reload();
 			}
-		} catch (error) {}
-		/*socket.emit('decline-match', { opponentName });
-		setInfo('');
-		leaveQueue(); // will also set isInQueue to false
-		setMatchFound(false);*/
+		} catch (error: any) {
+			setInfo(error);
+		}
 	}
 
 	return (

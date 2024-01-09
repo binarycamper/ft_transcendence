@@ -17,4 +17,7 @@ export class Matchmaking {
 
 	@Column({ default: true })
 	isActive: boolean;
+
+	@Column({ default: false })
+	accepted: boolean;
 }
