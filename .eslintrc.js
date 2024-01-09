@@ -49,7 +49,7 @@ module.exports = {
 		'no-unused-private-class-members': ['error'],
 		'no-useless-computed-key': ['error'],
 		'no-useless-concat': ['error'],
-		'no-useless-constructor': ['error'],
+		/* 'no-useless-constructor': ['error'], */
 		'no-useless-return': ['error'],
 		'no-var': ['error'],
 		// 'no-warning-comments': ['warn'],
