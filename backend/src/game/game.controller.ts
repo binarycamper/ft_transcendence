@@ -21,6 +21,7 @@ export class GameController {
 	}
 
 	//########################Debug#############################
+
 	@Get('all-games')
 	async getAllGame() {
 		return await this.gameService.getAllGames();
