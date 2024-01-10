@@ -6,18 +6,22 @@ export class Game {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	// Link back to the User entity for playerOne
 	@ManyToOne(() => User, (user) => user.gamesAsPlayerOne)
 	playerOne: User;
 
-	// Link back to the User entity for playerTwo
+	@Column({ default: false })
+	acceptedOne: boolean;
+
 	@ManyToOne(() => User, (user) => user.gamesAsPlayerTwo)
 	playerTwo: User;
 
-	@Column()
+	@Column({ default: false })
+	acceptedTwo: boolean;
+
+	@Column({ default: 0 })
 	scorePlayerOne: number;
 
-	@Column()
+	@Column({ default: 0 })
 	scorePlayerTwo: number;
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -28,7 +32,4 @@ export class Game {
 
 	@Column({ nullable: true })
 	winnerId: string;
-
-	@Column({})
-	accepted: boolean;
 }

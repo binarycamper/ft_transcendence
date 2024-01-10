@@ -9,6 +9,7 @@ export function MatchmakingQueuePage() {
 	const [queueTime, setQueueTime] = useState(0);
 	const [matchFound, setMatchFound] = useState(false);
 	const [opponentName, setOpponentName] = useState('');
+	const [hasAcceptedMatch, setHasAcceptedMatch] = useState(false);
 	const [info, setInfo] = useState('');
 
 	const clearMatchTimer = () => {
@@ -134,7 +135,7 @@ export function MatchmakingQueuePage() {
 	async function handleAcceptMatch() {
 		try {
 			clearMatchTimer();
-			const payload = { playerTwoName: opponentName };
+			const payload = { opponentName: opponentName };
 			const response = await fetch('http://localhost:8080/matchmaking/accept-match', {
 				method: 'POST',
 				credentials: 'include',
@@ -144,9 +145,10 @@ export function MatchmakingQueuePage() {
 
 			if (response.ok) {
 				const data = await response.json();
-				if (data.game?.accepted === true) {
+				if (data.game?.acceptedOne === true && data.game?.acceptedTwo === true) {
 					window.location.href = 'http://localhost:5173/spiel';
 				} else {
+					setHasAcceptedMatch(true);
 					// Set a timeout to wait for the other player
 					const waitingTimer = setTimeout(async () => {
 						// Notify the server to change queue.isActive to true
@@ -161,6 +163,8 @@ export function MatchmakingQueuePage() {
 
 							if (rejoinResponse.ok) {
 								const rejoinData = await rejoinResponse.json();
+								setHasAcceptedMatch(false);
+
 								setInfo(rejoinData.message || 'Rejoined the queue.');
 							} else {
 								const errorData = await rejoinResponse.json();
@@ -222,6 +226,8 @@ export function MatchmakingQueuePage() {
 					// If the backend says the user is in queue, start the queue timer
 					if (data.shouldRejoinQueue) {
 						// Call a function that handles the re-queue process
+						setHasAcceptedMatch(false);
+
 						setMatchFound(false);
 						setOpponentName('');
 						handleJoinQueue();
@@ -247,7 +253,7 @@ export function MatchmakingQueuePage() {
 	async function handleDeclineMatch() {
 		try {
 			clearMatchTimer();
-			const payload = { playerTwoName: opponentName };
+			const payload = { opponentName: opponentName };
 			const response = await fetch('http://localhost:8080/matchmaking/decline-match', {
 				method: 'POST',
 				credentials: 'include',
@@ -257,6 +263,8 @@ export function MatchmakingQueuePage() {
 			if (response.ok) {
 				const data = await response.json();
 				//console.log('response: ', data);
+				setHasAcceptedMatch(false);
+
 				setIsInQueue(false);
 				setMatchFound(false);
 				setOpponentName('');
@@ -278,21 +286,25 @@ export function MatchmakingQueuePage() {
 				when={isInQueue}
 				message="Leaving this page will remove you from the matchmaking queue. Are you sure you want to leave?"
 			/>
-			{!isInQueue ? (
-				<button onClick={handleJoinQueue}>Join Queue</button>
-			) : matchFound ? (
-				<>
-					<button onClick={handleAcceptMatch}>Accept Match</button>
-					<button onClick={handleDeclineMatch}>Decline Match</button>
-				</>
-			) : (
-				<>
-					<h3>If you refresh or disconnect from this page, matchmaking will stop.</h3>
-					<p>Time in Queue: {queueTime} Seconds</p>
-					<p>Waiting in queue...</p>
-					<button onClick={leaveQueue}>Leave Queue</button>
-				</>
-			)}
+			{
+				!isInQueue ? (
+					<button onClick={handleJoinQueue}>Join Queue</button>
+				) : matchFound && !hasAcceptedMatch ? (
+					// Show Accept/Decline buttons only if a match is found and not yet accepted
+					<>
+						<button onClick={handleAcceptMatch}>Accept Match</button>
+						<button onClick={handleDeclineMatch}>Decline Match</button>
+					</>
+				) : isInQueue && !hasAcceptedMatch ? (
+					// Show "Leave Queue" button only if in queue and match not accepted
+					<>
+						<h3>If you refresh or disconnect from this page, matchmaking will stop.</h3>
+						<p>Time in Queue: {queueTime} Seconds</p>
+						<p>Waiting in queue...</p>
+						<button onClick={leaveQueue}>Leave Queue</button>
+					</>
+				) : null // Don't render any buttons if match is accepted
+			}
 		</>
 	);
 }
