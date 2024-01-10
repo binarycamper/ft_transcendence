@@ -41,6 +41,16 @@ const GamePage = () => {
 		}
 		getCurrentUserId();
 
+		socket.on('gameStart', (game) => {
+			// Update game state based on the data received from the server
+			console.log('Game is starting', game);
+			setPlayerScores({
+				player1: game.scorePlayerOne,
+				player2: game.scorePlayerTwo,
+			});
+			// Other game state initializations based on the 'game' object
+		});
+
 		// TODO: check for better writing of this
 		const handleResize = () => {
 			setScreenWidth(window.innerWidth);
