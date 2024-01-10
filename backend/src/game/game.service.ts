@@ -120,8 +120,8 @@ export class GameService {
 		await this.gameRepository.save(game);
 	}
 
-	async updateGame(gameUpdateDto: GameUpdateDto) {
-		const game = await this.findGameById(gameUpdateDto.id);
+	async updateGame(gameUpdateDto: GameUpdateDto, userId: string) {
+		const game = await this.findGameById(userId);
 		if (!game) {
 			throw new InternalServerErrorException('Game not found');
 		}

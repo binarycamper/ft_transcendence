@@ -35,9 +35,9 @@ export class GameController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('update-game')
-	async updateGame(@Body() gameUpdateDto: GameUpdateDto) {
+	async updateGame(@Req() req, @Body() gameUpdateDto: GameUpdateDto) {
 		try {
-			return await this.gameService.updateGame(gameUpdateDto);
+			return await this.gameService.updateGame(gameUpdateDto, req.user.id);
 		} catch (error) {
 			if (error instanceof HttpException) {
 				throw error;
