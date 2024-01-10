@@ -14,6 +14,7 @@ import { Matchmaking } from './matchmaking.entity';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { EventsGateway } from 'src/events/events.gateway';
+import { Game } from 'src/game/game.entity';
 
 @Injectable()
 export class MatchmakingService {
@@ -135,6 +136,15 @@ export class MatchmakingService {
 				console.error(`Failed to leave queue: ${error.message}`, error.stack); //TODO: comment during eval.
 				throw new InternalServerErrorException(`Failed to leave queue: ${error.message}`);
 			}
+		}
+	}
+
+	async updateGame(game: Game): Promise<Game> {
+		try {
+			return this.matchmakingRepository.save(game);
+		} catch (error) {
+			console.error(`Failed to update game: ${error.message}`, error.stack);
+			throw new InternalServerErrorException(`Failed to update game: ${error.message}`);
 		}
 	}
 

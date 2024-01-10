@@ -134,7 +134,7 @@ export function MatchmakingQueuePage() {
 	async function handleAcceptMatch() {
 		try {
 			clearMatchTimer();
-			const payload = { playerTwoName: opponentName };
+			const payload = { opponentName: opponentName };
 			const response = await fetch('http://localhost:8080/matchmaking/accept-match', {
 				method: 'POST',
 				credentials: 'include',
@@ -144,7 +144,7 @@ export function MatchmakingQueuePage() {
 
 			if (response.ok) {
 				const data = await response.json();
-				if (data.game?.accepted === true) {
+				if (data.game?.acceptedOne === true && data.game?.acceptedTwo === true) {
 					window.location.href = 'http://localhost:5173/spiel';
 				} else {
 					// Set a timeout to wait for the other player
@@ -247,7 +247,7 @@ export function MatchmakingQueuePage() {
 	async function handleDeclineMatch() {
 		try {
 			clearMatchTimer();
-			const payload = { playerTwoName: opponentName };
+			const payload = { opponentName: opponentName };
 			const response = await fetch('http://localhost:8080/matchmaking/decline-match', {
 				method: 'POST',
 				credentials: 'include',

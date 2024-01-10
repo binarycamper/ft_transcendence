@@ -49,7 +49,6 @@ export class MatchmakingController {
 					queue,
 				});
 			} else {
-				//TODO: frontend site should restart the queue
 				if (myqueue.isActive === false) {
 					myqueue.isActive = true;
 					await this.matchmakingService.saveQueue(myqueue);
@@ -103,34 +102,27 @@ export class MatchmakingController {
 	async acceptMatch(
 		@Req() req: Request,
 		@Res() res: Response,
-		@Body('playerTwoName') opponentName: string,
+		@Body('opponentName') opponentName: string,
 	) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Requesting user not found.' });
 			}
-			const queue = await this.matchmakingService.findMyQueue(user);
-			if (!queue) {
-				if (user.status === 'online' || user.status === 'inqueue') {
-					this.joinQueue(req, res);
-					user.status = 'inqueue';
-					await this.userService.updateUser(user);
-					return res.status(HttpStatus.ACCEPTED).json({ message: 'Queue restarted.' }); //TODO: Frontend needs to render restarting queue!
-				}
-				return res
-					.status(HttpStatus.FORBIDDEN)
-					.json({ message: 'You are already ingame! Or Wrong User-Status.' }); //>TODO: delete  Or Wrong User-Status. before eval
-			}
-			queue.isActive = false;
-			await this.matchmakingService.saveQueue(queue);
+
 			const opponent = await this.userService.findProfileByName(opponentName);
 			if (!opponent) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Opponent user not found.' });
 			}
 
+			// Assuming 'createNewGame' sets 'acceptedOne' to true for the user who created the game
 			const game = await this.gameService.createNewGame(user, opponent);
-			const statusMessage = game.accepted
+			if (!game) {
+				console.log('no game created...');
+				return;
+			}
+			const allAccepted = game.acceptedOne && game.acceptedTwo;
+			const statusMessage = allAccepted
 				? 'Both players are ready. Game can start.'
 				: 'Waiting for the other player to join.';
 
@@ -140,7 +132,6 @@ export class MatchmakingController {
 				game: game,
 			});
 		} catch (error) {
-			//TODO send more errror codes to handle diffrent stuff... Not only 500
 			console.error('ERROR in acceptMatch:', error);
 			return res
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -153,7 +144,7 @@ export class MatchmakingController {
 	async declineMatch(
 		@Req() req: Request,
 		@Res() res: Response,
-		@Body('playerTwoName') opponentName: string,
+		@Body('opponentName') opponentName: string,
 	) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
@@ -165,7 +156,7 @@ export class MatchmakingController {
 
 			await this.matchmakingService.leaveQueue(req.user.id);
 			const game: Game = await this.gameService.findGameById(opponent.id);
-			console.log('delete game, if there is an old unaccepted game: ', game);
+			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
 			}
