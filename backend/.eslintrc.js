@@ -6,8 +6,9 @@ module.exports = {
 	extends: [
 		'eslint:recommended',
 		/* 'plugin:typescript-sort-keys/recommended', */
-		'plugin:@typescript-eslint/recommended',
 		'plugin:@typescript-eslint/recommended-requiring-type-checking',
+		'plugin:@typescript-eslint/recommended-type-checked',
+		'plugin:@typescript-eslint/stylistic-type-checked',
 	],
 	parser: '@typescript-eslint/parser',
 	parserOptions: {
@@ -19,6 +20,8 @@ module.exports = {
 	plugins: ['@typescript-eslint/eslint-plugin', 'typescript-sort-keys'],
 	root: false,
 	rules: {
+		'@typescript-eslint/prefer-nullish-coalescing':
+			'off' /* TODO: temporary 'off' until strict-mode compiler option enabled */,
 		// '@typescript-eslint/explicit-function-return-type': 'off',
 		// '@typescript-eslint/explicit-module-boundary-types': 'off',
 		// '@typescript-eslint/interface-name-prefix': 'off',

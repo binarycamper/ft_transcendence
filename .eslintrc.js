@@ -16,9 +16,7 @@ module.exports = {
 	reportUnusedDisableDirectives: true,
 	root: true,
 	rules: {
-		'@typescript-eslint/await-thenable': ['error'],
 		'@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
-		'@typescript-eslint/prefer-as-const': ['warn'],
 		camelcase: ['warn'],
 		'consistent-return': ['error', { treatUndefinedAsUnspecified: true }],
 		'default-param-last': ['error'],
@@ -64,7 +62,7 @@ module.exports = {
 		'no-unused-private-class-members': ['error'],
 		'no-useless-constructor': ['error'],
 		'no-warning-comments': ['warn'],
-		'sort-imports': ['warn'],
+		'sort-imports': ['warn', { ignoreCase: true }],
 		'sort-keys': ['warn'],
 		*/
 	},
