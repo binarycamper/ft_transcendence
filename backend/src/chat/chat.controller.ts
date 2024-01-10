@@ -271,10 +271,11 @@ export class ChatController {
 		/*if (chatRoom.ownerName === req.user.name) {
 			throw new UnauthorizedException('You are already the owner of that Chatroom!');
 		}*/
-
 		if (chatRoom.type === 'private') {
 			throw new UnauthorizedException('ChatRoom is private, you will need an invite.');
 		}
+		console.log('chatroom pw :', chatRoom.password.length);
+
 		if (chatRoom.type === 'public' && chatRoom.password !== '') {
 			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);
 			if (!isPasswordMatch) {
@@ -290,7 +291,11 @@ export class ChatController {
 			throw new BadRequestException('Chat room has max users');
 		}
 		// Check if the chat room is private and if the user is an admin or invited
-		if (!chatRoom.adminIds.includes(userId) && !chatRoom.users.some((user) => user.id === userId)) {
+		if (
+			!chatRoom.adminIds.includes(userId) &&
+			!chatRoom.users.some((user) => user.id === userId) &&
+			chatRoom.type === 'private'
+		) {
 			throw new ForbiddenException('You do not have permission to join this room.');
 		}
 

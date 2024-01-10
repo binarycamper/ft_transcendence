@@ -9,17 +9,16 @@ import { FriendList } from './pages/FriendList.page';
 import { FriendRequest } from './pages/Request.page';
 import { HomePage } from './pages/Home.page';
 import { Login } from './pages/Login.page';
-import { Play } from './pages/Play.page';
 import { Profile } from './pages/Profile.page';
 import { PublicProfile } from './pages/PublicProfile.page';
 import { Settings } from './pages/Settings.page';
-import { Spiel } from './pages/Spiel.page';
 import { TwoFactorSetup } from './pages/TwoFactorSetup.page';
 import { ChatRoomList } from './pages/ChatRoomList.page';
 import ResetPassword from './pages/ResetPassword.page';
 import ResetAccount from './pages/ResetAccount.page';
 import VerifyResetToken from './pages/VerifyResetToken.page';
 import { MatchmakingQueuePage } from './pages/Queue.page';
+import Game from './pages/Game.page';
 
 const router = createBrowserRouter([
 	{
@@ -91,8 +90,8 @@ const router = createBrowserRouter([
 		element: <PublicProfile />,
 	},
 	{
-		path: '/spiel',
-		element: <Spiel />,
+		path: '/game',
+		element: <Game />,
 	},
 	{
 		path: '/reset-account',

@@ -146,7 +146,7 @@ export function MatchmakingQueuePage() {
 			if (response.ok) {
 				const data = await response.json();
 				if (data.game?.acceptedOne === true && data.game?.acceptedTwo === true) {
-					window.location.href = 'http://localhost:5173/spiel';
+					window.location.href = 'http://localhost:5173/game';
 				} else {
 					setHasAcceptedMatch(true);
 					// Set a timeout to wait for the other player
@@ -197,7 +197,7 @@ export function MatchmakingQueuePage() {
 	useEffect(() => {
 		function handleGameReady() {
 			//TODO: DOubleCHeck if User is still in the matchmaking Process // fetch to server and ask!
-			window.location.href = `http://localhost:5173/spiel`;
+			window.location.href = `http://localhost:5173/game`;
 		}
 
 		socket.on('game-ready', handleGameReady);
