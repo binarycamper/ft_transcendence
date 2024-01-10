@@ -1,3 +1,4 @@
+//Ball.ts
 import findIntersection, { Line } from './intersection';
 import { Paddle } from './Paddle';
 import { Wall } from './Wall';

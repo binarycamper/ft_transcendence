@@ -1,3 +1,4 @@
+//Game.tsx
 import useGameLoop from '../../hooks/useGameLoop';
 import useTitle from '../../hooks/useTitle';
 import './Game.css';

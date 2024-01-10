@@ -1,3 +1,4 @@
+//wall.ts
 import { Line } from './intersection';
 
 export type Wall = {
