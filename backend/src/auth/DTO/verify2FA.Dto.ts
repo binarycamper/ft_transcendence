@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, Length, IsBoolean } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class Verify2FADto {
 	// If problems delete this

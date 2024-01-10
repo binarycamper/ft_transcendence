@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length, IsAlphanumeric } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class AuthCallbackDto {
 	@IsNotEmpty({ message: 'Code is required.' })

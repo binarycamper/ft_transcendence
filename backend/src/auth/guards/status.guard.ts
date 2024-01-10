@@ -1,9 +1,9 @@
 import {
-	Injectable,
 	CanActivate,
 	ExecutionContext,
 	HttpException,
 	HttpStatus,
+	Injectable,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 
@@ -19,8 +19,8 @@ export class StatusGuard implements CanActivate {
 		if (!user) {
 			throw new HttpException(
 				{
-					status: HttpStatus.UNAUTHORIZED,
 					error: 'Please login',
+					status: HttpStatus.UNAUTHORIZED,
 				},
 				HttpStatus.UNAUTHORIZED,
 			);
@@ -30,8 +30,8 @@ export class StatusGuard implements CanActivate {
 			//console.log('StatusGuard detect fresh user');
 			throw new HttpException(
 				{
-					status: HttpStatus.SEE_OTHER,
 					error: 'Please complete your profile',
+					status: HttpStatus.SEE_OTHER,
 				},
 				HttpStatus.SEE_OTHER,
 			);

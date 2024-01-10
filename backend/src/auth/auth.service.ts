@@ -1,20 +1,19 @@
+import * as bcrypt from 'bcryptjs';
+import * as nodemailer from 'nodemailer';
+import * as QRCode from 'qrcode';
+import * as speakeasy from 'speakeasy';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { IntraUser, OAuthTokenResponse } from './interfaces/auth.interfaces';
+import { MoreThan, Repository } from 'typeorm';
+import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import { User } from '../user/user.entity';
-import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from './guards/jwt.strategy';
 import { JwtService } from '@nestjs/jwt';
-import axios from 'axios';
-import * as speakeasy from 'speakeasy';
-import * as QRCode from 'qrcode';
+import { User } from '../user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { v4 as uuidv4 } from 'uuid';
-import * as nodemailer from 'nodemailer';
-import * as bcrypt from 'bcryptjs';
-import { OAuthTokenResponse, IntraUser } from './interfaces/auth.interfaces';
-
-import { JwtPayload } from './guards/jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -35,11 +34,11 @@ export class AuthService {
 		const tokenResponse = await axios.post<OAuthTokenResponse>(
 			'https://api.intra.42.fr/oauth/token',
 			{
-				grantType: 'authorization_code',
-				clientId: clientId,
-				clientSecret: clientSecret,
+				clientId,
+				clientSecret,
 				code,
-				redirectUri: 'http://localhost:8080/auth/callback',
+				grantType: 'authorization_code',
+				redirectURI: 'http://localhost:8080/auth/callback',
 			},
 		);
 
@@ -96,14 +95,14 @@ export class AuthService {
 
 		if (!user) {
 			const newUser = this.userRepository.create({
-				id: uuidv4(),
-				name: intraUser.login,
 				email: intraUser.email,
-				password: 'hashed-pw',
-				status: 'fresh',
+				has2FA: false,
+				id: uuidv4(),
 				intraId: intraUser.id,
 				intraImage: intraUser.image?.versions?.medium,
-				has2FA: false,
+				name: intraUser.login,
+				password: 'hashed-pw',
+				status: 'fresh',
 			});
 			await this.userRepository.save(newUser);
 			return newUser;
@@ -133,11 +132,9 @@ export class AuthService {
 			return { accessToken: jwtToken, userId: user.id }; //TODO: why userID?? it was id everywhere or?
 		} catch (error) {
 			const responseError = error as { response: { status: number } };
-			if (responseError.response?.status === 401) {
+			if (responseError.response?.status === 401)
 				throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-			} else {
-				throw new HttpException('Failed authentication', HttpStatus.INTERNAL_SERVER_ERROR);
-			}
+			throw new HttpException('Failed authentication', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -148,20 +145,16 @@ export class AuthService {
 		try {
 			const decoded = this.jwtService.verify<JwtPayload>(refreshToken);
 			const user = await this.userRepository.findOne({ where: { id: decoded.id } });
-
-			if (!user) {
-				throw new Error('User not found for the provided refresh token.');
-			}
+			if (!user) throw new Error('User not found for the provided refresh token.');
 
 			return user;
 		} catch (error) {
 			if (error instanceof Error) {
 				console.error('Invalid refresh token:', error.message);
 				throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
-			} else {
-				console.error('An unexpected error occurred');
-				throw new HttpException('An unexpected error occurred', HttpStatus.INTERNAL_SERVER_ERROR);
 			}
+			console.error('An unexpected error occurred');
+			throw new HttpException('An unexpected error occurred', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -169,10 +162,10 @@ export class AuthService {
 		try {
 			const user = await this.validateRefreshToken(refreshToken);
 			const payload = {
-				username: user.name,
-				id: user.id,
 				email: user.email,
+				id: user.id,
 				password: user.password,
+				username: user.name,
 			};
 			const newAccessToken = this.jwtService.sign(payload);
 
@@ -187,8 +180,8 @@ export class AuthService {
 	//This function is used to check the validity of the 2FA token.
 	private is2FATokenValid(user: User, token: string): boolean {
 		return speakeasy.totp.verify({
-			secret: user.unconfirmed2FASecret,
 			encoding: 'base32',
+			secret: user.unconfirmed2FASecret,
 			token: token,
 		});
 	}
@@ -203,19 +196,14 @@ export class AuthService {
 	}
 
 	async verify2FAToken(user: User, token: string): Promise<boolean> {
-		if (!user) {
-			throw new Error('User not found');
-		}
+		if (!user) throw new Error('User not found');
 
 		const secret = user.unconfirmed2FASecret || user.TFASecret;
-
-		if (!secret) {
-			throw new Error('2FA secret not set');
-		}
+		if (!secret) throw new Error('2FA secret not set');
 
 		const isValid = speakeasy.totp.verify({
-			secret: secret,
 			encoding: 'base32',
+			secret: secret,
 			token: token,
 		});
 
@@ -233,9 +221,9 @@ export class AuthService {
 			return null;
 		}
 		const payload = {
-			name: user.name,
-			id: user.id,
 			email: user.email,
+			id: user.id,
+			name: user.name,
 			require2FA: user.has2FA,
 		};
 		const accesToken = this.jwtService.sign(payload);
@@ -243,9 +231,8 @@ export class AuthService {
 	}
 
 	async setup2FA(user: User): Promise<{ qrCodeUrl: string }> {
-		if (!user) {
-			throw new Error('User not found');
-		}
+		if (!user) throw new Error('User not found');
+
 		if (!user.TFASecret) {
 			const secret = speakeasy.generateSecret();
 			const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
@@ -255,7 +242,7 @@ export class AuthService {
 		}
 		const secret = user.TFASecret;
 		const qrCodeUrl = await QRCode.toDataURL(
-			speakeasy.otpauthURL({ secret: secret, label: user.name, encoding: 'base32' }),
+			speakeasy.otpauthURL({ encoding: 'base32', label: user.name, secret: secret }),
 		);
 		return { qrCodeUrl };
 	}
@@ -276,20 +263,19 @@ export class AuthService {
 
 	async resetPassword(email: string): Promise<{ message: string }> {
 		const user = await this.userRepository.findOne({
-			where: { email: email },
 			select: [
+				'email',
 				'id',
 				'name',
-				'email',
 				'password',
-				'resetPasswordToken',
 				'resetPasswordExpires',
+				'resetPasswordToken',
 				'resetPasswordUrl',
 			],
+			where: { email: email },
 		});
-		if (!user) {
-			throw new Error('User not found');
-		}
+		if (!user) throw new Error('User not found');
+
 		console.log('user= ', user);
 		const resetToken = Math.random().toString(36).slice(2) + Date.now().toString(36);
 		const redirectUrl = `http://localhost:5173/reset-password/${resetToken}`;
@@ -303,13 +289,13 @@ export class AuthService {
 
 	sendResetPasswordEmail(email: string, resetPasswordUrl: string) {
 		const transporter = nodemailer.createTransport({
+			auth: {
+				pass: this.configService.get<string>('APP_PASSWORD'),
+				user: 'transcendence502@gmail.com',
+			},
 			host: 'smtp.gmail.com',
 			port: 465,
 			secure: true,
-			auth: {
-				user: 'transcendence502@gmail.com',
-				pass: this.configService.get<string>('APP_PASSWORD'),
-			},
 		});
 
 		const mailOptions = {
@@ -332,14 +318,11 @@ export class AuthService {
 	async updatePassword(token: string, newPassword: string): Promise<{ message: string }> {
 		const user = await this.userRepository.findOne({
 			where: {
-				resetPasswordToken: token,
 				resetPasswordExpires: MoreThan(new Date()),
+				resetPasswordToken: token,
 			},
 		});
-
-		if (!user) {
-			throw new Error('Invalid or expired password reset token');
-		}
+		if (!user) throw new Error('Invalid or expired password reset token');
 
 		user.password = await bcrypt.hash(newPassword, 10);
 		user.resetPasswordToken = null;
@@ -353,8 +336,8 @@ export class AuthService {
 	async verifyResetToken(token: string): Promise<boolean> {
 		const user = await this.userRepository.findOne({
 			where: {
-				resetPasswordToken: token,
 				resetPasswordExpires: MoreThan(new Date()),
+				resetPasswordToken: token,
 			},
 		});
 		return !!user;

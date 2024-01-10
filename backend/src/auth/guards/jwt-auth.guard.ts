@@ -31,7 +31,7 @@
 // 	}
 // }
 
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../../user/user.entity'; // Importieren Sie den tatsächlichen User-Entity-Typ, falls verfügbar
 

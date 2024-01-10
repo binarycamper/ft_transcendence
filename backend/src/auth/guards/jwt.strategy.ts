@@ -1,16 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '../../user/user.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request as ExpressRequest } from 'express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PassportStrategy } from '@nestjs/passport';
+import { Repository } from 'typeorm';
+import { User } from '../../user/user.entity';
 
-export type JwtPayload = {
+export interface JwtPayload {
 	id: string;
 	intraId: string;
-};
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 		super({
 			jwtFromRequest: ExtractJwt.fromExtractors([
 				(request: ExpressRequest) => {
-					if (request && request.headers && request.headers.cookie) {
+					if (request?.headers?.cookie) {
 						const cookies = request.headers.cookie.split(';');
 						const tokenCookie = cookies.find((cookie) => cookie.trim().startsWith('token='));
 						if (tokenCookie) {
@@ -42,10 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 		const user = await this.userRepository.findOne({
 			where: { id: payload.id },
 		});
-
-		if (!user) {
-			throw new UnauthorizedException('Please sign in to continue');
-		}
+		if (!user) throw new UnauthorizedException('Please sign in to continue');
 
 		return user;
 	}
