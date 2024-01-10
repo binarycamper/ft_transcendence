@@ -26,7 +26,7 @@ export class EventsService {
 				console.log('User not found for email: ', email);
 			}
 		} catch (error) {
-			console.error(error.message);
+			console.log(error.message);
 		}
 	}
 
