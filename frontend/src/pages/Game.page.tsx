@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { SocketContext } from './context/socketContext';
+import { useState, useEffect, useRef } from 'react';
+import { socket } from '../services/socket';
 
 const GamePage = () => {
-	const socket = useContext(SocketContext);
-
-	// State for screen dimensions
+	// Screen dimensions
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 	const [screenHeight, setScreenHeight] = useState(window.innerHeight);
 
@@ -72,7 +70,7 @@ const GamePage = () => {
 		return () => {
 			socket.off('gameStart');
 		};
-	}, [socket]);
+	}, []);
 
 	const startGame = () => {
 		setGameReady(true);
