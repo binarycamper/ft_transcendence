@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { SocketContext } from './context/socketContext';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { HttpStatusCode } from 'axios';
+import { socket } from '../services/socket';
+import { useNavigate } from 'react-router-dom';
 
 type Friend = {
 	id: string;
@@ -37,7 +37,6 @@ const buttonStyle = {
 };
 
 export function ChatRoom() {
-	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
 
 	//Save User data
@@ -162,7 +161,7 @@ export function ChatRoom() {
 		return () => {
 			socket.off('receive-message', handleNewMessage);
 		};
-	}, [socket, currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
+	}, [currentUserId, selectedFriend, selectedChatRoom]); // Add dependencies here as needed
 
 	function handleSendMessage() {
 		if (!newMessage.trim()) return;

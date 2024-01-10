@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { SocketContext } from './context/socketContext';
+import { useState, useEffect, useRef } from 'react';
+import { socket } from '../services/socket';
 
 const GamePage = () => {
-	// Socket context
-	const socket = useContext(SocketContext);
-
 	// Screen dimensions
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 	const [screenHeight, setScreenHeight] = useState(window.innerHeight);
@@ -55,7 +52,7 @@ const GamePage = () => {
 		return () => {
 			// Cleanup socket listeners
 		};
-	}, [socket]);
+	}, []);
 
 	const handlePaddleMovement = (event) => {
 		// Handle user input for paddle movement

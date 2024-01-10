@@ -1,9 +1,8 @@
-import { useContext, useEffect, useState } from 'react';
-import { SocketContext } from './context/socketContext';
+import { useEffect, useState } from 'react';
 import Prompt from '../components/Prompt';
+import { socket } from '../services/socket';
 
 export function MatchmakingQueuePage() {
-	const socket = useContext(SocketContext);
 	const [timer, setTimer] = useState<number | null>(null);
 	const [isInQueue, setIsInQueue] = useState(false);
 	const [queueTime, setQueueTime] = useState(0);
@@ -123,14 +122,14 @@ export function MatchmakingQueuePage() {
 				setTimer(countdownTimer);
 			}
 		}
-
+		console.log('socket.id', socket.id);
 		socket.on('match-found', handleMatch);
 
 		return () => {
 			socket.off('match-found', handleMatch);
 			clearMatchTimer();
 		};
-	}, [socket, matchFound, timer]);
+	}, [matchFound, timer]);
 
 	async function handleAcceptMatch() {
 		try {
@@ -205,7 +204,7 @@ export function MatchmakingQueuePage() {
 		return () => {
 			socket.off('game-ready', handleGameReady); // Corrected cleanup
 		};
-	}, [socket]);
+	}, []);
 
 	useEffect(() => {
 		async function handleGameLeave() {
@@ -247,7 +246,7 @@ export function MatchmakingQueuePage() {
 		return () => {
 			socket.off('matchDeclined', handleGameLeave);
 		};
-	}, [socket]); // Add any additional dependencies if necessary
+	}, []); // Add any additional dependencies if necessary
 
 	//will call the socket call to the function above.
 	async function handleDeclineMatch() {
