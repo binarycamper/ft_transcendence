@@ -74,7 +74,7 @@ const GamePage = () => {
 
 	const startGame = () => {
 		setGameReady(true);
-		socket.emit('playerReady', { userId: currentUserId });
+		socket.emit('playerReady', {});
 	};
 
 	return (
