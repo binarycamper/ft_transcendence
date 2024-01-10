@@ -57,7 +57,24 @@ const GamePage = () => {
 				window.location.href = 'http://localhost:5173/';
 			}
 		}
+		async function getCurrentGameData() {
+			try {
+				const response = await fetch('http://localhost:8080/game/my-game', {
+					credentials: 'include',
+				});
+				if (!response.ok) {
+					//window.location.href = 'http://localhost:5173/';
+					return;
+				}
+				const data = await response.json();
+				//TODO: Set ur data here you can have all infos of game entity. const game.playerOneScore = data.playerOneScore etc...
+			} catch (error) {
+				//window.location.href = 'http://localhost:5173/';
+			}
+		}
+
 		getCurrentUserId();
+		getCurrentGameData();
 	}, []);
 
 	useEffect(() => {

@@ -10,7 +10,7 @@ export class GameController {
 	constructor(private readonly gameService: GameService) {}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('my-games')
+	@Get('my-game')
 	async getMyGame(@Req() req: Request) {
 		return await this.gameService.findGameById(req.user.id);
 	}
