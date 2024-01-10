@@ -104,4 +104,8 @@ export class GameService {
 		const games = await this.gameRepository.find({});
 		await this.gameRepository.remove(games);
 	}
+
+	async saveGame(game: Game) {
+		await this.gameRepository.save(game);
+	}
 }
