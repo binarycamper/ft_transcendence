@@ -77,9 +77,19 @@ export class GameService {
 		});
 	}
 
-	async findGameById(userId: string): Promise<Game | undefined> {
+	async findUserById(userId: string): Promise<Game | undefined> {
 		return await this.gameRepository.findOne({
 			where: [{ playerOne: { id: userId } }, { playerTwo: { id: userId } }],
+			order: {
+				startTime: 'DESC',
+			},
+			relations: ['playerOne', 'playerTwo'],
+		});
+	}
+
+	async findGameById(gameId: string): Promise<Game | undefined> {
+		return await this.gameRepository.findOne({
+			where: [{ playerOne: { id: gameId } }, { playerTwo: { id: gameId } }],
 			order: {
 				startTime: 'DESC',
 			},
