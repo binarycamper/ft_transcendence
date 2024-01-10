@@ -41,6 +41,7 @@ const GamePage = () => {
 		}
 		getCurrentUserId();
 
+		// TODO: check for better writing of this
 		const handleResize = () => {
 			setScreenWidth(window.innerWidth);
 			setScreenHeight(window.innerHeight);
@@ -57,7 +58,7 @@ const GamePage = () => {
 		};
 	}, [socket]);
 
-	const handlePaddleMovement = (event) => {
+	const handlePaddleMovement = (event: any) => {
 		// Handle user input for paddle movement
 	};
 

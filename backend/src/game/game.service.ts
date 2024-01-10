@@ -111,7 +111,7 @@ export class GameService {
 	async handlePlayerReady(@ConnectedSocket() client: Socket, data: { userId: string }) {
 		try {
 			// Logic to handle player readiness
-			const game = await this.gameService.findGameById(data.userId);
+			const game = await this.findGameById(data.userId);
 			if (game) {
 				if (game.playerOne.id === data.userId) {
 					game.acceptedOne = true;
@@ -119,7 +119,7 @@ export class GameService {
 					game.acceptedTwo = true;
 				}
 
-				await this.gameService.saveGame(game);
+				await this.gameRepository.save(game);
 
 				// If both players are ready, emit a 'gameStart' event to both players
 				if (game.acceptedOne && game.acceptedTwo) {
