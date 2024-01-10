@@ -215,16 +215,18 @@ export class EventsGateway {
 	//########################Game#############################
 
 	@SubscribeMessage('playerReady')
-	async handlePlayerReady(@ConnectedSocket() client: Socket, data: { userId: string }) {
+	async handlePlayerReady(@ConnectedSocket() client: Socket) {
 		try {
-			console.log('PLAYER READYMtriggert');
-			console.log('Received playerReady with data:', data);
-			// Logic to handle player readiness
-			const game = await this.gameService.findGameById(data.userId);
+			const isAuthenticated = await this.verifyAuthentication(client);
+			if (!isAuthenticated.isAuthenticated) {
+				console.log('Invalid credentials');
+				return;
+			}
+			const game = await this.gameService.findGameById(isAuthenticated.userId);
 			if (game) {
-				if (game.playerOne.id === data.userId) {
+				if (game.playerOne.id === isAuthenticated.userId) {
 					game.acceptedOne = true;
-				} else if (game.playerTwo.id === data.userId) {
+				} else if (game.playerTwo.id === isAuthenticated.userId) {
 					game.acceptedTwo = true;
 				}
 
