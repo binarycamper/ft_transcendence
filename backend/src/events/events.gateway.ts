@@ -234,6 +234,8 @@ export class EventsGateway {
 
 				// If both players are ready, emit a 'gameStart' event to both players
 				if (game.acceptedOne && game.acceptedTwo) {
+					game.startTime = new Date();
+					await this.gameService.saveGame(game);
 					this.server.to(game.playerOne.id).emit('gameStart', game);
 					this.server.to(game.playerTwo.id).emit('gameStart', game);
 				}

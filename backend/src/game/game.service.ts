@@ -73,7 +73,9 @@ export class GameService {
 	}
 
 	async getAllGames() {
-		return await this.gameRepository.find({});
+		return await this.gameRepository.find({
+			relations: ['playerOne', 'playerTwo'],
+		});
 	}
 
 	async findGameById(userId: string): Promise<Game | undefined> {
