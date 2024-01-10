@@ -230,7 +230,7 @@ export class EventsGateway {
 					game.acceptedTwo = true;
 				}
 
-				this.gameService.saveGame(game);
+				await this.gameService.saveGame(game);
 
 				// If both players are ready, emit a 'gameStart' event to both players
 				if (game.acceptedOne && game.acceptedTwo) {
