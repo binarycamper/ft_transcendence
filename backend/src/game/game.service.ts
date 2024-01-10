@@ -4,6 +4,7 @@ import { Game } from './game.entity';
 import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
+import { GameUpdateDto } from './dto/dto';
 @Injectable()
 export class GameService {
 	constructor(
@@ -106,6 +107,18 @@ export class GameService {
 	}
 
 	async saveGame(game: Game) {
+		await this.gameRepository.save(game);
+	}
+
+	async updateGame(gameUpdateDto: GameUpdateDto) {
+		const game = await this.findGameById(gameUpdateDto.id);
+		if (!game) {
+			throw new InternalServerErrorException('Game not found');
+		}
+		game.scorePlayerOne = gameUpdateDto.scorePlayerOne;
+		game.scorePlayerTwo = gameUpdateDto.scorePlayerTwo;
+		game.winnerId = gameUpdateDto.winnerId;
+		game.endTime = gameUpdateDto.endTime;
 		await this.gameRepository.save(game);
 	}
 }
