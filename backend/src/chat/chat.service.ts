@@ -109,10 +109,10 @@ export class ChatService {
 			const hashedPassword = await bcrypt.hash(chatRoomData.password, 10);
 			chatRoomData.password = hashedPassword;
 		}
-		const chatRoom = await this.chatRoomRepository.create(chatRoomData);
+		const chatRoom = this.chatRoomRepository.create(chatRoomData);
 		//chatRoom.ownerId = chatRoomData.ownerId;
 		//console.log('chatRoom = ', chatRoom);
-		return await this.chatRoomRepository.save(chatRoom);
+		return this.chatRoomRepository.save(chatRoom);
 	}
 
 	async saveChatRoomMessage(
@@ -165,7 +165,11 @@ export class ChatService {
 			return chatRoomHistory;
 		} catch (error) {
 			// Handle or log the error appropriately
-			console.error(`Failed to fetch chat history: ${error.message}`);
+			if (error instanceof Error) {
+				console.error(`Failed to fetch chat history: ${error.message}`);
+			} else {
+				console.error('Failed to fetch chat history: Unknown error');
+			}
 			throw new InternalServerErrorException('Failed to fetch chat history');
 		}
 	}
@@ -344,7 +348,11 @@ export class ChatService {
 			return friendChatHistory;
 		} catch (error) {
 			// Handle or log the error appropriately
-			console.log(`Failed to fetch chat history: ${error.message}`);
+			if (error instanceof Error) {
+				console.log(`Failed to fetch chat history: ${error.message}`);
+			} else {
+				console.error('Failed to fetch chat history: Unknown error');
+			}
 			throw new InternalServerErrorException('Failed to fetch chat history');
 		}
 	}
@@ -450,22 +458,34 @@ export class ChatService {
 		return friendRequest;
 	}
 
-	async acceptRequest(messageId: string, user: User) {
-		//console.log('accept request started!');
+	// async acceptRequest(messageId: string, user: User) {
+	// 	//console.log('accept request started!');
+	// 	const request = await this.friendrequestRepository.findOne({ where: { id: messageId } });
+	// 	//console.log('REQUEST: ', request);
+	// 	if (!request) {
+	// 		throw new Error('Request not found');
+	// 	}
+	// 	let friend = await this.userService.findProfileById(request.senderId);
+	// 	user = await this.userService.addFriend(user, friend.name);
+	// 	friend = await this.userService.addFriend(friend, user.name);
+	// 	await this.friendrequestRepository.remove(request);
+	// 	return { success: true, message: 'FriendRequest request accepted.' };
+	// }
+	async acceptRequest(messageId: string, userParam: User) {
 		const request = await this.friendrequestRepository.findOne({ where: { id: messageId } });
-		//console.log('REQUEST: ', request);
 		if (!request) {
 			throw new Error('Request not found');
 		}
 		let friend = await this.userService.findProfileById(request.senderId);
-		user = await this.userService.addFriend(user, friend.name);
+		const user = await this.userService.addFriend(userParam, friend.name);
 		friend = await this.userService.addFriend(friend, user.name);
 		await this.friendrequestRepository.remove(request);
 		return { success: true, message: 'FriendRequest request accepted.' };
 	}
+	
 
 	// Method to decline a FriendRequest request
-	async declineRequest(messageId: string, user: User) {
+	async declineRequest(messageId: string) {
 		//console.log('Decline request started!');
 		const request = await this.friendrequestRepository.findOne({ where: { id: messageId } });
 		if (!request) {

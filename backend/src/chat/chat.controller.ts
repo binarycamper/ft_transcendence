@@ -530,7 +530,7 @@ export class ChatController {
 		@Res() res: Response,
 	) {
 		try {
-			await this.chatService.declineRequest(messageId, req.user);
+			await this.chatService.declineRequest(messageId);
 			return res.status(HttpStatus.NO_CONTENT).send('friend request declined!');
 		} catch (error) {
 			if (error instanceof Error) {
