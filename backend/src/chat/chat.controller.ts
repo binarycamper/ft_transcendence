@@ -514,7 +514,10 @@ export class ChatController {
 			await this.chatService.acceptRequest(messageId, req.user);
 			return res.status(HttpStatus.OK).send('Friend accepted!');
 		} catch (error) {
-			return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
+			if (error instanceof Error) {
+				return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
+			}
+			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'An unknown error occurred' });
 		}
 	}
 
@@ -530,7 +533,10 @@ export class ChatController {
 			await this.chatService.declineRequest(messageId, req.user);
 			return res.status(HttpStatus.NO_CONTENT).send('friend request declined!');
 		} catch (error) {
-			return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
+			if (error instanceof Error) {
+				return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
+			}
+			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'An unknown error occurred' });
 		}
 	}
 
