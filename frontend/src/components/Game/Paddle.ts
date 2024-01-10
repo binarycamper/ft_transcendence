@@ -1,3 +1,4 @@
+//Paddle.ts
 import { KeyMap, KeyState } from '../../hooks/useKeyHook';
 import type { Line } from './intersection';
 import { Ball } from './Ball';

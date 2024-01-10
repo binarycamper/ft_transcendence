@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react';
+import { socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
-import { useContext, useEffect, useState } from 'react';
-import { SocketContext } from '../pages/context/socketContext';
 
 interface MatchDetails {
 	id: string;
@@ -17,7 +17,6 @@ export default function useQue() {
 	const [queueTime, setQueueTime] = useState(
 		parseInt(localStorage.getItem('queueTime') || '0', 10),
 	);
-	const socket = useContext(SocketContext);
 	const [currentMatch, setCurrentMatch] = useState<MatchDetails | null>(null);
 	const navigate = useNavigate();
 
@@ -32,7 +31,7 @@ export default function useQue() {
 		return () => {
 			socket.off('matchProposal', handleMatchProposal);
 		};
-	}, [socket]);
+	}, []);
 
 	function acceptMatch() {
 		if (currentMatch) {

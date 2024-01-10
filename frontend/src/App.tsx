@@ -1,12 +1,11 @@
-import { useContext, useEffect } from 'react';
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Router } from './Router';
+import { socket } from './services/socket';
 import { theme } from './theme';
-import { SocketContext } from './pages/context/socketContext';
+import { useEffect } from 'react';
 
 export default function App() {
-	const socket = useContext(SocketContext);
 	useEffect(() => {
 		socket.on('connect', () => {
 			console.log(`Connected to server with socket id: ${socket.id}`);
@@ -27,7 +26,7 @@ export default function App() {
 			socket.off('disconnect');
 			socket.off('reconnect_attempt');
 		};
-	}, [socket]);
+	}, []);
 
 	return (
 		<MantineProvider defaultColorScheme="auto" theme={theme}>

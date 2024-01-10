@@ -1,3 +1,4 @@
+//scrore.ts
 import { Ball } from './Ball';
 
 type Score = {
