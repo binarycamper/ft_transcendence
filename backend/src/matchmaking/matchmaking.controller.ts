@@ -53,7 +53,7 @@ export class MatchmakingController {
 					myqueue.isActive = true;
 					await this.matchmakingService.saveQueue(myqueue);
 				}
-				console.log('queue already open!');
+				//console.log('queue already open!');
 				return res.status(HttpStatus.OK).json({
 					message: 'queue already open!',
 				});
@@ -63,12 +63,12 @@ export class MatchmakingController {
 				myqueue.isActive = true;
 				await this.matchmakingService.saveQueue(myqueue);
 			}
-			console.log('queue already open!');
+			//console.log('queue already open!');
 			return res.status(HttpStatus.OK).json({
 				message: 'queue already open!',
 			});
 		} catch (error) {
-			console.log('ERROR in matchmaking/join: ', error);
+			//console.log('ERROR in matchmaking/join: ', error);
 			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
 				message: 'New error!',
 			});
@@ -126,7 +126,7 @@ export class MatchmakingController {
 			// Assuming 'createNewGame' sets 'acceptedOne' to true for the user who created the game
 			const game = await this.gameService.createNewGame(user, opponent);
 			if (!game) {
-				console.log('no game created...');
+				//console.log('no game created...');
 				return;
 			}
 			const allAccepted = game.acceptedOne && game.acceptedTwo;
@@ -134,7 +134,7 @@ export class MatchmakingController {
 				? 'Both players are ready. Game can start.'
 				: 'Waiting for the other player to join.';
 
-			console.log('status: ', statusMessage);
+			//console.log('status: ', statusMessage);
 			return res.status(HttpStatus.CREATED).json({
 				message: `Match accepted. ${statusMessage}`,
 				game: game,
@@ -222,7 +222,7 @@ export class MatchmakingController {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
 			}
 			const game = await this.gameService.findGameById(user.id);
-			console.log('delete game, if there is an old unaccepted game: ', game);
+			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
 			}
@@ -268,7 +268,7 @@ export class MatchmakingController {
 			}
 
 			const game = await this.gameService.findGameById(user.id);
-			console.log('delete game, if there is an old unaccepted game: ', game);
+			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
 			}

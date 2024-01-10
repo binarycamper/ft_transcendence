@@ -58,14 +58,14 @@ export class GameService {
 				await this.gameRepository.save(existingGame);
 
 				// Emit event to notify that the game is ready
-				console.log('emit the game here:');
+				//console.log('emit the game here:');
 				this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
 					opponentName: player.name,
 				});
 			}
 			return existingGame;
 		} catch (error) {
-			console.log(`Failed to create game: ${error.message}`, error.stack);
+			//console.log(`Failed to create game: ${error.message}`, error.stack);
 			throw new InternalServerErrorException(`Failed to create game: ${error.message}`);
 		}
 	}
