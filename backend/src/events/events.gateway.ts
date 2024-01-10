@@ -219,7 +219,7 @@ export class EventsGateway {
 		try {
 			console.log('PLAYER READYMtriggert');
 			// Logic to handle player readiness
-			const game = await this.findGameById(data.userId);
+			const game = await this.gameService.findGameById(data.userId);
 			if (game) {
 				if (game.playerOne.id === data.userId) {
 					game.acceptedOne = true;
