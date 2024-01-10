@@ -14,6 +14,7 @@ import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { Mute } from 'src/chat/mute.entity';
 import { randomUUID } from 'crypto';
+import { GameService } from 'src/game/game.service';
 
 @WebSocketGateway({
 	cors: {
@@ -31,6 +32,7 @@ export class EventsGateway {
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 		private userService: UserService,
+		private gameService: GameService,
 	) {}
 
 	async verifyAuthentication(
@@ -211,4 +213,31 @@ export class EventsGateway {
 	}
 
 	//########################Game#############################
+
+	@SubscribeMessage('playerReady')
+	async handlePlayerReady(@ConnectedSocket() client: Socket, data: { userId: string }) {
+		try {
+			console.log('PLAYER READYMtriggert');
+			// Logic to handle player readiness
+			const game = await this.findGameById(data.userId);
+			if (game) {
+				if (game.playerOne.id === data.userId) {
+					game.acceptedOne = true;
+				} else if (game.playerTwo.id === data.userId) {
+					game.acceptedTwo = true;
+				}
+
+				//await this.gameRepository.save(game);
+
+				// If both players are ready, emit a 'gameStart' event to both players
+				if (game.acceptedOne && game.acceptedTwo) {
+					this.server.to(game.playerOne.id).emit('gameStart', game);
+					this.server.to(game.playerTwo.id).emit('gameStart', game);
+				}
+			}
+		} catch (error) {
+			console.error(`Error in handlePlayerReady: ${error}`);
+			// Handle error appropriately
+		}
+	}
 }

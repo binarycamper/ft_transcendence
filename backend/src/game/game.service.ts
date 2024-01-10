@@ -4,13 +4,9 @@ import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { EventsGateway } from 'src/events/events.gateway';
-import { ConnectedSocket, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
-import { Socket, Server } from 'socket.io';
 
 @Injectable()
 export class GameService {
-	@WebSocketServer()
-	server: Server;
 	constructor(
 		@InjectRepository(Game)
 		private gameRepository: Repository<Game>,
@@ -62,10 +58,12 @@ export class GameService {
 				await this.gameRepository.save(existingGame);
 
 				// Emit event to notify that the game is ready
+
+				this.eventsService.emitToUser(opponent.id, player.name);
 				//console.log('emit the game here:');
-				this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
+				/*this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
 					opponentName: player.name,
-				});
+				});*/
 			}
 			return existingGame;
 		} catch (error) {
@@ -105,31 +103,5 @@ export class GameService {
 	async deleteAllGames() {
 		const games = await this.gameRepository.find({});
 		await this.gameRepository.remove(games);
-	}
-
-	@SubscribeMessage('playerReady')
-	async handlePlayerReady(@ConnectedSocket() client: Socket, data: { userId: string }) {
-		try {
-			// Logic to handle player readiness
-			const game = await this.findGameById(data.userId);
-			if (game) {
-				if (game.playerOne.id === data.userId) {
-					game.acceptedOne = true;
-				} else if (game.playerTwo.id === data.userId) {
-					game.acceptedTwo = true;
-				}
-
-				await this.gameRepository.save(game);
-
-				// If both players are ready, emit a 'gameStart' event to both players
-				if (game.acceptedOne && game.acceptedTwo) {
-					this.server.to(game.playerOne.id).emit('gameStart', game);
-					this.server.to(game.playerTwo.id).emit('gameStart', game);
-				}
-			}
-		} catch (error) {
-			console.error(`Error in handlePlayerReady: ${error}`);
-			// Handle error appropriately
-		}
 	}
 }
