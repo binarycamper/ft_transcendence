@@ -218,6 +218,7 @@ export class EventsGateway {
 	async handlePlayerReady(@ConnectedSocket() client: Socket, data: { userId: string }) {
 		try {
 			console.log('PLAYER READYMtriggert');
+			console.log('Received playerReady with data:', data);
 			// Logic to handle player readiness
 			const game = await this.gameService.findGameById(data.userId);
 			if (game) {
@@ -227,7 +228,7 @@ export class EventsGateway {
 					game.acceptedTwo = true;
 				}
 
-				//await this.gameRepository.save(game);
+				//await this.gameService.save(game);
 
 				// If both players are ready, emit a 'gameStart' event to both players
 				if (game.acceptedOne && game.acceptedTwo) {
