@@ -12,7 +12,7 @@ export class GameController {
 	@UseGuards(JwtAuthGuard)
 	@Get('my-game')
 	async getMyGame(@Req() req: Request) {
-		return await this.gameService.findGameById(req.user.id);
+		return await this.gameService.findUserById(req.user.id);
 	}
 
 	@UseGuards(JwtAuthGuard)
