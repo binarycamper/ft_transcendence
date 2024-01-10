@@ -3,6 +3,12 @@ import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';
 import { Mute } from './mute.entity';
 
+export enum ChatRoomType {
+	Private = "private",
+	Public = "public",
+	// Add other types as needed
+  }
+
 @Entity()
 export class ChatRoom {
 	@PrimaryGeneratedColumn('uuid')
@@ -12,7 +18,7 @@ export class ChatRoom {
 	name: string;
 
 	@Column()
-	type: 'private' | 'public' | string;
+	type: ChatRoomType | string;
 
 	@Column({ nullable: true })
 	password: string;
