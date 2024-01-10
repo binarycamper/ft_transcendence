@@ -4,13 +4,13 @@ import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { EventsGateway } from 'src/events/events.gateway';
+import { EventsService } from 'src/events/events.service';
 
 @Injectable()
 export class GameService {
 	constructor(
 		@InjectRepository(Game)
 		private gameRepository: Repository<Game>,
-		private eventsGateway: EventsGateway,
 	) {}
 
 	async findExistingGame(playerOneId: string, playerTwoId: string): Promise<Game | undefined> {
@@ -59,7 +59,7 @@ export class GameService {
 
 				// Emit event to notify that the game is ready
 
-				this.eventsService.emitToUser(opponent.id, player.name);
+				//this.eventsService.emitToUser(opponent.id, player.name);
 				//console.log('emit the game here:');
 				/*this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
 					opponentName: player.name,
