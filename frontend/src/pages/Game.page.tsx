@@ -75,7 +75,7 @@ const GamePage = () => {
 	const startGame = () => {
 		setGameReady(true);
 		// Inform the server that the user is ready
-		socket.emit('playerReady', { userId: currentUserId });
+		socket.emit('playerReady');
 	};
 
 	return (
