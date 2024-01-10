@@ -1,3 +1,4 @@
+//game.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { User } from 'src/user/user.entity';
 

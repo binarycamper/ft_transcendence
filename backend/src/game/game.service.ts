@@ -1,11 +1,9 @@
+//game.service.ts
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Game } from './game.entity';
 import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
-import { EventsGateway } from 'src/events/events.gateway';
-import { EventsService } from 'src/events/events.service';
-
 @Injectable()
 export class GameService {
 	constructor(
