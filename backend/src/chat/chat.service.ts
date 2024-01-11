@@ -25,8 +25,6 @@ import { Mute } from './mute.entity';
 
 @Injectable()
 export class ChatService {
-	private server: Server;
-
 	constructor(
 		@InjectRepository(FriendRequest)
 		private readonly friendrequestRepository: Repository<FriendRequest>,
@@ -38,10 +36,6 @@ export class ChatService {
 		@InjectRepository(Mute)
 		private muteRepository: Repository<Mute>,
 	) {}
-
-	setServer(server: Server) {
-		this.server = server;
-	}
 
 	//########################Mute#############################
 
@@ -396,9 +390,6 @@ export class ChatService {
 
 		// Save the friend request in the database
 		await this.friendrequestRepository.save(friendRequest);
-
-		// Emit an event to the receiver via WebSocket
-		this.server.to(recipientId).emit('new-friend-request', friendRequest);
 
 		return friendRequest;
 	}
