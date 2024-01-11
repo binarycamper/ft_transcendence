@@ -37,7 +37,8 @@ export class GameController {
 	@Post('update-game')
 	async updateGame(@Req() req, @Body() gameUpdateDto: GameUpdateDto) {
 		try {
-			return await this.gameService.updateGame(gameUpdateDto, req.user.id);
+			const userId = req.user.id as string;
+			return await this.gameService.updateGame(gameUpdateDto, userId);
 		} catch (error) {
 			if (error instanceof HttpException) {
 				throw error;

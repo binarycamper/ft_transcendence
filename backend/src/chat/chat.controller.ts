@@ -436,11 +436,11 @@ export class ChatController {
 		}
 
 		// Update the password or remove it
-		if (newPassword !== '') {
+		if (newPassword === '') {
+			chatRoom.password = '';
+		} else {
 			const hashedPassword = await bcrypt.hash(newPassword, 10);
 			chatRoom.password = hashedPassword;
-		} else {
-			chatRoom.password = '';
 		}
 		await this.chatService.updateChatRoom(chatRoom);
 		return { message: 'Password has been updated successfully.' };
@@ -522,7 +522,9 @@ export class ChatController {
 			if (error instanceof Error) {
 				return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
 			}
-			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'An unknown error occurred' });
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ error: 'An unknown error occurred' });
 		}
 	}
 
@@ -541,7 +543,9 @@ export class ChatController {
 			if (error instanceof Error) {
 				return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
 			}
-			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'An unknown error occurred' });
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ error: 'An unknown error occurred' });
 		}
 	}
 

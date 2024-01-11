@@ -437,12 +437,12 @@ export class ChatService {
 		}
 
 		// Create and save a new friendRequest
-		const recipient_user = await this.userService.findProfileByName(friendRequestDto.recipient);
+		const recipUser = await this.userService.findProfileByName(friendRequestDto.recipient);
 		const friendRequest = this.friendrequestRepository.create({
 			...friendRequestDto,
 			senderId: user.id,
 			senderName: user.name,
-			recipientId: recipient_user.id,
+			recipientId: recipUser.id,
 			status: 'pending',
 		});
 		await this.friendrequestRepository.save(friendRequest);
@@ -473,7 +473,6 @@ export class ChatService {
 		await this.friendrequestRepository.remove(request);
 		return { success: true, message: 'FriendRequest request accepted.' };
 	}
-	
 
 	// Method to decline a FriendRequest request
 	async declineRequest(messageId: string) {

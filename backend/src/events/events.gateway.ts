@@ -7,7 +7,7 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import * as cookie from 'cookie';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EventsService } from './events.service';
 import { ChatService } from 'src/chat/chat.service';
@@ -15,6 +15,7 @@ import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { randomUUID } from 'crypto';
 import { GameService } from 'src/game/game.service';
+import { AuthenticatedSocket, DecodedToken, SocketWithUserData } from './dto/dto';
 
 @WebSocketGateway({
 	cors: {
@@ -35,9 +36,35 @@ export class EventsGateway {
 		private gameService: GameService,
 	) {}
 
-	async verifyAuthentication(
-		client: Socket,
-	): Promise<{ isAuthenticated: boolean; userId: string }> {
+	// async verifyAuthentication(
+	// 	client: SocketWithUserData,
+	// ): Promise<{ isAuthenticated: boolean; userId: string }> {
+	// 	const cookies = cookie.parse(client.handshake.headers.cookie || '');
+	// 	if (!cookies.token) {
+	// 		console.log('No cookies provided');
+	// 		return { isAuthenticated: false, userId: null };
+	// 	}
+	// 	const { token } = cookies;
+	// 	if (!token) {
+	// 		console.log('No token provided');
+	// 		return { isAuthenticated: false, userId: null };
+	// 	}
+	// 	const decoded = this.jwtService.verify<DecodedToken>(token, {
+	// 		secret: process.env.JWT_SECRET,
+	// 	});
+
+	// 	if (decoded) {
+	// 		client.data.user = decoded;
+	// 		return { isAuthenticated: true, userId: decoded.id };
+	// 	}
+	// 	return { isAuthenticated: false, userId: null };
+	// }
+
+	//Neu testen
+	verifyAuthentication(client: SocketWithUserData): {
+		isAuthenticated: boolean;
+		userId: string | null;
+	} {
 		const cookies = cookie.parse(client.handshake.headers.cookie || '');
 		if (!cookies.token) {
 			console.log('No cookies provided');
@@ -48,33 +75,66 @@ export class EventsGateway {
 			console.log('No token provided');
 			return { isAuthenticated: false, userId: null };
 		}
-		const decoded = await this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
-		if (decoded) {
-			client.data.user = decoded;
-			return { isAuthenticated: true, userId: decoded.id };
+
+		try {
+			const decoded = this.jwtService.verify<DecodedToken>(token, {
+				secret: process.env.JWT_SECRET,
+			});
+
+			if (decoded) {
+				client.data.user = decoded;
+				return { isAuthenticated: true, userId: decoded.id };
+			}
+		} catch (error) {
+			console.error('Error verifying token:', error);
 		}
-		return { isAuthenticated: false, userId: '' };
+
+		return { isAuthenticated: false, userId: null };
 	}
 
 	//########################UserStatus#############################
 
-	async handleConnection(client: Socket, ...args: any[]) {
+	//old
+
+	// async handleConnection(client: Socket, ...args: any[]) {
+	// 	try {
+	// 		const isAuthenticated = this.verifyAuthentication(client);
+	// 		if (!isAuthenticated.isAuthenticated) {
+	// 			console.log('Invalid credentials');
+	// 			return;
+	// 		}
+	// 		// User is authenticated, proceed with connection
+	// 		//console.log('Email to track online: ', client.data.user.email);
+	// 		await this.eventsService.userConnected(client.data.user.email);
+	// 		client.join(`user_${isAuthenticated.userId}`);
+	// 	} catch (error) {
+	// 		console.error('In handleConnection:', error.message);
+	// 	}
+	// }
+
+	//test new eslint conform
+
+	async handleConnection(client: AuthenticatedSocket) {
 		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
+			const isAuthenticated = this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
 				console.log('Invalid credentials');
+				client.disconnect();
 				return;
 			}
-			// User is authenticated, proceed with connection
-			//console.log('Email to track online: ', client.data.user.email);
+
 			await this.eventsService.userConnected(client.data.user.email);
-			client.join(`user_${isAuthenticated.userId}`);
+			await client.join(`user_${isAuthenticated.userId}`);
 		} catch (error) {
-			console.error('In handleConnection:', error.message);
+			if (error instanceof Error) {
+				console.error('In handleConnection:', error.message);
+			} else {
+				console.error('An unknown error occurred in handleConnection');
+			}
 		}
 	}
 
-	async handleDisconnect(client: Socket) {
+	async handleDisconnect(client: AuthenticatedSocket) {
 		if (client.data.user) {
 			await this.eventsService.userDisconnected(client.data.user.email);
 		} else {
@@ -88,10 +148,10 @@ export class EventsGateway {
 	@SubscribeMessage('send-message')
 	async handleMessage(
 		@MessageBody() data: { receiverId: string; content: string },
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() client: AuthenticatedSocket,
 	) {
 		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
+			const isAuthenticated = this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
 				console.log('Invalid credentials');
 				return;
@@ -119,7 +179,11 @@ export class EventsGateway {
 				id: message.id,
 			});
 		} catch (error) {
-			console.error('Error in handleMessage:', error.message);
+			if (error instanceof Error) {
+				console.error('Error in handleMessage:', error.message);
+			} else {
+				console.error('An unknown error occurred in handleMessage');
+			}
 		}
 	}
 
@@ -127,10 +191,10 @@ export class EventsGateway {
 	@SubscribeMessage('send-message-to-chatroom')
 	async handleMessageToChatRoom(
 		@MessageBody() data: { chatRoomId: string; content: string },
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() client: AuthenticatedSocket,
 	) {
 		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
+			const isAuthenticated = this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
 				console.log('Invalid credentials');
 				return;
@@ -208,16 +272,20 @@ export class EventsGateway {
 				}
 			}
 		} catch (error) {
-			console.error('Error in handleMessage:', error.message); //TODO: del before eval.
+			if (error instanceof Error) {
+				console.error('Error in handleMessage:', error.message);
+			} else {
+				console.error('An unknown error occurred in handleMessage');
+			}
 		}
 	}
 
 	//########################Game#############################
 
 	@SubscribeMessage('playerReady')
-	async handlePlayerReady(@ConnectedSocket() client: Socket) {
+	async handlePlayerReady(@ConnectedSocket() client: AuthenticatedSocket) {
 		try {
-			const isAuthenticated = await this.verifyAuthentication(client);
+			const isAuthenticated = this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
 				console.log('Invalid credentials');
 				return;
