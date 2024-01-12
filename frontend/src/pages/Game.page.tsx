@@ -5,6 +5,8 @@ import '../css/game.css';
 // Game arena dimensions
 const gameWidth = 1200;
 const gameHeight = 800;
+const topBorder = 135;
+const paddleHeight = 125;
 
 const GamePage = () => {
 	interface Player {
@@ -35,8 +37,8 @@ const GamePage = () => {
 	const [gameReady, setGameReady] = useState(false);
 	const [oppoReady, setOppoReady] = useState(false);
 	const [ballPosition, setBallPosition] = useState({ x: 300, y: 200 });
-	const [myPaddle, setMyPaddle] = useState(200);
-	const [opPaddle, setOpPaddle] = useState(200);
+	const [myPaddle, setMyPaddle] = useState(250);
+	const [opPaddle, setOpPaddle] = useState(250);
 
 	useEffect(() => {
 		async function getUserId() {
@@ -114,18 +116,22 @@ const GamePage = () => {
 			const movementAmount = 10;
 			let newPaddlePosition = myPaddle;
 
-			if (key === 'w' && myPaddle > 0) {
-				newPaddlePosition -= movementAmount;
+			// If the 'w' key is pressed and paddle is above the topBorder, move up
+			if (key === 'w' && myPaddle > topBorder) {
+				newPaddlePosition = Math.max(newPaddlePosition - movementAmount, topBorder);
 				req = 'up';
-			} else if (key === 's' && myPaddle < gameHeight - 100) {
-				newPaddlePosition += movementAmount;
+			}
+			// If the 's' key is pressed and paddle is above the bottom minus paddleHeight, move down
+			else if (key === 's' && myPaddle < gameHeight - paddleHeight) {
+				newPaddlePosition = Math.min(newPaddlePosition + movementAmount, gameHeight - paddleHeight);
 				req = 'down';
 			}
 
 			// Update paddle position and emit event to server
-			setMyPaddle(newPaddlePosition);
-
-			socket.emit('keydown', { key: req });
+			if (req) {
+				setMyPaddle(newPaddlePosition);
+				socket.emit('keydown', { key: req });
+			}
 		};
 
 		document.addEventListener('keydown', handleKeyDown);

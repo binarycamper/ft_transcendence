@@ -158,7 +158,6 @@ export class GameService {
 				Math.min(game.playerTwoPaddle + paddleMovement, gameHeight - 100),
 			);
 		}
-
 		await this.gameRepository.save(game);
 		return game;
 	}
