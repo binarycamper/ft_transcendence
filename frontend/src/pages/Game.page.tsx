@@ -71,18 +71,15 @@ const GamePage = () => {
 					return;
 				}
 				const data = await response.json();
-				console.log('data.playerOneID', data.playerOne.id);
 				setGameData(data);
 				setGameReady(data.started);
 				setOppoReady(data.started);
 				if (data.playerOne.id === userId) {
-					console.log('set PAddle1!');
 					setMyPaddle(data.playerOnePaddle);
 					setOpPaddle(data.playerTwoPaddle);
 				} else {
 					setMyPaddle(data.playerTwoPaddle);
 					setOpPaddle(data.playerOnePaddle);
-					console.log('set PAddle2!');
 				}
 			} catch (error) {
 				// Handle error
@@ -113,18 +110,22 @@ const GamePage = () => {
 			if (!gameReady || !oppoReady || !gameData) return;
 
 			const key = e.key.toLowerCase();
+			let req;
 			const movementAmount = 10;
 			let newPaddlePosition = myPaddle;
 
 			if (key === 'w' && myPaddle > 0) {
 				newPaddlePosition -= movementAmount;
+				req = 'up';
 			} else if (key === 's' && myPaddle < gameHeight - 100) {
 				newPaddlePosition += movementAmount;
+				req = 'down';
 			}
 
 			// Update paddle position and emit event to server
 			setMyPaddle(newPaddlePosition);
-			socket.emit('paddleMove', { userId, newPosition: newPaddlePosition });
+
+			socket.emit('keydown', { key: req });
 		};
 
 		document.addEventListener('keydown', handleKeyDown);
@@ -138,13 +139,10 @@ const GamePage = () => {
 		const handleGameUpdate = (updatedGameData: GameData) => {
 			setGameData(updatedGameData);
 			// Update local paddle position if it's different
-			if (gameData?.playerOne.id === userId && updatedGameData.playerOnePaddle !== myPaddle) {
+			if (gameData?.playerOne.id === userId) {
 				setMyPaddle(updatedGameData.playerOnePaddle);
 				setOpPaddle(updatedGameData.playerTwoPaddle);
-			} else if (
-				gameData?.playerTwo.id === userId &&
-				updatedGameData.playerTwoPaddle !== myPaddle
-			) {
+			} else if (gameData?.playerTwo.id === userId) {
 				setMyPaddle(updatedGameData.playerTwoPaddle);
 				setOpPaddle(updatedGameData.playerOnePaddle);
 			}

@@ -6,6 +6,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { GameUpdateDto } from './dto/dto';
 import { EventsGateway } from 'src/events/events.gateway';
+
+const gameHeight = 800; // game field's height
+
 @Injectable()
 export class GameService {
 	constructor(
@@ -138,11 +141,24 @@ export class GameService {
 
 	async updatePaddle(userId: string, key: string) {
 		const game = await this.findGameById(userId);
-		if (key === 'up') {
-			game.playerOnePaddle -= 10;
-		} else if (key === 'down') {
-			game.playerOnePaddle += 10;
+
+		// Determine which player is making the move
+		const isPlayerOne = userId === game.playerOne.id;
+
+		// Calculate new paddle position based on key press
+		const paddleMovement = key === 'up' ? -10 : 10;
+		if (isPlayerOne) {
+			game.playerOnePaddle = Math.max(
+				0,
+				Math.min(game.playerOnePaddle + paddleMovement, gameHeight - 100),
+			);
+		} else {
+			game.playerTwoPaddle = Math.max(
+				0,
+				Math.min(game.playerTwoPaddle + paddleMovement, gameHeight - 100),
+			);
 		}
+
 		await this.gameRepository.save(game);
 		return game;
 	}
