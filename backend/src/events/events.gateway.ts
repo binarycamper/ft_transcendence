@@ -247,7 +247,7 @@ export class EventsGateway {
 		}
 	}
 
-	@SubscribeMessage('keyHook')
+	@SubscribeMessage('keydown')
 	async keyHook(@ConnectedSocket() client: Socket, @MessageBody() data: { key: string }) {
 		const isAuthenticated = await this.verifyAuthentication(client);
 		if (!isAuthenticated.isAuthenticated) {
@@ -256,9 +256,9 @@ export class EventsGateway {
 		}
 		const game = await this.gameService.updatePaddle(isAuthenticated.userId, data.key);
 		if (isAuthenticated.userId === game.playerOne.id) {
-			this.server.to(`user_${game.playerTwo.id}`).emit('updatePaddle', data.key);
+			this.server.to(`user_${game.playerTwo.id}`).emit('handleGameUpdate', game);
 		} else {
-			this.server.to(`user_${game.playerOne.id}`).emit('updatePaddle', data.key);
+			this.server.to(`user_${game.playerOne.id}`).emit('handleGameUpdate', game);
 		}
 	}
 }

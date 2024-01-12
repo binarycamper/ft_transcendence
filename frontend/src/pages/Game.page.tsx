@@ -7,23 +7,36 @@ const gameWidth = 1200;
 const gameHeight = 800;
 
 const GamePage = () => {
-	const playerAvatarStyle = (player) => ({
-		backgroundImage: `url('https://source.unsplash.com/featured/?${player}')`,
-	});
-	// User states
+	interface Player {
+		id: string;
+		name: string;
+	}
+
+	interface GameData {
+		id: string;
+		playerOne: Player;
+		acceptedOne: boolean;
+		playerTwo: Player;
+		acceptedTwo: boolean;
+		started: boolean;
+		scorePlayerOne: number;
+		scorePlayerTwo: number;
+		startTime: Date;
+		endTime: Date | null;
+		winnerId: string | null;
+		playerOnePaddle: number;
+		playerTwoPaddle: number;
+	}
+
 	const [userId, setUserId] = useState('');
 	const [userName, setUserName] = useState('');
 
-	// State for game status and scores
-	const [playerScores, setPlayerScores] = useState({ player1: 0, player2: 0 });
+	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [gameReady, setGameReady] = useState(false);
 	const [oppoReady, setOppoReady] = useState(false);
-
-	// Paddle and ball state
-
-	const [leftPaddleY, setLeftPaddleY] = useState(200);
-	const [rightPaddleY, setRightPaddleY] = useState(200);
 	const [ballPosition, setBallPosition] = useState({ x: 300, y: 200 });
+	const [myPaddle, setMyPaddle] = useState(200);
+	const [opPaddle, setOpPaddle] = useState(200);
 
 	useEffect(() => {
 		async function getUserId() {
@@ -39,12 +52,18 @@ const GamePage = () => {
 				setUserId(data.id);
 				setUserName(data.name);
 			} catch (error) {
+				console.log('error: ', error);
 				window.location.href = 'http://localhost:5173/';
 			}
 		}
+		getUserId();
+	}, []);
 
+	useEffect(() => {
 		async function getCurrentGameData() {
 			try {
+				console.log('started');
+
 				const response = await fetch('http://localhost:8080/game/my-game', {
 					credentials: 'include',
 				});
@@ -52,27 +71,31 @@ const GamePage = () => {
 					return;
 				}
 				const data = await response.json();
-				console.log('game paddle: ', data.leftPaddleY);
-				setLeftPaddleY(data.leftPaddleY);
-				// TODO: Set your data here. You can have all the info of the game entity.
-				// const game.playerOneScore = data.playerOneScore etc...
+				console.log('data.playerOneID', data.playerOne.id);
+				setGameData(data);
+				setGameReady(data.started);
+				setOppoReady(data.started);
+				if (data.playerOne.id === userId) {
+					console.log('set PAddle1!');
+					setMyPaddle(data.playerOnePaddle);
+					setOpPaddle(data.playerTwoPaddle);
+				} else {
+					setMyPaddle(data.playerTwoPaddle);
+					setOpPaddle(data.playerOnePaddle);
+					console.log('set PAddle2!');
+				}
 			} catch (error) {
 				// Handle error
 			}
 		}
 
-		getUserId();
 		getCurrentGameData();
 	}, []);
 
 	useEffect(() => {
 		socket.on('gameStart', (game) => {
-			setPlayerScores({
-				player1: game.scorePlayerOne,
-				player2: game.scorePlayerTwo,
-			});
 			console.log('enemy sent start!');
-			setOppoReady(true); // Assuming 'gameStart' means both players are ready, and the game can start
+			setOppoReady(true);
 		});
 
 		return () => {
@@ -87,20 +110,21 @@ const GamePage = () => {
 
 	useEffect(() => {
 		const handleKeyDown = (e) => {
-			const key = e.key.toLowerCase();
-			const movementKeys = {
-				w: 'up',
-				a: 'up',
-				s: 'down',
-				d: 'down',
-			};
+			if (!gameReady || !oppoReady || !gameData) return;
 
-			// Check if the key is one of the movement keys
-			if (movementKeys.hasOwnProperty(key)) {
-				console.log(`${e.key.toUpperCase()} pressed`); // Log in uppercase for consistency
-				// Emit the corresponding movement direction
-				socket.emit('keyHook', { key: movementKeys[key] });
+			const key = e.key.toLowerCase();
+			const movementAmount = 10;
+			let newPaddlePosition = myPaddle;
+
+			if (key === 'w' && myPaddle > 0) {
+				newPaddlePosition -= movementAmount;
+			} else if (key === 's' && myPaddle < gameHeight - 100) {
+				newPaddlePosition += movementAmount;
 			}
+
+			// Update paddle position and emit event to server
+			setMyPaddle(newPaddlePosition);
+			socket.emit('paddleMove', { userId, newPosition: newPaddlePosition });
 		};
 
 		document.addEventListener('keydown', handleKeyDown);
@@ -108,87 +132,85 @@ const GamePage = () => {
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [gameReady, oppoReady]);
+	}, [myPaddle, gameReady, oppoReady, userId]);
 
 	useEffect(() => {
-		const handlePaddleMovement = (e) => {
-			const key = e.key.toLowerCase();
-			const leftPaddleMovement = {
-				w: -10, // Move left paddle up (decrease Y position)
-				s: 10, // Move left paddle down (increase Y position)
-			};
-
-			const rightPaddleMovement = {
-				a: -10, // Move right paddle up (decrease Y position)
-				d: 10, // Move right paddle down (increase Y position)
-			};
-
-			// Check if the key is one of the left paddle movement keys
-			if (leftPaddleMovement.hasOwnProperty(key)) {
-				// Calculate new left paddle position
-				const newLeftPaddleY = leftPaddleY + leftPaddleMovement[key];
-
-				// Ensure the left paddle stays within the game bounds (adjust as needed)
-				const minY = 0;
-				const maxY = gameHeight - 100; // Adjust the value based on your paddle height
-				const clampedPosition = Math.min(Math.max(newLeftPaddleY, minY), maxY);
-
-				// Update the left paddle position
-				setLeftPaddleY(clampedPosition);
-			}
-
-			// Check if the key is one of the right paddle movement keys
-			if (rightPaddleMovement.hasOwnProperty(key)) {
-				// Calculate new right paddle position
-				const newRightPaddleY = rightPaddleY + rightPaddleMovement[key];
-
-				// Ensure the right paddle stays within the game bounds (adjust as needed)
-				const minY = 0;
-				const maxY = gameHeight - 100; // Adjust the value based on your paddle height
-				const clampedPosition = Math.min(Math.max(newRightPaddleY, minY), maxY);
-
-				// Update the right paddle position
-				setRightPaddleY(clampedPosition);
+		const handleGameUpdate = (updatedGameData: GameData) => {
+			setGameData(updatedGameData);
+			// Update local paddle position if it's different
+			if (gameData?.playerOne.id === userId && updatedGameData.playerOnePaddle !== myPaddle) {
+				setMyPaddle(updatedGameData.playerOnePaddle);
+				setOpPaddle(updatedGameData.playerTwoPaddle);
+			} else if (
+				gameData?.playerTwo.id === userId &&
+				updatedGameData.playerTwoPaddle !== myPaddle
+			) {
+				setMyPaddle(updatedGameData.playerTwoPaddle);
+				setOpPaddle(updatedGameData.playerOnePaddle);
 			}
 		};
 
-		document.addEventListener('keydown', handlePaddleMovement);
+		socket.on('handleGameUpdate', handleGameUpdate);
 
 		return () => {
-			document.removeEventListener('keydown', handlePaddleMovement);
+			socket.off('handleGameUpdate', handleGameUpdate);
 		};
-	}, [leftPaddleY, rightPaddleY]);
+	}, [gameData, userId, myPaddle]);
+
+	const debugPrintGameData = () => {
+		console.log('Current Game Data:', gameData);
+	};
+
+	const getUserPos = () => {
+		return gameData?.playerOne.id === userId ? 'Player 1' : 'Player 2';
+	};
+
+	const getPlayerScore = () => {
+		return getUserPos() === 'Player 1' ? gameData?.scorePlayerOne : gameData?.scorePlayerTwo;
+	};
+
+	const getPaddlePosition = (playerPos: string) => {
+		return playerPos === 'Player 1' ? gameData?.playerOnePaddle : gameData?.playerTwoPaddle;
+	};
 
 	return (
 		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
 			<h1 className="gameHeader">Ping Pong Game</h1>
 			<div className="scoreboard">
 				<div className="player-info">
-					<div className="player-avatar" style={playerAvatarStyle('player1')}></div>
 					<span>
-						{userName} (Player 1): {playerScores.player1}
+						{userName} ({getUserPos()}): {getPlayerScore()}
 					</span>
 				</div>
 				<div className="player-info">
-					<div className="player-avatar" style={playerAvatarStyle('player2')}></div>
-					<span>Opponent (Player 2): {playerScores.player2}</span>
+					<span>
+						{gameData?.playerOne.id === userId
+							? gameData?.playerTwo.name
+							: gameData?.playerOne.name}
+						({gameData?.playerOne.name}):
+						{gameData?.playerOne.id === userId
+							? gameData?.scorePlayerTwo
+							: gameData?.scorePlayerOne}
+					</span>
 				</div>
 			</div>
-			{gameReady && oppoReady ? (
+			{!gameReady && (
+				<button onClick={startGame} className="readyButton">
+					Ready
+				</button>
+			)}
+			{gameReady && oppoReady && (
 				<>
-					<div className="paddle left" style={{ top: `${leftPaddleY}px` }} />
-					<div className="paddle right" style={{ top: `${rightPaddleY}px` }} />
+					<div className="paddle left" style={{ top: `${myPaddle}px` }} />
+					<div className="paddle right" style={{ top: `${opPaddle}px` }} />
 					<div
 						className="ball"
 						style={{ left: `${ballPosition.x}px`, top: `${ballPosition.y}px` }}
 					/>
 					{/* Optionally, render a pause button or other in-game options */}
 				</>
-			) : (
-				<button onClick={startGame} className="readyButton">
-					Ready
-				</button>
 			)}
+			{/* Ready button and other UI elements */}
 		</div>
 	);
 };
