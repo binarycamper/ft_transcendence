@@ -246,4 +246,9 @@ export class EventsGateway {
 			// Handle error appropriately
 		}
 	}
+
+	@SubscribeMessage('keyHook')
+	async keyHook(@ConnectedSocket() client: Socket, @MessageBody() data: { key: string }) {
+		console.log('KEyHOOK triggert!, ', data.key);
+	}
 }

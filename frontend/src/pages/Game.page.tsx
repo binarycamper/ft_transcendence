@@ -86,10 +86,18 @@ const GamePage = () => {
 	useEffect(() => {
 		const handleKeyDown = (e) => {
 			const key = e.key.toLowerCase();
-			// Check for 'w', 'a', 's', 'd' regardless of caps
-			if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+			const movementKeys = {
+				w: 'up',
+				a: 'up',
+				s: 'down',
+				d: 'down',
+			};
+
+			// Check if the key is one of the movement keys
+			if (movementKeys.hasOwnProperty(key)) {
 				console.log(`${e.key.toUpperCase()} pressed`); // Log in uppercase for consistency
-				socket.emit('keyHook', { key: key });
+				// Emit the corresponding movement direction
+				socket.emit('keyHook', { key: movementKeys[key] });
 			}
 		};
 
@@ -99,6 +107,55 @@ const GamePage = () => {
 			document.removeEventListener('keydown', handleKeyDown);
 		};
 	}, [gameReady, oppoReady]);
+
+	useEffect(() => {
+		const handlePaddleMovement = (e) => {
+			const key = e.key.toLowerCase();
+			const leftPaddleMovement = {
+				w: -10, // Move left paddle up (decrease Y position)
+				s: 10, // Move left paddle down (increase Y position)
+			};
+
+			const rightPaddleMovement = {
+				a: -10, // Move right paddle up (decrease Y position)
+				d: 10, // Move right paddle down (increase Y position)
+			};
+
+			// Check if the key is one of the left paddle movement keys
+			if (leftPaddleMovement.hasOwnProperty(key)) {
+				// Calculate new left paddle position
+				const newLeftPaddleY = leftPaddleY + leftPaddleMovement[key];
+
+				// Ensure the left paddle stays within the game bounds (adjust as needed)
+				const minY = 0;
+				const maxY = gameHeight - 100; // Adjust the value based on your paddle height
+				const clampedPosition = Math.min(Math.max(newLeftPaddleY, minY), maxY);
+
+				// Update the left paddle position
+				setLeftPaddleY(clampedPosition);
+			}
+
+			// Check if the key is one of the right paddle movement keys
+			if (rightPaddleMovement.hasOwnProperty(key)) {
+				// Calculate new right paddle position
+				const newRightPaddleY = rightPaddleY + rightPaddleMovement[key];
+
+				// Ensure the right paddle stays within the game bounds (adjust as needed)
+				const minY = 0;
+				const maxY = gameHeight - 100; // Adjust the value based on your paddle height
+				const clampedPosition = Math.min(Math.max(newRightPaddleY, minY), maxY);
+
+				// Update the right paddle position
+				setRightPaddleY(clampedPosition);
+			}
+		};
+
+		document.addEventListener('keydown', handlePaddleMovement);
+
+		return () => {
+			document.removeEventListener('keydown', handlePaddleMovement);
+		};
+	}, [leftPaddleY, rightPaddleY]);
 
 	return (
 		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
