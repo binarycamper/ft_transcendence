@@ -85,25 +85,30 @@ const GamePage = () => {
 
 	useEffect(() => {
 		const handleKeyDown = (e) => {
-			console.log('pressed key ??');
-			// Update paddle position based on key press
-			// ...
+			switch (e.key) {
+				case 'ArrowUp':
+					console.log('Arrow Up pressed');
+					// Update paddle position here if needed
+					break;
+				case 'ArrowDown':
+					console.log('Arrow Down pressed');
+					// Update paddle position here if needed
+					break;
+				case 'ArrowLeft':
+					console.log('Arrow Left pressed');
+					// Update paddle position here if needed
+					break;
+				case 'ArrowRight':
+					console.log('Arrow Right pressed');
+					// Update paddle position here if needed
+					break;
+				default:
+					console.log(`Key pressed: ${e.key}`);
+					break;
+			}
 		};
 
 		document.addEventListener('keydown', handleKeyDown);
-
-		if (gameReady && oppoReady) {
-			// Game loop
-			const updateGame = () => {
-				// Update ball position and check for collisions
-				// ...
-
-				requestAnimationFrame(updateGame);
-			};
-
-			// Start the game loop
-			requestAnimationFrame(updateGame);
-		}
 
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown);
