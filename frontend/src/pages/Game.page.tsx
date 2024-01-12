@@ -85,26 +85,11 @@ const GamePage = () => {
 
 	useEffect(() => {
 		const handleKeyDown = (e) => {
-			switch (e.key) {
-				case 'ArrowUp':
-					console.log('Arrow Up pressed');
-					// Update paddle position here if needed
-					break;
-				case 'ArrowDown':
-					console.log('Arrow Down pressed');
-					// Update paddle position here if needed
-					break;
-				case 'ArrowLeft':
-					console.log('Arrow Left pressed');
-					// Update paddle position here if needed
-					break;
-				case 'ArrowRight':
-					console.log('Arrow Right pressed');
-					// Update paddle position here if needed
-					break;
-				default:
-					console.log(`Key pressed: ${e.key}`);
-					break;
+			const key = e.key.toLowerCase();
+			// Check for 'w', 'a', 's', 'd' regardless of caps
+			if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+				console.log(`${e.key.toUpperCase()} pressed`); // Log in uppercase for consistency
+				socket.emit('keyHook', { key: key });
 			}
 		};
 
