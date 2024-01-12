@@ -58,15 +58,6 @@ export class MatchmakingController {
 					message: 'queue already open!',
 				});
 			}
-			//TODO: frontend site should restart the queue
-			if (myqueue.isActive === false) {
-				myqueue.isActive = true;
-				await this.matchmakingService.saveQueue(myqueue);
-			}
-			//console.log('queue already open!');
-			return res.status(HttpStatus.OK).json({
-				message: 'queue already open!',
-			});
 		} catch (error) {
 			//console.log('ERROR in matchmaking/join: ', error);
 			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
