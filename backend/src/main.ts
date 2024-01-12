@@ -47,8 +47,8 @@ async function bootstrap() {
 		}),
 	);
 
-	await app.listen(3000).catch((error) => {
+	await app.listen(8080).catch((error) => {
 		logger.error('Error starting the server', error);
 	});
 }
-bootstrap();
+void bootstrap();

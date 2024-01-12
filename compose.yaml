@@ -24,7 +24,8 @@ services:
     networks:
       - internal
     ports:
-      - '8080:3000'
+      - '8080:8080'
+      - '8090:8090'
     restart: unless-stopped
     volumes:
       - ${BACKEND_VOLUME}:/usr/src/app
