@@ -45,4 +45,7 @@ export class Game {
 
 	@Column({ default: false }) //GameMode On Off
 	gameMode: boolean;
+
+	@Column('int', { array: true, default: () => "'{600,400}'" })
+	ballPosition: number[];
 }

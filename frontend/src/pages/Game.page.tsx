@@ -12,6 +12,7 @@ const GamePage = () => {
 	interface Player {
 		id: string;
 		name: string;
+		customImage: string;
 	}
 
 	interface GameData {
@@ -29,6 +30,7 @@ const GamePage = () => {
 		playerOnePaddle: number;
 		playerTwoPaddle: number;
 		gameMode: boolean;
+		ballPosition: [number, number];
 	}
 
 	const [userId, setUserId] = useState('');
@@ -38,7 +40,7 @@ const GamePage = () => {
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [gameReady, setGameReady] = useState(false);
 	const [oppoReady, setOppoReady] = useState(false);
-	const [ballPosition, setBallPosition] = useState({ x: 300, y: 200 });
+	const [ballPosition, setBallPosition] = useState({ x: 600, y: 400 });
 	const [myPaddle, setMyPaddle] = useState(250);
 	const [opPaddle, setOpPaddle] = useState(250);
 
@@ -55,6 +57,7 @@ const GamePage = () => {
 				const data = await response.json();
 				setUserId(data.id);
 				setUserName(data.name);
+				console.log('data.image request: ', data.customImage); //TODO: RENDER IMAGE AS AVATAR.
 			} catch (error) {
 				console.log('error: ', error);
 				window.location.href = 'http://localhost:5173/';
@@ -239,7 +242,10 @@ const GamePage = () => {
 					<div className="paddle right" style={{ top: `${opPaddle}px` }} />
 					<div
 						className="ball"
-						style={{ left: `${ballPosition.x}px`, top: `${ballPosition.y}px` }}
+						style={{
+							left: `${gameData?.ballPosition[0]}px`,
+							top: `${gameData?.ballPosition[1]}px`,
+						}}
 					/>
 					{/* Optionally, render a pause button or other in-game options */}
 				</>
