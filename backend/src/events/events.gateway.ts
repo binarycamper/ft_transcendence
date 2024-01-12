@@ -237,8 +237,8 @@ export class EventsGateway {
 					console.log('start signal sended!');
 					game.startTime = new Date();
 					await this.gameService.saveGame(game);
-					this.server.to(game.playerOne.id).emit('gameStart', game);
-					this.server.to(game.playerTwo.id).emit('gameStart', game);
+					this.server.to(`user_${game.playerOne.id}`).emit('gameStart', game);
+					this.server.to(`user_${game.playerTwo.id}`).emit('gameStart', game);
 				}
 			}
 		} catch (error) {

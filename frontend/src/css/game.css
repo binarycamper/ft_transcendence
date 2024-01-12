@@ -1,69 +1,61 @@
-.game-container {
-	max-width: 800px;
-	margin: 0 auto;
-	text-align: center;
+/* Reset some default styles */
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #f0f0f0;
 }
 
-.game-board {
+/* Center the game container */
+.gameContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+}
+
+/* Style the game title */
+h2 {
+	font-size: 36px;
+	color: #333;
+	margin-bottom: 20px;
+}
+
+/* Style the game area */
+.gameArea {
 	position: relative;
-	width: 100%;
-	height: 500px; /* Adjust as needed */
-	background: #eee; /* Light gray background, you can put any color or image */
-	border: 1px solid #000; /* Black border */
-	margin-top: 20px;
+	width: 600px;
+	height: 400px;
+	background-color: #000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid #333;
 }
 
+/* Style the paddles */
+.paddle {
+	position: absolute;
+	width: 10px;
+	height: 80px;
+	background-color: #333;
+}
+
+/* Style the left paddle */
+.left {
+	left: 20px;
+}
+
+/* Style the right paddle */
+.right {
+	right: 20px;
+}
+
+/* Style the ball */
 .ball {
 	position: absolute;
-	width: 20px; /* Ball size */
+	width: 20px;
 	height: 20px;
-	background: #000; /* Black ball, change as needed */
+	background-color: #ff5722;
 	border-radius: 50%;
-}
-
-.left-paddle,
-.right-paddle {
-	position: absolute;
-	width: 15px; /* Paddle width */
-	height: 100px; /* Paddle height */
-	background: #333; /* Dark gray paddles */
-}
-
-.left-paddle {
-	left: 20px; /* Distance from the left edge of the game board */
-}
-
-.right-paddle {
-	right: 20px; /* Distance from the right edge of the game board */
-}
-
-button {
-	padding: 10px 20px;
-	margin-top: 20px;
-	background: #0066ff; /* Blue background */
-	color: white; /* White text */
-	border: none;
-	border-radius: 5px;
-	cursor: pointer;
-	font-size: 16px;
-}
-
-button:hover {
-	background: #0056e0; /* Darker blue on hover */
-}
-
-/* Add responsiveness to your game container if needed */
-@media (max-width: 600px) {
-	.game-container {
-		width: 100%;
-	}
-
-	.game-board {
-		height: 300px; /* Smaller game board on mobile */
-	}
-
-	.left-paddle,
-	.right-paddle {
-		height: 60px; /* Smaller paddles on mobile */
-	}
 }

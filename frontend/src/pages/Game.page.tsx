@@ -1,79 +1,58 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
+import '../css/game.css';
 
 const GamePage = () => {
-	// Screen dimensions
-	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-	const [screenHeight, setScreenHeight] = useState(window.innerHeight);
+	// User states
+	const [userId, setUserId] = useState('');
+	const [userName, setUserName] = useState('');
 
-	// State for user and game
-	const [currentUserId, setCurrentUserId] = useState(null);
-	const [currentUserName, setCurrentUserName] = useState(null);
-	const [ballPosition, setBallPosition] = useState({ x: screenWidth / 2, y: screenHeight / 2 });
+	// State for game status and scores
 	const [playerScores, setPlayerScores] = useState({ player1: 0, player2: 0 });
 	const [gameReady, setGameReady] = useState(false);
+	const [oppoReady, setOppoReady] = useState(false);
 
-	// State for paddle movement
-	const [leftPaddleY, setLeftPaddleY] = useState(0);
-	const [rightPaddleY, setRightPaddleY] = useState(0);
+	// Paddle and ball state
 
-	useEffect(
-		() => {
-			const handleResize = () => {
-				setScreenWidth(window.innerWidth);
-				setScreenHeight(window.innerHeight);
-
-				// calculate the ratio of the ball's current position to the total width and height of the game area
-				//const ballXRatio = ballPos.x / 1280;
-				//const ballYRatio = ballPos.y / 720;
-
-				// multiply the new dimensions of the game area by these ratios to get the new position of the ball
-				//setBallPos({ x: ballXRatio * window.innerWidth, y: ballYRatio * window.innerHeight });
-			};
-
-			window.addEventListener('resize', handleResize);
-
-			return () => {
-				window.removeEventListener('resize', handleResize);
-			};
-		},
-		[
-			/*ballPos*/
-		],
-	);
+	const [leftPaddleY, setLeftPaddleY] = useState(200);
+	const [rightPaddleY, setRightPaddleY] = useState(200);
+	const [ballPosition, setBallPosition] = useState({ x: 300, y: 200 });
 
 	useEffect(() => {
-		async function getCurrentUserId() {
+		async function getUserId() {
 			try {
-				const response = await fetch('http://localhost:8080/user/id', { credentials: 'include' });
+				const response = await fetch('http://localhost:8080/user/id', {
+					credentials: 'include',
+				});
 				if (!response.ok) {
 					window.location.href = 'http://localhost:5173/';
 					return;
 				}
 				const data = await response.json();
-				setCurrentUserId(data.id);
-				setCurrentUserName(data.name);
+				setUserId(data.id);
+				setUserName(data.name);
 			} catch (error) {
 				window.location.href = 'http://localhost:5173/';
 			}
 		}
+
 		async function getCurrentGameData() {
 			try {
 				const response = await fetch('http://localhost:8080/game/my-game', {
 					credentials: 'include',
 				});
 				if (!response.ok) {
-					//window.location.href = 'http://localhost:5173/';
 					return;
 				}
 				const data = await response.json();
-				//TODO: Set ur data here you can have all infos of game entity. const game.playerOneScore = data.playerOneScore etc...
+				// TODO: Set your data here. You can have all the info of the game entity.
+				// const game.playerOneScore = data.playerOneScore etc...
 			} catch (error) {
-				//window.location.href = 'http://localhost:5173/';
+				// Handle error
 			}
 		}
 
-		getCurrentUserId();
+		getUserId();
 		getCurrentGameData();
 	}, []);
 
@@ -83,7 +62,10 @@ const GamePage = () => {
 				player1: game.scorePlayerOne,
 				player2: game.scorePlayerTwo,
 			});
+			console.log('enemy sent start!');
+			setOppoReady(true); // Assuming 'gameStart' means both players are ready, and the game can start
 		});
+
 		return () => {
 			socket.off('gameStart');
 		};
@@ -94,13 +76,43 @@ const GamePage = () => {
 		socket.emit('playerReady', {});
 	};
 
+	useEffect(() => {
+		const handleKeyDown = (e) => {
+			// Update paddle position based on key press
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+
+		// Game loop
+		const updateGame = () => {
+			// Update ball position and check for collisions
+
+			requestAnimationFrame(updateGame);
+		};
+
+		// Start the game loop
+		requestAnimationFrame(updateGame);
+
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, []);
+
 	return (
-		<div className="game-container">
+		<div className="gameContainer">
 			<h2>Ping Pong Game</h2>
-			<div className="game-board">
-				{/* Render game elements like paddles and ball based on their state */}
-			</div>
-			{/* User info and game control buttons */}
+			{!gameReady && <button onClick={startGame}>Ready</button>}
+			{gameReady && oppoReady && (
+				<>
+					<div className="paddle left" style={{ top: `${leftPaddleY}px` }} />
+					<div className="paddle right" style={{ top: `${rightPaddleY}px` }} />
+					<div
+						className="ball"
+						style={{ left: `${ballPosition.x}px`, top: `${ballPosition.y}px` }}
+					/>
+				</>
+			)}
+			{/* Optionally, render scores and other UI elements here */}
 		</div>
 	);
 };
