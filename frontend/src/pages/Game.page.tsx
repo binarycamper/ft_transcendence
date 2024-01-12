@@ -223,12 +223,14 @@ const GamePage = () => {
 					<button onClick={startGame} className="readyButton">
 						Ready
 					</button>
-					<button
-						onClick={toggleGameMode}
-						className={`modeButton ${gameMode ? 'modeButtonOn' : 'modeButtonOff'}`}
-					>
-						{gameMode ? 'BoshyMode: ON' : 'BoshyMode: OFF'}
-					</button>
+					{gameData && userId === gameData.playerOne.id && (
+						<button
+							onClick={toggleGameMode}
+							className={`modeButton ${gameMode ? 'modeButtonOn' : 'modeButtonOff'}`}
+						>
+							{gameMode ? 'BoshyMode: ON' : 'BoshyMode: OFF'}
+						</button>
+					)}
 				</>
 			)}
 			{gameReady && oppoReady && (
