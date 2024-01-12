@@ -5,7 +5,6 @@ import {
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
-	UnauthorizedException,
 	forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';

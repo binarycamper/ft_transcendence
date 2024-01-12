@@ -1,4 +1,10 @@
 import { IsNotEmpty } from 'class-validator';
+// import { Request } from 'express';
+// import { User } from '../../user/user.entity'; // Ersetzen Sie dies durch den tatsächlichen Importpfad
+
+// export interface RequestWithUser extends Request {
+// 	user: User;
+// }
 
 export class GameUpdateDto {
 	@IsNotEmpty({ message: 'Id is required.' })

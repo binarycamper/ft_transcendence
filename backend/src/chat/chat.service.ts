@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequest } from './friendRequest.entity';
-import { Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.entity';
 import { ChatMessage } from './chat.entity';

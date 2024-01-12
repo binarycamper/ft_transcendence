@@ -67,7 +67,11 @@ export class GameService {
 			return existingGame;
 		} catch (error) {
 			//console.log(`Failed to create game: ${error.message}`, error.stack);
-			throw new InternalServerErrorException(`Failed to create game: ${error.message}`);
+			if (error instanceof Error) {
+				throw new InternalServerErrorException(`Failed to create game: ${error.message}`);
+			} else {
+				throw new InternalServerErrorException(`unknown`);
+			}
 		}
 	}
 

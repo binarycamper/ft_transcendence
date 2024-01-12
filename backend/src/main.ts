@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import { Request, Response } from 'express';
 
 async function bootstrap() {
 	const logger = new Logger(bootstrap.name);
@@ -46,6 +47,8 @@ async function bootstrap() {
 		}),
 	);
 
-	await app.listen(3000);
+	await app.listen(3000).catch((error) => {
+		logger.error('Error starting the server', error);
+	});
 }
 bootstrap();

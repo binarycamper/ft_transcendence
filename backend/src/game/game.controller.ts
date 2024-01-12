@@ -1,9 +1,8 @@
 //game.controller.ts
-import { Body, Controller, Delete, Get, HttpException, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Req, UseGuards } from '@nestjs/common';
 import { GameService } from './game.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Request } from 'express';
-import { GameUpdateDto } from './dto/dto';
 
 @Controller('game')
 export class GameController {
@@ -33,17 +32,18 @@ export class GameController {
 		return await this.gameService.deleteAllGames();
 	}
 
-	@UseGuards(JwtAuthGuard)
-	@Post('update-game')
-	async updateGame(@Req() req, @Body() gameUpdateDto: GameUpdateDto) {
-		try {
-			const userId = req.user.id as string;
-			return await this.gameService.updateGame(gameUpdateDto, userId);
-		} catch (error) {
-			if (error instanceof HttpException) {
-				throw error;
-			}
-			throw new HttpException('Internal Server Error', 500);
-		}
-	}
+	// @UseGuards(JwtAuthGuard)
+	// @Post('update-game')
+	// async updateGame(@Req() req, @Body() gameUpdateDto: GameUpdateDto) {
+	// 	try {
+	// 		const userId = req.user.id;
+	// 		console.log('Req: ', req); // req.user ist jetzt vom Typ User
+	// 		return await this.gameService.updateGame(gameUpdateDto, userId);
+	// 	} catch (error) {
+	// 		if (error instanceof HttpException) {
+	// 			throw error;
+	// 		}
+	// 		throw new HttpException('Internal Server Error', 500);
+	// 	}
+	// }
 }

@@ -1,5 +1,5 @@
 //game.module.ts
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './game.entity';
 import { GameController } from './game.controller';

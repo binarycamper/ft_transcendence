@@ -22,7 +22,6 @@ import { GameService } from 'src/game/game.service';
 import { Request, Response } from 'express';
 import { EventsGateway } from 'src/events/events.gateway';
 import { Game } from 'src/game/game.entity';
-import { RejoinQueueDto } from './dto/matchmaking.dto';
 
 @Controller('matchmaking')
 export class MatchmakingController {
@@ -34,41 +33,73 @@ export class MatchmakingController {
 		private eventsGateway: EventsGateway,
 	) {}
 
+	// @UseGuards(JwtAuthGuard, StatusGuard)
+	// @Post('join')
+	// async joinQueue(@Req() req: Request, @Res() res: Response) {
+	// 	try {
+	// 		const user = await this.userService.findProfileById(req.user.id);
+	// 		const myqueue = await this.matchmakingService.findMyQueue(user);
+	// 		if (!myqueue) {
+	// 			const queue = await this.matchmakingService.joinQueue(user);
+	// 			user.status = 'inqueue';
+	// 			await this.userService.updateUser(user);
+	// 			return res.status(HttpStatus.OK).json({
+	// 				message: 'queue started!',
+	// 				queue,
+	// 			});
+	// 		} else {
+	// 			if (myqueue.isActive === false) {
+	// 				myqueue.isActive = true;
+	// 				await this.matchmakingService.saveQueue(myqueue);
+	// 			}
+	// 			//console.log('queue already open!');
+	// 			return res.status(HttpStatus.OK).json({
+	// 				message: 'queue already open!',
+	// 			});
+	// 		}
+	// 		//TODO: frontend site should restart the queue
+	// 		if (myqueue.isActive === false) {
+	// 			myqueue.isActive = true;
+	// 			await this.matchmakingService.saveQueue(myqueue);
+	// 		}
+	// 		//console.log('queue already open!');
+	// 		return res.status(HttpStatus.OK).json({
+	// 			message: 'queue already open!',
+	// 		});
+	// 	} catch (error) {
+	// 		//console.log('ERROR in matchmaking/join: ', error);
+	// 		return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+	// 			message: 'New error!',
+	// 		});
+	// 	}
+	// }
+
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	@Post('join')
 	async joinQueue(@Req() req: Request, @Res() res: Response) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			const myqueue = await this.matchmakingService.findMyQueue(user);
-			if (!myqueue) {
-				const queue = await this.matchmakingService.joinQueue(user);
-				user.status = 'inqueue';
-				await this.userService.updateUser(user);
-				return res.status(HttpStatus.OK).json({
-					message: 'queue started!',
-					queue,
-				});
-			} else {
-				if (myqueue.isActive === false) {
+
+			if (myqueue) {
+				if (!myqueue.isActive) {
 					myqueue.isActive = true;
 					await this.matchmakingService.saveQueue(myqueue);
 				}
-				//console.log('queue already open!');
 				return res.status(HttpStatus.OK).json({
 					message: 'queue already open!',
 				});
 			}
-			//TODO: frontend site should restart the queue
-			if (myqueue.isActive === false) {
-				myqueue.isActive = true;
-				await this.matchmakingService.saveQueue(myqueue);
-			}
-			//console.log('queue already open!');
+
+			const queue = await this.matchmakingService.joinQueue(user);
+			user.status = 'inqueue';
+			await this.userService.updateUser(user);
+
 			return res.status(HttpStatus.OK).json({
-				message: 'queue already open!',
+				message: 'queue started!',
+				queue,
 			});
 		} catch (error) {
-			//console.log('ERROR in matchmaking/join: ', error);
 			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
 				message: 'New error!',
 			});
@@ -127,7 +158,7 @@ export class MatchmakingController {
 			const game = await this.gameService.createNewGame(user, opponent);
 			if (!game) {
 				//console.log('no game created...');
-				return;
+				return res.status(HttpStatus.NOT_FOUND).json({ message: 'No game found.' });
 			}
 			const allAccepted = game.acceptedOne && game.acceptedTwo;
 			const statusMessage = allAccepted
@@ -215,7 +246,7 @@ export class MatchmakingController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('timeout')
-	async handleTimeout(@Req() req: Request, @Res() res: Response, @Body() body: any) {
+	async handleTimeout(@Req() req: Request, @Res() res: Response) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			if (!user) {
@@ -260,7 +291,7 @@ export class MatchmakingController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('rejoin-queue')
-	async rejoinQueue(@Req() req: Request, @Res() res: Response, @Body() body: RejoinQueueDto) {
+	async rejoinQueue(@Req() req: Request, @Res() res: Response) {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
 			if (!user) {
