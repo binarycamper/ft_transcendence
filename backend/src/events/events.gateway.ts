@@ -225,17 +225,17 @@ export class EventsGateway {
 			const game = await this.gameService.findUserById(isAuthenticated.userId);
 			if (game) {
 				if (game.playerOne.id === isAuthenticated.userId) {
-					game.acceptedOne = true;
+					game.acceptedOne = false;
 				} else if (game.playerTwo.id === isAuthenticated.userId) {
-					game.acceptedTwo = true;
+					game.acceptedTwo = false;
 				}
 
 				await this.gameService.saveGame(game);
 
 				// If both players are ready, emit a 'gameStart' event to both players
-				if (game.acceptedOne && game.acceptedTwo) {
-					console.log('start signal sended!');
+				if (!game.acceptedOne && !game.acceptedTwo) {
 					game.startTime = new Date();
+					game.started = true;
 					await this.gameService.saveGame(game);
 					this.server.to(`user_${game.playerOne.id}`).emit('gameStart', game);
 					this.server.to(`user_${game.playerTwo.id}`).emit('gameStart', game);
@@ -254,7 +254,11 @@ export class EventsGateway {
 			console.log('Invalid credentials');
 			return;
 		}
-		await this.gameService.updatePaddle(isAuthenticated.userId, data.key);
-		console.log('KEyHOOK triggert!, ', data.key);
+		const game = await this.gameService.updatePaddle(isAuthenticated.userId, data.key);
+		if (isAuthenticated.userId === game.playerOne.id) {
+			this.server.to(`user_${game.playerTwo.id}`).emit('updatePaddle', data.key);
+		} else {
+			this.server.to(`user_${game.playerOne.id}`).emit('updatePaddle', data.key);
+		}
 	}
 }

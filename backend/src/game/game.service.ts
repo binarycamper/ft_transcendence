@@ -56,7 +56,8 @@ export class GameService {
 				player.id === existingGame.playerTwo.id &&
 				opponent.id === existingGame.playerOne.id
 			) {
-				existingGame.acceptedTwo = true; // Player two accepts the game
+				//existingGame.acceptedTwo = true; // Player two accepts the game
+				existingGame.acceptedTwo = true;
 				await this.gameRepository.save(existingGame);
 
 				// Emit event to notify that the game is ready
@@ -138,10 +139,11 @@ export class GameService {
 	async updatePaddle(userId: string, key: string) {
 		const game = await this.findGameById(userId);
 		if (key === 'up') {
-			game.leftPaddleY -= 10;
+			game.playerOnePaddle -= 10;
 		} else if (key === 'down') {
-			game.leftPaddleY += 10;
+			game.playerOnePaddle += 10;
 		}
 		await this.gameRepository.save(game);
+		return game;
 	}
 }

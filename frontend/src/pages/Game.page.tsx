@@ -174,7 +174,7 @@ const GamePage = () => {
 					<span>Opponent (Player 2): {playerScores.player2}</span>
 				</div>
 			</div>
-			{gameReady ? (
+			{gameReady && oppoReady ? (
 				<>
 					<div className="paddle left" style={{ top: `${leftPaddleY}px` }} />
 					<div className="paddle right" style={{ top: `${rightPaddleY}px` }} />

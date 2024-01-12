@@ -19,6 +19,9 @@ export class Game {
 	@Column({ default: false })
 	acceptedTwo: boolean;
 
+	@Column({ default: false })
+	started: boolean;
+
 	@Column({ default: 0 })
 	scorePlayerOne: number;
 
@@ -35,8 +38,8 @@ export class Game {
 	winnerId: string;
 
 	@Column({ default: 200 }) // Default position for left paddle
-	leftPaddleY: number;
+	playerOnePaddle: number;
 
 	@Column({ default: 200 }) // Default position for right paddle
-	rightPaddleY: number;
+	playerTwoPaddle: number;
 }
