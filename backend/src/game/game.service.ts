@@ -1,15 +1,18 @@
 //game.service.ts
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, forwardRef } from '@nestjs/common';
 import { Game } from './game.entity';
 import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { GameUpdateDto } from './dto/dto';
+import { EventsGateway } from 'src/events/events.gateway';
 @Injectable()
 export class GameService {
 	constructor(
 		@InjectRepository(Game)
 		private gameRepository: Repository<Game>,
+		@Inject(forwardRef(() => EventsGateway))
+		private eventsGateway: EventsGateway,
 	) {}
 
 	async findExistingGame(playerOneId: string, playerTwoId: string): Promise<Game | undefined> {
@@ -60,9 +63,9 @@ export class GameService {
 
 				//this.eventsService.emitToUser(opponent.id, player.name);
 				//console.log('emit the game here:');
-				/*this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
+				this.eventsGateway.server.to(`user_${opponent.id}`).emit('game-ready', {
 					opponentName: player.name,
-				});*/
+				});
 			}
 			return existingGame;
 		} catch (error) {

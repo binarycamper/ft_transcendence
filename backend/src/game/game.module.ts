@@ -6,9 +6,10 @@ import { GameController } from './game.controller';
 import { GameService } from './game.service';
 import { User } from 'src/user/user.entity';
 import { UserModule } from 'src/user/user.module';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
-	imports: [UserModule, TypeOrmModule.forFeature([Game, User])],
+	imports: [UserModule, TypeOrmModule.forFeature([Game, User]), forwardRef(() => EventsModule)],
 	controllers: [GameController],
 	providers: [GameService],
 	exports: [GameService],
