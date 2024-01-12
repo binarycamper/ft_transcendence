@@ -84,7 +84,7 @@ export class GameService {
 		});
 	}
 
-	async findUserById(userId: string): Promise<Game | undefined> {
+	async findGameByUserId(userId: string): Promise<Game | undefined> {
 		return await this.gameRepository.findOne({
 			where: [{ playerOne: { id: userId } }, { playerTwo: { id: userId } }],
 			order: {
@@ -160,5 +160,23 @@ export class GameService {
 		}
 		await this.gameRepository.save(game);
 		return game;
+	}
+
+	async updateGameMode(userId: string, gameMode: boolean): Promise<void> {
+		try {
+			const game = await this.findGameByUserId(userId);
+
+			if (!game) {
+				throw new InternalServerErrorException('Game not found');
+			}
+
+			// Update the game mode for the user
+			game.gameMode = gameMode;
+
+			// Save the updated game
+			await this.gameRepository.save(game);
+		} catch (error) {
+			throw new InternalServerErrorException(`Failed to update game mode: ${error.message}`);
+		}
 	}
 }

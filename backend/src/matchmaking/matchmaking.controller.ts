@@ -154,7 +154,7 @@ export class MatchmakingController {
 			//const myqueue = await this.matchmakingService.findQueueWithId(req.user.id);
 
 			await this.matchmakingService.leaveQueue(req.user.id);
-			const game: Game = await this.gameService.findUserById(opponent.id);
+			const game: Game = await this.gameService.findGameByUserId(opponent.id);
 			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
@@ -212,7 +212,7 @@ export class MatchmakingController {
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
 			}
-			const game = await this.gameService.findUserById(user.id);
+			const game = await this.gameService.findGameByUserId(user.id);
 			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
@@ -258,7 +258,7 @@ export class MatchmakingController {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
 			}
 
-			const game = await this.gameService.findUserById(user.id);
+			const game = await this.gameService.findGameByUserId(user.id);
 			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);

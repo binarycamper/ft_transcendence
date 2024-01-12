@@ -28,11 +28,13 @@ const GamePage = () => {
 		winnerId: string | null;
 		playerOnePaddle: number;
 		playerTwoPaddle: number;
+		gameMode: boolean;
 	}
 
 	const [userId, setUserId] = useState('');
 	const [userName, setUserName] = useState('');
 
+	const [gameMode, setGameMode] = useState<boolean>(false);
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [gameReady, setGameReady] = useState(false);
 	const [oppoReady, setOppoReady] = useState(false);
@@ -90,6 +92,32 @@ const GamePage = () => {
 
 		getCurrentGameData();
 	}, []);
+
+	const toggleGameMode = async () => {
+		try {
+			// Toggle the game mode on the client side
+			setGameMode(!gameMode);
+			const response = await fetch('http://localhost:8080/game/game-mode', {
+				credentials: 'include',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ gameMode: !gameMode }),
+			});
+
+			if (!response.ok) {
+				// Handle the response status or error here
+				console.log('Failed to update game mode on the server');
+				setGameMode(!gameMode); // Revert back to the previous game mode
+			}
+		} catch (error) {
+			// Handle any network or fetch-related errors here
+			console.log('Error while updating game mode:', error);
+			// You may want to handle errors by resetting the game mode to its previous value
+			setGameMode(!gameMode); // Revert back to the previous game mode
+		}
+	};
 
 	useEffect(() => {
 		socket.on('gameStart', (game) => {
@@ -191,9 +219,17 @@ const GamePage = () => {
 				</div>
 			</div>
 			{!gameReady && (
-				<button onClick={startGame} className="readyButton">
-					Ready
-				</button>
+				<>
+					<button onClick={startGame} className="readyButton">
+						Ready
+					</button>
+					<button
+						onClick={toggleGameMode}
+						className={`modeButton ${gameMode ? 'modeButtonOn' : 'modeButtonOff'}`}
+					>
+						{gameMode ? 'BoshyMode: ON' : 'BoshyMode: OFF'}
+					</button>
+				</>
 			)}
 			{gameReady && oppoReady && (
 				<>

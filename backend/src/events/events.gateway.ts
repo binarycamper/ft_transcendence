@@ -222,7 +222,7 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-			const game = await this.gameService.findUserById(isAuthenticated.userId);
+			const game = await this.gameService.findGameByUserId(isAuthenticated.userId);
 			if (game) {
 				if (game.playerOne.id === isAuthenticated.userId) {
 					game.acceptedOne = false;

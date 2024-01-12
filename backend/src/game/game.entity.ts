@@ -42,4 +42,7 @@ export class Game {
 
 	@Column({ default: 200 }) // Default position for right paddle
 	playerTwoPaddle: number;
+
+	@Column({ default: false }) //GameMode On Off
+	gameMode: boolean;
 }
