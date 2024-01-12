@@ -173,10 +173,6 @@ const GamePage = () => {
 		return getUserPos() === 'Player 1' ? gameData?.scorePlayerOne : gameData?.scorePlayerTwo;
 	};
 
-	const getPaddlePosition = (playerPos: string) => {
-		return playerPos === 'Player 1' ? gameData?.playerOnePaddle : gameData?.playerTwoPaddle;
-	};
-
 	return (
 		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
 			<h1 className="gameHeader">Ping Pong Game</h1>
@@ -189,12 +185,8 @@ const GamePage = () => {
 				<div className="player-info">
 					<span>
 						{gameData?.playerOne.id === userId
-							? gameData?.playerTwo.name
-							: gameData?.playerOne.name}
-						({gameData?.playerOne.name}):
-						{gameData?.playerOne.id === userId
-							? gameData?.scorePlayerTwo
-							: gameData?.scorePlayerOne}
+							? `${gameData?.playerTwo.name} (Player 2): ${gameData?.scorePlayerTwo}`
+							: `${gameData?.playerOne.name} (Player 1): ${gameData?.scorePlayerOne}`}
 					</span>
 				</div>
 			</div>
