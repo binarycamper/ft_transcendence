@@ -52,6 +52,8 @@ const GamePage = () => {
 					return;
 				}
 				const data = await response.json();
+				console.log('game paddle: ', data.leftPaddleY);
+				setLeftPaddleY(data.leftPaddleY);
 				// TODO: Set your data here. You can have all the info of the game entity.
 				// const game.playerOneScore = data.playerOneScore etc...
 			} catch (error) {
