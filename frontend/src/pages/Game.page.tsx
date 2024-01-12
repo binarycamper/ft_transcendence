@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
 import '../css/game.css';
 
+// Game arena dimensions
+const gameWidth = 1200;
+const gameHeight = 800;
+
 const GamePage = () => {
 	// User states
 	const [userId, setUserId] = useState('');
@@ -78,31 +82,42 @@ const GamePage = () => {
 
 	useEffect(() => {
 		const handleKeyDown = (e) => {
+			console.log('pressed key ??');
 			// Update paddle position based on key press
+			// ...
 		};
 
 		document.addEventListener('keydown', handleKeyDown);
 
-		// Game loop
-		const updateGame = () => {
-			// Update ball position and check for collisions
+		if (gameReady && oppoReady) {
+			// Game loop
+			const updateGame = () => {
+				// Update ball position and check for collisions
+				// ...
 
+				requestAnimationFrame(updateGame);
+			};
+
+			// Start the game loop
 			requestAnimationFrame(updateGame);
-		};
-
-		// Start the game loop
-		requestAnimationFrame(updateGame);
+		}
 
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown);
 		};
-	}, []);
+	}, [gameReady, oppoReady]);
 
 	return (
-		<div className="gameContainer">
-			<h2>Ping Pong Game</h2>
-			{!gameReady && <button onClick={startGame}>Ready</button>}
-			{gameReady && oppoReady && (
+		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
+			<h1 className="gameHeader">Ping Pong Game</h1>
+			<div className="scoreboard">
+				{/* Render player names and scores here */}
+				<span>
+					{userName} (Player 1): {playerScores.player1}
+				</span>
+				<span>Opponent (Player 2): {playerScores.player2}</span>
+			</div>
+			{gameReady ? (
 				<>
 					<div className="paddle left" style={{ top: `${leftPaddleY}px` }} />
 					<div className="paddle right" style={{ top: `${rightPaddleY}px` }} />
@@ -110,9 +125,13 @@ const GamePage = () => {
 						className="ball"
 						style={{ left: `${ballPosition.x}px`, top: `${ballPosition.y}px` }}
 					/>
+					{/* Optionally, render a pause button or other in-game options */}
 				</>
+			) : (
+				<button onClick={startGame} className="readyButton">
+					Ready
+				</button>
 			)}
-			{/* Optionally, render scores and other UI elements here */}
 		</div>
 	);
 };
