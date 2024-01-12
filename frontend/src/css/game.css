@@ -1,64 +1,135 @@
+/* Main container and background */
 .gameContainer {
 	position: relative;
-	background-color: #f0f0f0;
+	background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);
 	border: 2px solid #333;
 	margin: 20px auto;
-	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+	box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+	overflow: hidden;
 }
 
+/* Header styling */
 .gameHeader {
 	text-align: center;
-	color: #333;
-	padding: 10px 0;
-	font-size: 24px;
-	background-color: #ddd;
+	color: #fff;
+	padding: 15px 0;
+	font-size: 32px;
+	background-color: #111;
 	border-bottom: 2px solid #333;
 }
 
+/* Scoreboard enhancements */
 .scoreboard {
 	display: flex;
 	justify-content: space-between;
-	padding: 10px;
-	background-color: #eee;
-	color: #333;
-	border-bottom: 2px solid #333;
+	padding: 15px 30px;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	font-weight: bold;
 }
 
+/* Player avatars and information */
+.player-info {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.player-avatar {
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	background-size: cover;
+	border: 2px solid #fff;
+}
+
+/* Paddle styling */
 .paddle {
 	position: absolute;
 	width: 20px;
-	height: 100px;
-	background-color: #333;
+	height: 120px;
+	background-color: #fff;
+	transition: top 0.1s ease;
 }
 
 .paddle.left {
-	left: 20px;
+	left: 50px;
 }
 
 .paddle.right {
-	right: 20px;
+	right: 50px;
 }
 
+/* Ball styling with animation */
 .ball {
 	position: absolute;
-	width: 20px;
-	height: 20px;
-	background-color: red;
+	width: 30px;
+	height: 30px;
+	background-color: #ff4757;
 	border-radius: 50%;
+	box-shadow: 0 0 10px rgba(255, 71, 87, 0.75);
 }
 
+/* Button styling */
 .readyButton {
 	display: block;
-	margin: 20px auto;
-	padding: 10px 20px;
-	background-color: #4caf50;
-	color: white;
+	margin: 30px auto;
+	padding: 15px 30px;
+	background-color: #2ed573;
+	color: #fff;
 	border: none;
 	cursor: pointer;
-	font-size: 16px;
-	transition: background-color 0.3s;
+	font-size: 18px;
+	font-weight: bold;
+	box-shadow: 0 2px 5px rgba(46, 213, 115, 0.4);
+	border-radius: 5px;
+	transition: transform 0.1s ease;
 }
 
 .readyButton:hover {
-	background-color: #45a049;
+	background-color: #28a745;
+	transform: translateY(-3px);
+	box-shadow: 0 5px 10px rgba(46, 213, 115, 0.6);
+}
+
+/* Adding a subtle animation to the ball */
+@keyframes floatBall {
+	0%,
+	100% {
+		transform: translateY(-10%);
+	}
+	50% {
+		transform: translateY(10%);
+	}
+}
+
+.ball {
+	animation: floatBall 2s ease-in-out infinite;
+}
+
+/* Responsive tweaks for smaller screens */
+@media (max-width: 768px) {
+	.gameContainer {
+		width: 90%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+	}
+
+	.gameHeader {
+		font-size: 24px;
+	}
+
+	.scoreboard {
+		padding: 10px;
+	}
+
+	.player-info {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.readyButton {
+		padding: 10px 20px;
+		font-size: 16px;
+	}
 }

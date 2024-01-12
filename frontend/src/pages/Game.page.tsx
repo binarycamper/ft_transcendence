@@ -7,6 +7,9 @@ const gameWidth = 1200;
 const gameHeight = 800;
 
 const GamePage = () => {
+	const playerAvatarStyle = (player) => ({
+		backgroundImage: `url('https://source.unsplash.com/featured/?${player}')`,
+	});
 	// User states
 	const [userId, setUserId] = useState('');
 	const [userName, setUserName] = useState('');
@@ -111,11 +114,16 @@ const GamePage = () => {
 		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
 			<h1 className="gameHeader">Ping Pong Game</h1>
 			<div className="scoreboard">
-				{/* Render player names and scores here */}
-				<span>
-					{userName} (Player 1): {playerScores.player1}
-				</span>
-				<span>Opponent (Player 2): {playerScores.player2}</span>
+				<div className="player-info">
+					<div className="player-avatar" style={playerAvatarStyle('player1')}></div>
+					<span>
+						{userName} (Player 1): {playerScores.player1}
+					</span>
+				</div>
+				<div className="player-info">
+					<div className="player-avatar" style={playerAvatarStyle('player2')}></div>
+					<span>Opponent (Player 2): {playerScores.player2}</span>
+				</div>
 			</div>
 			{gameReady ? (
 				<>
