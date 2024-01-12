@@ -134,4 +134,14 @@ export class GameService {
 		game.endTime = gameUpdateDto.endTime;
 		await this.gameRepository.save(game);
 	}
+
+	async updatePaddle(userId: string, key: string) {
+		const game = await this.findGameById(userId);
+		if (key === 'up') {
+			game.leftPaddleY += 10;
+		} else if (key === 'down') {
+			game.leftPaddleY -= 10;
+		}
+		await this.gameRepository.save(game);
+	}
 }

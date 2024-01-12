@@ -33,4 +33,10 @@ export class Game {
 
 	@Column({ nullable: true })
 	winnerId: string;
+
+	@Column({ default: 200 }) // Default position for left paddle
+	leftPaddleY: number;
+
+	@Column({ default: 200 }) // Default position for right paddle
+	rightPaddleY: number;
 }

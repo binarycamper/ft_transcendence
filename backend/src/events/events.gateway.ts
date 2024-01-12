@@ -249,6 +249,12 @@ export class EventsGateway {
 
 	@SubscribeMessage('keyHook')
 	async keyHook(@ConnectedSocket() client: Socket, @MessageBody() data: { key: string }) {
+		const isAuthenticated = await this.verifyAuthentication(client);
+		if (!isAuthenticated.isAuthenticated) {
+			console.log('Invalid credentials');
+			return;
+		}
+		await this.gameService.updatePaddle(isAuthenticated.userId, data.key);
 		console.log('KEyHOOK triggert!, ', data.key);
 	}
 }
