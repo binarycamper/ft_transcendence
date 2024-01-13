@@ -256,9 +256,38 @@ export class EventsGateway {
 		}
 		const game = await this.gameService.updatePaddle(isAuthenticated.userId, data.key);
 		if (isAuthenticated.userId === game.playerOne.id) {
-			this.server.to(`user_${game.playerTwo.id}`).emit('handleGameUpdate', game);
+			this.server.to(`user_${game.playerTwo.id}`).emit('handlePaddleUpdate', game);
 		} else {
-			this.server.to(`user_${game.playerOne.id}`).emit('handleGameUpdate', game);
+			this.server.to(`user_${game.playerOne.id}`).emit('handlePaddleUpdate', game);
 		}
+	}
+
+	@SubscribeMessage('scoreUpdate')
+	async handleScoreUpdate(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() data: { scorePlayerOne: number; scorePlayerTwo: number },
+	) {
+		const isAuthenticated = await this.verifyAuthentication(client);
+		if (!isAuthenticated.isAuthenticated) {
+			console.log('Invalid credentials');
+			return;
+		}
+
+		// Assuming you have a method in your game service to handle the score update
+		const updatedGame = await this.gameService.updateScore(
+			isAuthenticated.userId,
+			data.scorePlayerOne,
+			data.scorePlayerTwo,
+		);
+
+		if (!updatedGame) {
+			// Handle error, could not find game or update score
+			console.error('Could not update score');
+			return;
+		}
+
+		// Emit the updated game state to both players
+		this.server.to(`user_${updatedGame.playerOne.id}`).emit('scoreUpdate', updatedGame);
+		this.server.to(`user_${updatedGame.playerTwo.id}`).emit('scoreUpdate', updatedGame);
 	}
 }

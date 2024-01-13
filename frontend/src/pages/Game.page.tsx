@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
 import '../css/game.css';
+import Paddle from '../components/game_jj/Paddle';
 
 // Game arena dimensions
 
@@ -30,6 +31,7 @@ const GamePage = () => {
 		playerTwoPaddle: number;
 		gameMode: boolean;
 		ballPosition: [number, number];
+		ballDirection: [number, number];
 	}
 
 	const [userId, setUserId] = useState('');
@@ -38,8 +40,6 @@ const GamePage = () => {
 	//graphic:
 	const [gameWidth, setGameWidth] = useState(Math.min(window.innerWidth, 1200));
 	const [gameHeight, setGameHeight] = useState(Math.min(window.innerHeight, 800));
-	const paddleWidth = gameWidth * 0.02; // 2% of game width
-	const paddleOffset = gameWidth * 0.05; // 5% from the side of the game area
 
 	//games Init
 	const [gameMode, setGameMode] = useState<boolean>(false);
@@ -49,68 +49,84 @@ const GamePage = () => {
 	const [ballPosition, setBallPosition] = useState({ x: 600, y: 400 });
 	const [myPaddle, setMyPaddle] = useState(0);
 	const [opPaddle, setOpPaddle] = useState(0);
+	const [ballSize, setBallSize] = useState(0);
 
 	useEffect(() => {
-		async function getUserId() {
+		const ballElement = document.querySelector('.ball');
+		if (ballElement) {
+			const ballComputedStyle = window.getComputedStyle(ballElement);
+			const size = parseFloat(ballComputedStyle.width);
+			setBallSize(size);
+		}
+	}, [gameWidth, gameHeight]); // Recalculate when game dimensions change
+
+	useEffect(() => {
+		async function getUserIdAndGameData() {
 			try {
-				const response = await fetch('http://localhost:8080/user/id', {
+				// Fetch user ID
+				const userResponse = await fetch('http://localhost:8080/user/id', {
 					credentials: 'include',
 				});
-				if (!response.ok) {
-					window.location.href = 'http://localhost:5173/';
-					return;
+				if (!userResponse.ok) {
+					throw new Error('Failed to fetch user ID');
 				}
-				const data = await response.json();
-				setUserId(data.id);
-				setUserName(data.name);
-				console.log('data.image request: ', data.customImage); //TODO: RENDER IMAGE AS AVATAR.
+				const userData = await userResponse.json();
+				setUserId(userData.id);
+				setUserName(userData.name);
+
+				// Fetch game data
+				const gameResponse = await fetch('http://localhost:8080/game/my-game', {
+					credentials: 'include',
+				});
+				if (!gameResponse.ok) {
+					throw new Error('Failed to fetch game data');
+				}
+				const gameData = await gameResponse.json();
+
+				// Update state with the fetched data
+				setGameData(gameData);
+				setGameReady(gameData.started);
+				setOppoReady(gameData.started);
+
+				// Set paddle positions
+				if (gameData.playerOne.id === userData.id) {
+					setMyPaddle(gameData.playerOnePaddle * (gameHeight / 120));
+					setOpPaddle(gameData.playerTwoPaddle * (gameHeight / 120));
+				} else {
+					setMyPaddle(gameData.playerTwoPaddle * (gameHeight / 120));
+					setOpPaddle(gameData.playerOnePaddle * (gameHeight / 120));
+				}
 			} catch (error) {
-				console.log('error: ', error);
+				console.error('Error fetching data:', error);
 				window.location.href = 'http://localhost:5173/';
 			}
 		}
-		getUserId();
-	}, []);
 
-	useEffect(() => {
-		async function getCurrentGameData() {
-			try {
-				console.log('started');
-
-				const response = await fetch('http://localhost:8080/game/my-game', {
-					credentials: 'include',
-				});
-				if (!response.ok) {
-					return;
-				}
-				const data = await response.json();
-				setGameData(data);
-				setGameReady(data.started);
-				setOppoReady(data.started);
-				if (data.playerOne.id === userId) {
-					setMyPaddle(data.playerOnePaddle);
-					setOpPaddle(data.playerTwoPaddle);
-				} else {
-					setMyPaddle(data.playerTwoPaddle);
-					setOpPaddle(data.playerOnePaddle);
-				}
-			} catch (error) {
-				// Handle error
-			}
-		}
-
-		getCurrentGameData();
+		getUserIdAndGameData();
 	}, []);
 
 	useEffect(() => {
 		function handleResize() {
-			setGameWidth(Math.min(window.innerWidth, 1200));
-			setGameHeight(Math.min(window.innerHeight, 800));
+			const newGameWidth = Math.min(window.innerWidth, 1200);
+			const newGameHeight = Math.min(window.innerHeight, 800);
+
+			// Calculate the ratio of new dimension to old dimension
+			const widthRatio = newGameWidth / gameWidth;
+			const heightRatio = newGameHeight / gameHeight;
+
+			// Apply the ratio to the ball position
+			const newPos1 = ballPosition.x * widthRatio;
+			const newPos2 = ballPosition.y * heightRatio;
+
+			// Update state with new game dimensions and ball position
+			setGameWidth(newGameWidth);
+			setGameHeight(newGameHeight);
+			setBallPosition({ x: newPos1, y: newPos2 });
 		}
 
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
-	}, []);
+	}, [gameWidth, gameHeight, ballPosition]); // Make sure to include all dependencies used in the effect
 
 	const toggleGameMode = async () => {
 		try {
@@ -139,7 +155,7 @@ const GamePage = () => {
 	};
 
 	useEffect(() => {
-		socket.on('gameStart', (game) => {
+		socket.on('gameStart', () => {
 			console.log('enemy sent start!');
 			setOppoReady(true);
 		});
@@ -161,7 +177,6 @@ const GamePage = () => {
 			const key = e.key.toLowerCase();
 			let newPaddlePosition = myPaddle;
 			const movementAmount = gameHeight / 120; // Adjust movement amount if necessary
-			console.log('movement val: ', movementAmount);
 			// Move up
 			if (key === 'w') {
 				newPaddlePosition -= movementAmount;
@@ -195,9 +210,8 @@ const GamePage = () => {
 	}, [myPaddle, gameReady, oppoReady, userId]);
 
 	useEffect(() => {
-		const handleGameUpdate = (updatedGameData: GameData) => {
-			setGameData(updatedGameData);
-			// Update local paddle position if it's different
+		const handlePaddleUpdate = (updatedGameData: GameData) => {
+			// Update only paddle positions to minimize re-renders
 			if (gameData?.playerOne.id === userId) {
 				setMyPaddle(updatedGameData.playerOnePaddle * (gameHeight / 120));
 				setOpPaddle(updatedGameData.playerTwoPaddle * (gameHeight / 120));
@@ -207,16 +221,34 @@ const GamePage = () => {
 			}
 		};
 
-		socket.on('handleGameUpdate', handleGameUpdate);
+		socket.on('handlePaddleUpdate', handlePaddleUpdate);
 
 		return () => {
-			socket.off('handleGameUpdate', handleGameUpdate);
+			socket.off('handlePaddleUpdate', handlePaddleUpdate);
 		};
-	}, [gameData, userId, myPaddle]);
+	}, [gameData, userId]); // Consider carefully the dependencies here
 
-	const debugPrintGameData = () => {
-		console.log('Current Game Data:', gameData);
-	};
+	useEffect(() => {
+		const handleScoreUpdate = (updatedScoreData: GameData) => {
+			setGameData((prevGameData) => {
+				// Make sure prevGameData is not null before spreading
+				if (prevGameData) {
+					return {
+						...prevGameData,
+						scorePlayerOne: updatedScoreData.scorePlayerOne,
+						scorePlayerTwo: updatedScoreData.scorePlayerTwo,
+					};
+				}
+				return prevGameData;
+			});
+		};
+
+		socket.on('scoreUpdate', handleScoreUpdate);
+
+		return () => {
+			socket.off('scoreUpdate', handleScoreUpdate);
+		};
+	}, [socket]); // Add socket to the dependency array
 
 	const getUserPos = () => {
 		return gameData?.playerOne.id === userId ? 'Player 1' : 'Player 2';
@@ -246,12 +278,61 @@ const GamePage = () => {
 		return ''; // Return a default image or empty string if no match
 	};
 
+	useEffect(() => {
+		const intervalId = setInterval(() => {
+			if (gameReady && gameData) {
+				updateBallPosition();
+			}
+		}, 100); // Update every 100ms, adjust as needed
+
+		return () => clearInterval(intervalId);
+	}, [gameReady, gameData, ballPosition, ballSize]);
+
+	const updateBallPosition = () => {
+		setBallPosition((prevPosition) => {
+			if (gameData) {
+				let newX = prevPosition.x + gameData.ballDirection[0];
+				let newY = prevPosition.y + gameData.ballDirection[1];
+
+				// Collision with top and bottom walls
+				if (newY <= topBorder || newY >= gameHeight - ballSize) {
+					gameData.ballDirection[1] = -gameData.ballDirection[1];
+				}
+
+				// Scoring logic for left and right walls
+				if (newX <= 0 || newX >= gameWidth - ballSize) {
+					// Reset the ball to the center
+					newX = gameWidth / 2 - ballSize / 2;
+					newY = gameHeight / 2 - ballSize / 2;
+
+					// Update scores based on which side the ball left the screen
+					if (newX <= 0) {
+						gameData.scorePlayerTwo += 1;
+					} else {
+						gameData.scorePlayerOne += 1;
+					}
+
+					// Emit score update to server (if needed)
+					socket.emit('scoreUpdate', {
+						scorePlayerOne: gameData.scorePlayerOne,
+						scorePlayerTwo: gameData.scorePlayerTwo,
+					});
+
+					// Reset ball direction (you might want to randomize this)
+					gameData.ballDirection = [-gameData.ballDirection[0], gameData.ballDirection[1]];
+				}
+
+				return { x: newX, y: newY };
+			}
+			return prevPosition;
+		});
+	};
+
 	return (
 		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
 			<h1 className="gameHeader">Ping Pong Game</h1>
 			<div className="scoreboard">
 				<div className="player-info">
-					{/* Display user avatar using the image URL */}
 					{/* Display user avatar using the image URL */}
 					<img
 						src={getCurrentUserAvatarUrl()}
@@ -289,19 +370,14 @@ const GamePage = () => {
 			)}
 			{gameReady && oppoReady && (
 				<>
-					<div
-						className="paddle left"
-						style={{ top: `${myPaddle}px`, left: `${paddleOffset}px`, width: `${paddleWidth}px` }}
-					/>
-					<div
-						className="paddle right"
-						style={{ top: `${opPaddle}px`, right: `${paddleOffset}px`, width: `${paddleWidth}px` }}
-					/>
+					{/* Use the Paddle component instead of the div for paddles */}
+					<Paddle position={myPaddle} isLeft={true} />
+					<Paddle position={opPaddle} isLeft={false} />
 					<div
 						className="ball"
 						style={{
-							left: `${gameData?.ballPosition[0]}px`,
-							top: `${gameData?.ballPosition[1]}px`,
+							left: `${ballPosition.x}px`,
+							top: `${ballPosition.y}px`,
 						}}
 					/>
 					{/* Optionally, render a pause button or other in-game options */}

@@ -48,4 +48,7 @@ export class Game {
 
 	@Column('int', { array: true, default: () => "'{600,400}'" })
 	ballPosition: number[];
+
+	@Column('int', { array: true, default: () => "'{1,1}'" })
+	ballDirection: number[]; // Represents the x and y velocity of the ball
 }

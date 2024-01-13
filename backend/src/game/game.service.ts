@@ -179,4 +179,20 @@ export class GameService {
 			throw new InternalServerErrorException(`Failed to update game mode: ${error.message}`);
 		}
 	}
+
+	async updateScore(userId: string, scorePlayerOne: number, scorePlayerTwo: number): Promise<Game> {
+		const game = await this.findGameByUserId(userId);
+		if (!game) {
+			throw new InternalServerErrorException('Game not found');
+		}
+
+		// Update the scores
+		game.scorePlayerOne = scorePlayerOne;
+		game.scorePlayerTwo = scorePlayerTwo;
+
+		// You might want to add some logic to determine if the game has ended here
+
+		await this.gameRepository.save(game);
+		return game;
+	}
 }
