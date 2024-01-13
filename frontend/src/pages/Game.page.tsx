@@ -3,16 +3,14 @@ import { socket } from '../services/socket';
 import '../css/game.css';
 
 // Game arena dimensions
-const gameWidth = 1200;
-const gameHeight = 800;
-const topBorder = 135;
+
+const topBorder = 15;
 const paddleHeight = 125;
 
 const GamePage = () => {
 	interface Player {
 		id: string;
 		name: string;
-		customImage: string;
 	}
 
 	interface GameData {
@@ -35,7 +33,15 @@ const GamePage = () => {
 
 	const [userId, setUserId] = useState('');
 	const [userName, setUserName] = useState('');
+	const [userImage, setUserImage] = useState('');
 
+	//graphic:
+	const [gameWidth, setGameWidth] = useState(Math.min(window.innerWidth, 1200));
+	const [gameHeight, setGameHeight] = useState(Math.min(window.innerHeight, 800));
+	const paddleWidth = gameWidth * 0.02; // 2% of game width
+	const paddleOffset = gameWidth * 0.05; // 5% from the side of the game area
+
+	//games Init
 	const [gameMode, setGameMode] = useState<boolean>(false);
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [gameReady, setGameReady] = useState(false);
@@ -81,6 +87,7 @@ const GamePage = () => {
 				setGameData(data);
 				setGameReady(data.started);
 				setOppoReady(data.started);
+				setUserImage(data.customImage);
 				if (data.playerOne.id === userId) {
 					setMyPaddle(data.playerOnePaddle);
 					setOpPaddle(data.playerTwoPaddle);
@@ -94,6 +101,16 @@ const GamePage = () => {
 		}
 
 		getCurrentGameData();
+	}, []);
+
+	useEffect(() => {
+		function handleResize() {
+			setGameWidth(Math.min(window.innerWidth, 1200));
+			setGameHeight(Math.min(window.innerHeight, 800));
+		}
+
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
 	const toggleGameMode = async () => {
@@ -143,25 +160,31 @@ const GamePage = () => {
 			if (!gameReady || !oppoReady || !gameData) return;
 
 			const key = e.key.toLowerCase();
-			let req;
-			const movementAmount = 10;
 			let newPaddlePosition = myPaddle;
+			const movementAmount = gameWidth / 120; // Adjust movement amount if necessary
 
-			// If the 'w' key is pressed and paddle is above the topBorder, move up
-			if (key === 'w' && myPaddle > topBorder) {
-				newPaddlePosition = Math.max(newPaddlePosition - movementAmount, topBorder);
-				req = 'up';
+			// Move up
+			if (key === 'w') {
+				newPaddlePosition -= movementAmount;
+				if (newPaddlePosition < topBorder) {
+					newPaddlePosition = topBorder; // Prevent the paddle from moving above the top border
+				}
 			}
-			// If the 's' key is pressed and paddle is above the bottom minus paddleHeight, move down
-			else if (key === 's' && myPaddle < gameHeight - paddleHeight) {
-				newPaddlePosition = Math.min(newPaddlePosition + movementAmount, gameHeight - paddleHeight);
-				req = 'down';
+			// Move down
+			else if (key === 's') {
+				newPaddlePosition += movementAmount;
+				// Prevent the paddle from moving below the bottom of the game area
+				const maxPaddleBottom = gameHeight - paddleHeight - topBorder;
+				if (newPaddlePosition > maxPaddleBottom) {
+					newPaddlePosition = maxPaddleBottom;
+				}
 			}
 
-			// Update paddle position and emit event to server
-			if (req) {
+			// Update paddle position
+			if (newPaddlePosition !== myPaddle) {
 				setMyPaddle(newPaddlePosition);
-				socket.emit('keydown', { key: req });
+				// Emit event to server if necessary
+				socket.emit('keydown', { key: key === 'w' ? 'up' : 'down' });
 			}
 		};
 
@@ -238,8 +261,14 @@ const GamePage = () => {
 			)}
 			{gameReady && oppoReady && (
 				<>
-					<div className="paddle left" style={{ top: `${myPaddle}px` }} />
-					<div className="paddle right" style={{ top: `${opPaddle}px` }} />
+					<div
+						className="paddle left"
+						style={{ top: `${myPaddle}px`, left: `${paddleOffset}px`, width: `${paddleWidth}px` }}
+					/>
+					<div
+						className="paddle right"
+						style={{ top: `${opPaddle}px`, right: `${paddleOffset}px`, width: `${paddleWidth}px` }}
+					/>
 					<div
 						className="ball"
 						style={{
