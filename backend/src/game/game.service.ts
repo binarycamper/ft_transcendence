@@ -193,8 +193,23 @@ export class GameService {
 		// Update the scores
 		game.scorePlayerOne = scorePlayerOne;
 		game.scorePlayerTwo = scorePlayerTwo;
+		const maxScore = 10;
+		if (game.scorePlayerOne >= maxScore) {
+			game.winnerId = game.playerOne.id;
+		} else if (game.scorePlayerTwo >= maxScore) {
+			game.winnerId = game.playerTwo.id;
+		}
 
-		// You might want to add some logic to determine if the game has ended here
+		game.ballPosition = [600, 400]; // Assuming the center of your game field
+		// Assign a new random direction to the ball
+		game.ballDirection = [
+			Math.random() * 2 - 1, // Random float between -1 and 1 for x direction
+			Math.random() * 2 - 1, // Random float between -1 and 1 for y direction
+		];
+		// Normalize the direction to ensure consistent ball speed in any direction
+		const length = Math.sqrt(game.ballDirection[0] ** 2 + game.ballDirection[1] ** 2);
+		game.ballDirection[0] /= length;
+		game.ballDirection[1] /= length;
 
 		await this.gameRepository.save(game);
 		return game;

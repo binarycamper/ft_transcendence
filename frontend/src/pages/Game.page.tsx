@@ -180,6 +180,7 @@ const GamePage = () => {
 	useEffect(() => {
 		socket.on('gameStart', (data) => {
 			console.log('data: ', data);
+			setGameData(data);
 			setOppoReady(true);
 		});
 
@@ -253,25 +254,39 @@ const GamePage = () => {
 
 	useEffect(() => {
 		const handleScoreUpdate = (updatedScoreData: GameData) => {
+			// Update scores and reset ball position to the center immediately
 			setGameData((prevGameData) => {
-				// Make sure prevGameData is not null before spreading
 				if (prevGameData) {
 					return {
 						...prevGameData,
+						ballPosition: [gameWidth / 2, gameHeight / 2],
 						scorePlayerOne: updatedScoreData.scorePlayerOne,
 						scorePlayerTwo: updatedScoreData.scorePlayerTwo,
 					};
 				}
 				return prevGameData;
 			});
+
+			// Wait for 1 second before starting the ball movement
+			setTimeout(() => {
+				setGameData((prevGameData) => {
+					if (prevGameData) {
+						return {
+							...prevGameData,
+							ballDirection: [updatedScoreData.ballDirection[0], updatedScoreData.ballDirection[1]],
+						};
+					}
+					return prevGameData;
+				});
+			}, 1000);
 		};
 
-		socket.on('scoreUpdate', handleScoreUpdate);
+		socket.on('newBall', handleScoreUpdate);
 
 		return () => {
-			socket.off('scoreUpdate', handleScoreUpdate);
+			socket.off('newBall', handleScoreUpdate);
 		};
-	}, [socket]); // Add socket to the dependency array
+	}, [socket, gameWidth, gameHeight]); // Add necessary dependencies to the dependency array
 
 	const getUserPos = () => {
 		return gameData?.playerOne.id === userId ? 'Player 1' : 'Player 2';
@@ -311,6 +326,7 @@ const GamePage = () => {
 		return () => clearInterval(intervalId);
 	}, [gameReady, gameData, ballPosition, ballSize]);
 
+	//TODO: TOP BOt Border && paddle collision
 	const updateBallPosition = () => {
 		setBallPosition((prevPosition) => {
 			if (gameData) {
@@ -340,11 +356,7 @@ const GamePage = () => {
 						scorePlayerOne: gameData.scorePlayerOne,
 						scorePlayerTwo: gameData.scorePlayerTwo,
 					});
-
-					// Reset ball direction (you might want to randomize this)
-					gameData.ballDirection = [-gameData.ballDirection[0], gameData.ballDirection[1]];
 				}
-
 				return { x: newX, y: newY };
 			}
 			return prevPosition;
@@ -352,7 +364,7 @@ const GamePage = () => {
 	};
 
 	return (
-		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
+		<div className="gameContainer">
 			<h1 className="gameHeader">Ping Pong Game</h1>
 			<div className="scoreboard">
 				<div className="player-info">

@@ -46,9 +46,10 @@ export class Game {
 	@Column({ default: false }) //GameMode On Off
 	gameMode: boolean;
 
-	@Column('int', { array: true, default: () => "'{600,400}'" })
+	@Column('float', { array: true, default: () => "'{600,400}'" })
 	ballPosition: number[];
 
-	@Column('int', { array: true, default: () => "'{1,1}'" })
+	// Update ballDirection to float with precision
+	@Column('float', { array: true, default: () => "'{0,0}'" }) // Default direction as 0,0
 	ballDirection: number[]; // Represents the x and y velocity of the ball
 }

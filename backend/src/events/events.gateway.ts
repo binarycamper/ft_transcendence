@@ -15,6 +15,7 @@ import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { randomUUID } from 'crypto';
 import { GameService } from 'src/game/game.service';
+import { Game } from 'src/game/game.entity';
 
 @WebSocketGateway({
 	cors: {
@@ -222,7 +223,7 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-			const game = await this.gameService.findGameByUserId(isAuthenticated.userId);
+			const game: Game = await this.gameService.findGameByUserId(isAuthenticated.userId);
 			if (game) {
 				if (game.playerOne.id === isAuthenticated.userId) {
 					game.acceptedOne = false;
@@ -236,8 +237,10 @@ export class EventsGateway {
 				if (!game.acceptedOne && !game.acceptedTwo) {
 					game.startTime = new Date();
 					game.started = true;
-					game.ballDirection[0] = Math.floor(Math.random() * Math.PI * 2); //Math.random() * 2 - 1;
-					game.ballDirection[1] = Math.floor(Math.random() * Math.PI * 2); //Math.random() * 2 - 1;
+
+					//TODO: CHeck if that is correct ?!?!
+					game.ballDirection[0] = Math.random() * 2 - 1;
+					game.ballDirection[1] = Math.random() * 2 - 1;
 
 					console.log('dir: ', game.ballDirection[0]);
 					console.log('dir: ', game.ballDirection[1]);
@@ -278,6 +281,7 @@ export class EventsGateway {
 			console.log('Invalid credentials');
 			return;
 		}
+
 		console.log('data: ', data);
 		// Assuming you have a method in your game service to handle the score update
 		const updatedGame = await this.gameService.updateScore(
@@ -298,8 +302,8 @@ export class EventsGateway {
 			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('gameWon', updatedGame);
 		} else {
 			// Emit the updated game state to both players
-			this.server.to(`user_${updatedGame.playerOne.id}`).emit('scoreUpdate', updatedGame);
-			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('scoreUpdate', updatedGame);
+			this.server.to(`user_${updatedGame.playerOne.id}`).emit('newBall', updatedGame);
+			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('newBall', updatedGame);
 		}
 	}
 }
