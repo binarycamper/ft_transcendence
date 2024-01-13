@@ -200,16 +200,15 @@ export class GameService {
 			game.winnerId = game.playerTwo.id;
 		}
 
-		game.ballPosition = [600, 400]; // Assuming the center of your game field
-		// Assign a new random direction to the ball
-		game.ballDirection = [
-			Math.random() * 2 - 1, // Random float between -1 and 1 for x direction
-			Math.random() * 2 - 1, // Random float between -1 and 1 for y direction
-		];
-		// Normalize the direction to ensure consistent ball speed in any direction
-		const length = Math.sqrt(game.ballDirection[0] ** 2 + game.ballDirection[1] ** 2);
-		game.ballDirection[0] /= length;
-		game.ballDirection[1] /= length;
+		do {
+			game.ballDirection[0] = Math.random() * 2 - 1; // Random float between -1 and 1 for x direction
+			game.ballDirection[1] = Math.random() * 2 - 1; // Random float between -1 and 1 for y direction
+
+			// Normalize the direction to ensure consistent ball speed in any direction
+			const length = Math.sqrt(game.ballDirection[0] ** 2 + game.ballDirection[1] ** 2);
+			game.ballDirection[0] /= length;
+			game.ballDirection[1] /= length;
+		} while (Math.abs(game.ballDirection[1]) < 0.3);
 
 		await this.gameRepository.save(game);
 		return game;

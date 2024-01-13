@@ -238,9 +238,15 @@ export class EventsGateway {
 					game.startTime = new Date();
 					game.started = true;
 
-					//TODO: CHeck if that is correct ?!?!
-					game.ballDirection[0] = Math.random() * 2 - 1;
-					game.ballDirection[1] = Math.random() * 2 - 1;
+					do {
+						game.ballDirection[0] = Math.random() * 2 - 1; // Random float between -1 and 1 for x direction
+						game.ballDirection[1] = Math.random() * 2 - 1; // Random float between -1 and 1 for y direction
+
+						// Normalize the direction to ensure consistent ball speed in any direction
+						const length = Math.sqrt(game.ballDirection[0] ** 2 + game.ballDirection[1] ** 2);
+						game.ballDirection[0] /= length;
+						game.ballDirection[1] /= length;
+					} while (Math.abs(game.ballDirection[1]) < 0.3);
 
 					console.log('dir: ', game.ballDirection[0]);
 					console.log('dir: ', game.ballDirection[1]);
