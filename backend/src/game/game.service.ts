@@ -146,7 +146,7 @@ export class GameService {
 		const isPlayerOne = userId === game.playerOne.id;
 
 		// Calculate new paddle position based on key press
-		const paddleMovement = key === 'up' ? -10 : 10;
+		const paddleMovement = key === 'up' ? -1 : 1;
 		if (isPlayerOne) {
 			game.playerOnePaddle = Math.max(
 				0,

@@ -144,7 +144,7 @@
 	}
 
 	.paddle {
-		height: 10vmin; /* Shorter paddles for smaller screens */
+		height: 10vh; /* Shorter paddles for smaller screens */
 	}
 
 	.ball {

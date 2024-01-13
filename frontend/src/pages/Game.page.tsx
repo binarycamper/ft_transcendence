@@ -47,8 +47,8 @@ const GamePage = () => {
 	const [gameReady, setGameReady] = useState(false);
 	const [oppoReady, setOppoReady] = useState(false);
 	const [ballPosition, setBallPosition] = useState({ x: 600, y: 400 });
-	const [myPaddle, setMyPaddle] = useState(250);
-	const [opPaddle, setOpPaddle] = useState(250);
+	const [myPaddle, setMyPaddle] = useState(0);
+	const [opPaddle, setOpPaddle] = useState(0);
 
 	useEffect(() => {
 		async function getUserId() {
@@ -160,8 +160,8 @@ const GamePage = () => {
 
 			const key = e.key.toLowerCase();
 			let newPaddlePosition = myPaddle;
-			const movementAmount = gameWidth / 120; // Adjust movement amount if necessary
-
+			const movementAmount = gameHeight / 120; // Adjust movement amount if necessary
+			console.log('movement val: ', movementAmount);
 			// Move up
 			if (key === 'w') {
 				newPaddlePosition -= movementAmount;
@@ -199,11 +199,11 @@ const GamePage = () => {
 			setGameData(updatedGameData);
 			// Update local paddle position if it's different
 			if (gameData?.playerOne.id === userId) {
-				setMyPaddle(updatedGameData.playerOnePaddle);
-				setOpPaddle(updatedGameData.playerTwoPaddle);
+				setMyPaddle(updatedGameData.playerOnePaddle * (gameHeight / 120));
+				setOpPaddle(updatedGameData.playerTwoPaddle * (gameHeight / 120));
 			} else if (gameData?.playerTwo.id === userId) {
-				setMyPaddle(updatedGameData.playerTwoPaddle);
-				setOpPaddle(updatedGameData.playerOnePaddle);
+				setMyPaddle(updatedGameData.playerTwoPaddle * (gameHeight / 120));
+				setOpPaddle(updatedGameData.playerOnePaddle * (gameHeight / 120));
 			}
 		};
 

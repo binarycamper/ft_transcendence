@@ -37,10 +37,10 @@ export class Game {
 	@Column({ nullable: true })
 	winnerId: string;
 
-	@Column({ default: 200 }) // Default position for left paddle
+	@Column({ default: 0 }) // Default position for left paddle
 	playerOnePaddle: number;
 
-	@Column({ default: 200 }) // Default position for right paddle
+	@Column({ default: 0 }) // Default position for right paddle
 	playerTwoPaddle: number;
 
 	@Column({ default: false }) //GameMode On Off
