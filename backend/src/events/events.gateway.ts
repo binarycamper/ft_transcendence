@@ -236,6 +236,12 @@ export class EventsGateway {
 				if (!game.acceptedOne && !game.acceptedTwo) {
 					game.startTime = new Date();
 					game.started = true;
+					game.ballDirection[0] = Math.floor(Math.random() * Math.PI * 2); //Math.random() * 2 - 1;
+					game.ballDirection[1] = Math.floor(Math.random() * Math.PI * 2); //Math.random() * 2 - 1;
+
+					console.log('dir: ', game.ballDirection[0]);
+					console.log('dir: ', game.ballDirection[1]);
+
 					await this.gameService.saveGame(game);
 					this.server.to(`user_${game.playerOne.id}`).emit('gameStart', game);
 					this.server.to(`user_${game.playerTwo.id}`).emit('gameStart', game);
@@ -272,22 +278,28 @@ export class EventsGateway {
 			console.log('Invalid credentials');
 			return;
 		}
-
+		console.log('data: ', data);
 		// Assuming you have a method in your game service to handle the score update
 		const updatedGame = await this.gameService.updateScore(
 			isAuthenticated.userId,
 			data.scorePlayerOne,
 			data.scorePlayerTwo,
 		);
-
 		if (!updatedGame) {
 			// Handle error, could not find game or update score
 			console.error('Could not update score');
 			return;
 		}
 
-		// Emit the updated game state to both players
-		this.server.to(`user_${updatedGame.playerOne.id}`).emit('scoreUpdate', updatedGame);
-		this.server.to(`user_${updatedGame.playerTwo.id}`).emit('scoreUpdate', updatedGame);
+		const maxScore = 10;
+		if (updatedGame.scorePlayerOne >= maxScore) {
+			this.server.to(`user_${updatedGame.playerOne.id}`).emit('gameWon', updatedGame);
+		} else if (updatedGame.scorePlayerTwo >= 10) {
+			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('gameWon', updatedGame);
+		} else {
+			// Emit the updated game state to both players
+			this.server.to(`user_${updatedGame.playerOne.id}`).emit('scoreUpdate', updatedGame);
+			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('scoreUpdate', updatedGame);
+		}
 	}
 }

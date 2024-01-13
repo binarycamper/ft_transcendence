@@ -79,32 +79,22 @@ const GamePage = () => {
 	useEffect(() => {
 		async function getUserIdAndGameData() {
 			try {
-				// Fetch user ID
 				const userResponse = await fetch('http://localhost:8080/user/id', {
 					credentials: 'include',
 				});
-				if (!userResponse.ok) {
-					throw new Error('Failed to fetch user ID');
-				}
+				if (!userResponse.ok) throw new Error('Failed to fetch user ID');
 				const userData = await userResponse.json();
-				setUserId(userData.id);
-				setUserName(userData.name);
-
-				// Fetch game data
 				const gameResponse = await fetch('http://localhost:8080/game/my-game', {
 					credentials: 'include',
 				});
-				if (!gameResponse.ok) {
-					throw new Error('Failed to fetch game data');
-				}
+				if (!gameResponse.ok) throw new Error('Failed to fetch game data');
 				const gameData = await gameResponse.json();
-
-				// Update state with the fetched data
+				setUserId(userData.id);
+				setUserName(userData.name);
 				setGameData(gameData);
 				setGameReady(gameData.started);
 				setOppoReady(gameData.started);
-
-				// Set paddle positions
+				// Directly set the paddle positions without using a functional update
 				if (gameData.playerOne.id === userData.id) {
 					setMyPaddle(gameData.playerOnePaddle * (gameHeight / 120));
 					setOpPaddle(gameData.playerTwoPaddle * (gameHeight / 120));
@@ -117,9 +107,8 @@ const GamePage = () => {
 				window.location.href = 'http://localhost:5173/';
 			}
 		}
-
 		getUserIdAndGameData();
-	}, []);
+	}, []); // The dependency array should be empty to mimic componentDidMount behavior
 
 	useEffect(() => {
 		// We wrap handleResize in a throttle function to limit how often it can be called
@@ -189,8 +178,8 @@ const GamePage = () => {
 	};
 
 	useEffect(() => {
-		socket.on('gameStart', () => {
-			console.log('enemy sent start!');
+		socket.on('gameStart', (data) => {
+			console.log('data: ', data);
 			setOppoReady(true);
 		});
 

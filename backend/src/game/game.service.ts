@@ -185,7 +185,11 @@ export class GameService {
 		if (!game) {
 			throw new InternalServerErrorException('Game not found');
 		}
-
+		if (scorePlayerOne === 10) {
+			game.winnerId = game.playerOne.id;
+		} else if (scorePlayerTwo === 10) {
+			game.winnerId = game.playerTwo.id;
+		}
 		// Update the scores
 		game.scorePlayerOne = scorePlayerOne;
 		game.scorePlayerTwo = scorePlayerTwo;
