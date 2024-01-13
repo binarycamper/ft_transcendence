@@ -11,6 +11,7 @@ const GamePage = () => {
 	interface Player {
 		id: string;
 		name: string;
+		customImage: string;
 	}
 
 	interface GameData {
@@ -33,7 +34,6 @@ const GamePage = () => {
 
 	const [userId, setUserId] = useState('');
 	const [userName, setUserName] = useState('');
-	const [userImage, setUserImage] = useState('');
 
 	//graphic:
 	const [gameWidth, setGameWidth] = useState(Math.min(window.innerWidth, 1200));
@@ -87,7 +87,6 @@ const GamePage = () => {
 				setGameData(data);
 				setGameReady(data.started);
 				setOppoReady(data.started);
-				setUserImage(data.customImage);
 				if (data.playerOne.id === userId) {
 					setMyPaddle(data.playerOnePaddle);
 					setOpPaddle(data.playerTwoPaddle);
@@ -227,16 +226,45 @@ const GamePage = () => {
 		return getUserPos() === 'Player 1' ? gameData?.scorePlayerOne : gameData?.scorePlayerTwo;
 	};
 
+	const getCurrentUserAvatarUrl = () => {
+		if (gameData) {
+			if (gameData.playerOne.id === userId) {
+				return gameData.playerOne.customImage;
+			} else if (gameData.playerTwo.id === userId) {
+				return gameData.playerTwo.customImage;
+			}
+		}
+		return ''; // Return a default image or empty string if no match
+	};
+
+	const getOpponentAvatarUrl = () => {
+		if (gameData) {
+			return gameData.playerOne.id !== userId
+				? gameData.playerOne.customImage
+				: gameData.playerTwo.customImage;
+		}
+		return ''; // Return a default image or empty string if no match
+	};
+
 	return (
 		<div className="gameContainer" style={{ width: `${gameWidth}px`, height: `${gameHeight}px` }}>
 			<h1 className="gameHeader">Ping Pong Game</h1>
 			<div className="scoreboard">
 				<div className="player-info">
+					{/* Display user avatar using the image URL */}
+					{/* Display user avatar using the image URL */}
+					<img
+						src={getCurrentUserAvatarUrl()}
+						alt={`${userName}'s avatar`}
+						className="player-avatar"
+					/>
 					<span>
 						{userName} ({getUserPos()}): {getPlayerScore()}
 					</span>
 				</div>
 				<div className="player-info">
+					{/* Display opponent avatar using the image URL */}
+					<img src={getOpponentAvatarUrl()} alt="Opponent's avatar" className="player-avatar" />
 					<span>
 						{gameData?.playerOne.id === userId
 							? `${gameData?.playerTwo.name} (Player 2): ${gameData?.scorePlayerTwo}`
