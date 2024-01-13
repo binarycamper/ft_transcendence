@@ -3,6 +3,22 @@ import { socket } from '../services/socket';
 import '../css/game.css';
 import Paddle from '../components/game_jj/Paddle';
 
+// A utility function to throttle the calls to a function
+function throttle(callback, limit) {
+	let waiting = false; // Initially, we're not waiting
+	return function (...args) {
+		// We return a throttled function
+		if (!waiting) {
+			// If we're not waiting
+			callback.apply(this, args); // Execute users callback
+			waiting = true; // Prevent future invocations
+			setTimeout(function () {
+				// After a period of time
+				waiting = false; // And allow future invocations
+			}, limit);
+		}
+	};
+}
 // Game arena dimensions
 
 const topBorder = 15;
@@ -104,6 +120,24 @@ const GamePage = () => {
 
 		getUserIdAndGameData();
 	}, []);
+
+	useEffect(() => {
+		// We wrap handleResize in a throttle function to limit how often it can be called
+		const throttledHandleResize = throttle(function handleResize() {
+			const newGameWidth = Math.min(window.innerWidth, 1200);
+			const newGameHeight = Math.min(window.innerHeight, 800);
+			const widthRatio = newGameWidth / gameWidth;
+			const heightRatio = newGameHeight / gameHeight;
+			const newPos1 = ballPosition.x * widthRatio;
+			const newPos2 = ballPosition.y * heightRatio;
+			setGameWidth(newGameWidth);
+			setGameHeight(newGameHeight);
+			setBallPosition({ x: newPos1, y: newPos2 });
+		}, 250); // For instance, only allow it to be called once every 250ms
+
+		window.addEventListener('resize', throttledHandleResize);
+		return () => window.removeEventListener('resize', throttledHandleResize);
+	}, [gameWidth, gameHeight, ballPosition]); // Dependencies remain the same
 
 	useEffect(() => {
 		function handleResize() {
@@ -371,8 +405,21 @@ const GamePage = () => {
 			{gameReady && oppoReady && (
 				<>
 					{/* Use the Paddle component instead of the div for paddles */}
-					<Paddle position={myPaddle} isLeft={true} />
-					<Paddle position={opPaddle} isLeft={false} />
+					<Paddle
+						position={myPaddle}
+						isLeft={true}
+						gameWidth={gameWidth}
+						gameHeight={gameHeight}
+						paddleHeight={paddleHeight}
+					/>
+					<Paddle
+						position={opPaddle}
+						isLeft={false}
+						gameWidth={gameWidth}
+						gameHeight={gameHeight}
+						paddleHeight={paddleHeight}
+					/>
+
 					<div
 						className="ball"
 						style={{

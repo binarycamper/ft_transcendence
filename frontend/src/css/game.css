@@ -1,10 +1,10 @@
 /* Main container and background */
 .gameContainer {
 	position: relative;
-	width: 100%; /* Full width */
-	height: 100vh; /* Full viewport height */
-	max-width: 1200px; /* Maximum width */
-	max-height: 800px; /* Maximum height */
+	width: 90vw;
+	height: 80vh;
+	max-width: 1200px;
+	max-height: 800px;
 	margin: 20px auto;
 	background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);
 	border: 2px solid #333;
