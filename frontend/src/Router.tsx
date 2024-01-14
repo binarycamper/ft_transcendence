@@ -18,7 +18,8 @@ import ResetPassword from './pages/ResetPassword.page';
 import ResetAccount from './pages/ResetAccount.page';
 import VerifyResetToken from './pages/VerifyResetToken.page';
 import { MatchmakingQueuePage } from './pages/Queue.page';
-import Game from './pages/Game.page';
+import GamePage from './pages/Game.page';
+import Game from './components/Game/Game';
 
 const router = createBrowserRouter([
 	{
@@ -91,7 +92,7 @@ const router = createBrowserRouter([
 	},
 	{
 		path: '/game',
-		element: <Game />,
+		element: <GamePage />,
 	},
 	{
 		path: '/reset-account',
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
 	{
 		path: '/reset-password/:token',
 		element: <VerifyResetToken />,
+	},
+	{
+		path: '/game-arena',
+		element: <Game />,
 	},
 ]);
 

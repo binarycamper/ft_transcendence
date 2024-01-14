@@ -1,9 +1,12 @@
+//App.tsx
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Router } from './Router';
 import { socket } from './services/socket';
 import { theme } from './theme';
 import { useEffect } from 'react';
+import { UserProvider } from './components/game_jj/UserContext';
+import { GameDataProvider } from './components/game_jj/GameDataContext';
 
 export default function App() {
 	useEffect(() => {
@@ -30,7 +33,11 @@ export default function App() {
 
 	return (
 		<MantineProvider defaultColorScheme="auto" theme={theme}>
-			<Router />
+			<UserProvider>
+				<GameDataProvider>
+					<Router />
+				</GameDataProvider>
+			</UserProvider>
 		</MantineProvider>
 	);
 }

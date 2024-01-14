@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { socket } from '../services/socket';
-import Arena from '../components/game_jj/Arena';
+import Game from '../components/Game/Game';
 
 interface CurrUser {
 	id: string;
@@ -45,7 +45,7 @@ export const CurrUserContext = React.createContext<CurrUser | null>(null);
 export const PlayerContext = React.createContext<Player | null>(null);
 export const GameDataContext = React.createContext<GameData | null>(null);
 
-function Game() {
+function GamePage() {
 	const [game, setGame] = useState<GameData | null>(null);
 	const [currUser, setCurrUser] = useState<CurrUser | null>(null);
 	const [player, setPlayer] = useState<Player | null>(null);
@@ -100,6 +100,7 @@ function Game() {
 					console.log('Game has started:', game);
 					setGame(game);
 					setGameStarted(true);
+					window.location.href = 'http://localhost:5173/game-arena';
 				});
 
 				// Remove the "gameStart" event listener when the component unmounts
@@ -169,8 +170,7 @@ function Game() {
 					</button>
 				</div>
 			)}
-			{game?.started && <Arena />}
 		</div>
 	);
 }
-export default Game;
+export default GamePage;
