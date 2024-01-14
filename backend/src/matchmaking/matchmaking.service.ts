@@ -113,7 +113,7 @@ export class MatchmakingService {
 		return matchmakingEntry;
 	}
 
-	async viewQueue(): Promise<{ message: string }> {
+	viewQueue(): { message: string } {
 		// Placeholder logic to view the current matchmaking queue
 		// Implement actual logic to retrieve and return queue information
 		console.log(`Viewing the current matchmaking queue`);
@@ -131,10 +131,15 @@ export class MatchmakingService {
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw error;
-			} else {
-				console.error(`Failed to leave queue: ${error.message}`, error.stack); //TODO: comment during eval.
-				throw new InternalServerErrorException(`Failed to leave queue: ${error.message}`);
+			} 
+			else if (error instanceof Error) {
+                console.error(`Failed to leave queue: ${error.message}`, error.stack);
+                throw new InternalServerErrorException(`Failed to leave queue: ${error.message}`);
 			}
+			else {
+				console.error('An unknown error occurred', error);
+                throw new InternalServerErrorException('An unknown error occurred');
+            }
 		}
 	}
 
@@ -142,8 +147,13 @@ export class MatchmakingService {
 		try {
 			return this.matchmakingRepository.save(game);
 		} catch (error) {
-			console.error(`Failed to update game: ${error.message}`, error.stack);
-			throw new InternalServerErrorException(`Failed to update game: ${error.message}`);
+			if (error instanceof Error) {
+				console.error(`Failed to update game: ${error.message}`, error.stack);
+				throw new InternalServerErrorException(`Failed to update game: ${error.message}`);
+			} else {
+				console.error('An unknown error occurred', error);
+				throw new InternalServerErrorException('An unknown error occurred during game update');
+			}
 		}
 	}
 
