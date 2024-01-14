@@ -145,6 +145,8 @@ const GamePage = () => {
 			setGameWidth(newGameWidth);
 			setGameHeight(newGameHeight);
 			setBallPosition({ x: newPos1, y: newPos2 });
+			//TODO: EMIT NEW GameWIdth!!! and use in calc
+			socket.emit('gameResize', { newGameWidth });
 		}
 
 		window.addEventListener('resize', handleResize);
@@ -191,7 +193,7 @@ const GamePage = () => {
 
 	const startGame = () => {
 		setGameReady(true);
-		socket.emit('playerReady', {});
+		socket.emit('playerReady', { gameWidth, gameHeight });
 	};
 
 	useEffect(() => {
@@ -362,6 +364,19 @@ const GamePage = () => {
 			return prevPosition;
 		});
 	};
+
+	useEffect(() => {
+		// Listen for ball updates from the server
+		socket.on('ballUpdate', (data: { ballPosition: [number, number] }) => {
+			// Update ball position state
+			setBallPosition({ x: data.ballPosition[1], y: data.ballPosition[0] });
+		});
+
+		// Clean up the effect by removing the event listener when the component unmounts
+		return () => {
+			socket.off('ballUpdate');
+		};
+	}, []); // The dependency array is empty to set up the listener once on mount
 
 	return (
 		<div className="gameContainer">

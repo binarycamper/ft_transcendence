@@ -74,7 +74,7 @@
 	background-color: #ff4757;
 	border-radius: 50%;
 	box-shadow: 0 0 10px rgba(255, 71, 87, 0.75);
-	animation: floatBall 2s ease-in-out infinite;
+	/*animation: floatBall 2s ease-in-out infinite;*/
 }
 
 /* Button styling */

@@ -52,4 +52,20 @@ export class Game {
 	// Update ballDirection to float with precision
 	@Column('float', { array: true, default: () => "'{0,0}'" }) // Default direction as 0,0
 	ballDirection: number[]; // Represents the x and y velocity of the ball
+
+	@Column({ type: 'float', default: 1.0 }) // Default speed value can be changed as needed
+	ballSpeed: number;
+
+	// Add these new columns to track the game area size for each player
+	@Column({ type: 'int', nullable: true })
+	playerOneGameWidth: number;
+
+	@Column({ type: 'int', nullable: true })
+	playerOneGameHeight: number;
+
+	@Column({ type: 'int', nullable: true })
+	playerTwoGameWidth: number;
+
+	@Column({ type: 'int', nullable: true })
+	playerTwoGameHeight: number;
 }

@@ -36,6 +36,7 @@ export class EventsGateway {
 		private gameService: GameService,
 	) {}
 
+	//#####################################################CookieDecoderforSockets##########################################################
 	async verifyAuthentication(
 		client: Socket,
 	): Promise<{ isAuthenticated: boolean; userId: string }> {
@@ -57,7 +58,7 @@ export class EventsGateway {
 		return { isAuthenticated: false, userId: '' };
 	}
 
-	//########################UserStatus#############################
+	//#####################################################UserStatus##########################################################
 
 	async handleConnection(client: Socket, ...args: any[]) {
 		try {
@@ -83,7 +84,7 @@ export class EventsGateway {
 		}
 	}
 
-	//########################ChatMessages#############################
+	//#####################################################ChatMessages##########################################################
 
 	//TODO: DTO here pls
 	@SubscribeMessage('send-message')
@@ -213,54 +214,78 @@ export class EventsGateway {
 		}
 	}
 
-	//########################Game#############################
+	//################################################Game##########################################################
 
 	@SubscribeMessage('playerReady')
-	async handlePlayerReady(@ConnectedSocket() client: Socket) {
+	async handlePlayerReady(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() data: { gameWidth: number; gameHeight: number },
+	): Promise<void> {
 		try {
 			const isAuthenticated = await this.verifyAuthentication(client);
 			if (!isAuthenticated.isAuthenticated) {
-				console.log('Invalid credentials');
+				console.error('Invalid credentials');
 				return;
 			}
-			const game: Game = await this.gameService.findGameByUserId(isAuthenticated.userId);
-			if (game) {
+
+			const game = await this.gameService.findGameByUserId(isAuthenticated.userId);
+			if (!game) {
+				console.error('Game not found');
+				return;
+			}
+
+			// Update the accepted status of the player who is ready // so i toggle Matchmaking accept back to false to avoid using a new bool
+			if (game.playerOne.id === isAuthenticated.userId) {
+				game.acceptedOne = false;
+			} else if (game.playerTwo.id === isAuthenticated.userId) {
+				game.acceptedTwo = false;
+			}
+
+			// Check if both players are ready to start the game
+			if (!game.acceptedOne && !game.acceptedTwo) {
+				game.startTime = new Date();
+				game.started = true;
+				this.setRandomBallDirection(game);
 				if (game.playerOne.id === isAuthenticated.userId) {
-					game.acceptedOne = false;
+					game.playerOneGameWidth = data.gameWidth;
+					game.playerOneGameHeight = data.gameHeight;
 				} else if (game.playerTwo.id === isAuthenticated.userId) {
-					game.acceptedTwo = false;
+					game.playerTwoGameWidth = data.gameWidth;
+					game.playerTwoGameHeight = data.gameHeight;
 				}
 
 				await this.gameService.saveGame(game);
+				this.gameService.startGameLoop(game.id);
 
-				// If both players are ready, emit a 'gameStart' event to both players
-				if (!game.acceptedOne && !game.acceptedTwo) {
-					game.startTime = new Date();
-					game.started = true;
-
-					do {
-						game.ballDirection[0] = Math.random() * 2 - 1; // Random float between -1 and 1 for x direction
-						game.ballDirection[1] = Math.random() * 2 - 1; // Random float between -1 and 1 for y direction
-
-						// Normalize the direction to ensure consistent ball speed in any direction
-						const length = Math.sqrt(game.ballDirection[0] ** 2 + game.ballDirection[1] ** 2);
-						game.ballDirection[0] /= length;
-						game.ballDirection[1] /= length;
-					} while (Math.abs(game.ballDirection[1]) < 0.3);
-
-					console.log('dir: ', game.ballDirection[0]);
-					console.log('dir: ', game.ballDirection[1]);
-
-					await this.gameService.saveGame(game);
-					this.server.to(`user_${game.playerOne.id}`).emit('gameStart', game);
-					this.server.to(`user_${game.playerTwo.id}`).emit('gameStart', game);
-				}
+				// Notify both players that the game has started
+				this.server.to(`user_${game.playerOne.id}`).emit('gameStart', game);
+				this.server.to(`user_${game.playerTwo.id}`).emit('gameStart', game);
+			} else {
+				await this.gameService.saveGame(game); // Save the partial state
 			}
 		} catch (error) {
 			console.error(`Error in handlePlayerReady: ${error}`);
 			// Handle error appropriately
 		}
 	}
+	//################################tools for handlePlayerReady###########################################################
+
+	private setRandomBallDirection(game: Game): void {
+		do {
+			game.ballDirection[0] = Math.random() * 2 - 1; // Random float between -1 and 1 for x direction
+			game.ballDirection[1] = Math.random() * 2 - 1; // Random float between -1 and 1 for y direction
+			this.normalizeBallDirection(game);
+		} while (Math.abs(game.ballDirection[1]) < 0.3); // Avoid a horizontal trajectory
+	}
+
+	private normalizeBallDirection(game: Game): void {
+		const length = Math.sqrt(
+			Math.pow(game.ballDirection[0], 2) + Math.pow(game.ballDirection[1], 2),
+		);
+		game.ballDirection[0] /= length;
+		game.ballDirection[1] /= length;
+	}
+	//#######################################################################################################################
 
 	@SubscribeMessage('keydown')
 	async keyHook(@ConnectedSocket() client: Socket, @MessageBody() data: { key: string }) {
@@ -310,6 +335,24 @@ export class EventsGateway {
 			// Emit the updated game state to both players
 			this.server.to(`user_${updatedGame.playerOne.id}`).emit('newBall', updatedGame);
 			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('newBall', updatedGame);
+		}
+	}
+
+	@SubscribeMessage('gameResize')
+	async handleGameResize(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() data: { newGameWidth: number; newGameHeight: number },
+	) {
+		const game = await this.gameService.findGameByUserId(client.data.user.id);
+		if (game) {
+			if (client.data.user.id === game.playerOne.id) {
+				game.playerOneGameWidth = data.newGameWidth;
+				game.playerOneGameHeight = data.newGameHeight;
+			} else if (client.data.user.id === game.playerTwo.id) {
+				game.playerTwoGameWidth = data.newGameWidth;
+				game.playerTwoGameHeight = data.newGameHeight;
+			}
+			await this.gameService.saveGame(game); // Save the updated game state
 		}
 	}
 }

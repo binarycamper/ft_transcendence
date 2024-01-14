@@ -11,6 +11,9 @@ const gameHeight = 800; // game field's height
 
 @Injectable()
 export class GameService {
+	//existing games:
+	private gameIntervals: { [gameId: string]: NodeJS.Timer } = {};
+
 	constructor(
 		@InjectRepository(Game)
 		private gameRepository: Repository<Game>,
@@ -62,7 +65,6 @@ export class GameService {
 				//existingGame.acceptedTwo = true; // Player two accepts the game
 				existingGame.acceptedTwo = true;
 				await this.gameRepository.save(existingGame);
-
 				// Emit event to notify that the game is ready
 
 				//this.eventsService.emitToUser(opponent.id, player.name);
@@ -196,10 +198,11 @@ export class GameService {
 		const maxScore = 10;
 		if (game.scorePlayerOne >= maxScore) {
 			game.winnerId = game.playerOne.id;
+			return await this.gameRepository.save(game);
 		} else if (game.scorePlayerTwo >= maxScore) {
 			game.winnerId = game.playerTwo.id;
+			return await this.gameRepository.save(game);
 		}
-
 		do {
 			game.ballDirection[0] = Math.random() * 2 - 1; // Random float between -1 and 1 for x direction
 			game.ballDirection[1] = Math.random() * 2 - 1; // Random float between -1 and 1 for y direction
@@ -209,8 +212,59 @@ export class GameService {
 			game.ballDirection[0] /= length;
 			game.ballDirection[1] /= length;
 		} while (Math.abs(game.ballDirection[1]) < 0.3);
+		return await this.gameRepository.save(game);
+	}
 
-		await this.gameRepository.save(game);
-		return game;
+	startGameLoop(gameId: string) {
+		const gameWidth = 1200;
+		if (!gameId) {
+			console.log('game id empty!');
+			return;
+		}
+		const ballUpdateRate = 16; // Update every 16ms (~60fps)
+		const intervalId = setInterval(async () => {
+			let game = await this.findGameById(gameId);
+
+			if (!game) {
+				console.log(`Game not found: ${gameId}`);
+				clearInterval(intervalId);
+				return;
+			}
+
+			// Update the ball's position
+			game.ballPosition[0] += game.ballDirection[0] * game.ballSpeed;
+			game.ballPosition[1] += game.ballDirection[1] * game.ballSpeed;
+
+			// Persist the new ball position
+			await this.saveGame(game);
+
+			// Broadcast the new game state to player one
+			this.eventsGateway.server.to(`user_${game.playerOne.id}`).emit('ballUpdate', {
+				ballPosition: game.ballPosition, // Actual position
+				ballDirection: game.ballDirection, // Actual direction
+			});
+
+			// Broadcast the mirrored game state to player two using their game width
+			this.eventsGateway.server.to(`user_${game.playerTwo.id}`).emit('ballUpdate', {
+				ballPosition: [game.playerTwoGameWidth - game.ballPosition[0], game.ballPosition[1]], // Mirrored position
+				ballDirection: [-game.ballDirection[0], game.ballDirection[1]], // Mirrored direction
+			});
+		}, ballUpdateRate);
+
+		this.gameIntervals[gameId] = intervalId;
+	}
+
+	// Stop the game loop when the game ends
+	stopGameLoop(gameId: string) {
+		// Retrieve the interval timer
+		const intervalId = this.gameIntervals[gameId];
+
+		// Clear the interval
+		if (intervalId) {
+			clearInterval(intervalId as unknown as number);
+
+			// Delete the entry from the map
+			delete this.gameIntervals[gameId];
+		}
 	}
 }
