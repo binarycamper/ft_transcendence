@@ -112,10 +112,7 @@ export class UserService {
 		const user = await this.userRepository.findOne({
 			where: { email: email },
 		});
-		if (!user) {
-			return undefined;
-		}
-		return user.id;
+		return user ? user.id : undefined;
 	}
 
 	async findUserIdForLogin(email: string) {
@@ -468,7 +465,7 @@ export class UserService {
 		return this.userRepository.save(newUser);
 	}
 
-	async createDebugToken(user: User): Promise<string> {
+	createDebugToken(user: User): string {
 		const payload = {
 			name: user.name,
 			email: user.email,
