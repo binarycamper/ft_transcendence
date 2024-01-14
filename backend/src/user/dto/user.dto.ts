@@ -1,8 +1,6 @@
 import {
 	IsNotEmpty,
 	IsString,
-	Matches,
-	IsStrongPassword,
 	Length,
 	MinLength,
 } from 'class-validator';

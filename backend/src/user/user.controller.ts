@@ -135,9 +135,9 @@ export class UserController {
 			//	this.logger.error(`Error deleting user: ${error.message}`, error.stack);
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException('User not found');
-			} else if (error.response && error.status) {
+			} else if(error instanceof HttpException) {
 				// If error is an instance of HttpException, rethrow it
-				throw new HttpException(error.response, error.status);
+				throw error;
 			} else {
 				// For all other errors, consider them as internal server errors
 				throw new InternalServerErrorException(
@@ -189,13 +189,13 @@ export class UserController {
 			return false;
 		}
 	}
-
+	
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
 	getImage(@Query() getImageDto: GetImageDto, @Req() req, @Res() res: Response) {
 		// Construct the full file path
-		let fullPath = UPLOAD_PATH + getImageDto.filename;
+		let fullPath: string = UPLOAD_PATH + getImageDto.filename;
 
 		//works not in public profile but in own
 		//TODO: delete me before eval.
@@ -243,7 +243,7 @@ export class UserController {
 	//Get List of friends of that user
 	@Get('friends')
 	@UseGuards(JwtAuthGuard)
-	async getFriends(@Req() req: Request, @Res() res: Response) {
+	async getFriends(@Req() req: Request, @Res() res: Response): Promise<Response>  {
 		const userId = req.user.id;
 		try {
 			const user = await this.userService.findProfileById(userId);
@@ -259,10 +259,10 @@ export class UserController {
 				return friendDetails;
 			});
 
-			res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
+			return res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
 		} catch (error) {
 			//console.error('Error retrieving friends:', error);
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
+			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
 		}
 	}
 
@@ -277,18 +277,24 @@ export class UserController {
 			await this.userService.removeFriend(req.user.id, removeFriendDto.friendid);
 			return res.status(HttpStatus.NO_CONTENT).send();
 		} catch (error) {
-			//console.error('Error removing friend:', error.message);
-			const status =
-				error instanceof NotFoundException
-					? HttpStatus.NOT_FOUND
-					: HttpStatus.INTERNAL_SERVER_ERROR;
-			return res.status(status).json({ message: error.message });
+			let message = 'An error occurred';
+			let status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+			if (error instanceof NotFoundException) {
+				status = HttpStatus.NOT_FOUND;
+				message = error.message;
+			} else if (error instanceof Error) {
+				// Safe to access error.message
+				message = error.message;
+			}
+
+			return res.status(status).json({ message });
 		}
 	}
 
 	@Post('add-friend')
 	@UseGuards(JwtAuthGuard)
-	async addFriend(@Req() req: Request, @Body() addFriendDto: AddFriendDto, @Res() res: Response) {
+	async addFriend(@Req() req: Request, @Body() addFriendDto: AddFriendDto, @Res() res: Response): Promise<Response> {
 		const { user } = req;
 		try {
 			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
@@ -296,10 +302,10 @@ export class UserController {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
 
-			res.status(HttpStatus.OK).json({ message: 'Friend added successfully' });
+			return res.status(HttpStatus.OK).json({ message: 'Friend added successfully' });
 		} catch (error) {
 			console.error('Error adding friend:', error);
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error adding friend' });
+			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error adding friend' });
 		}
 	}
 
@@ -321,7 +327,7 @@ export class UserController {
 			await this.userService.removeFriend(user.id, userToBlock.id);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {
-			console.error('Error while blocking user: ', error.message);
+			console.error('Error while blocking user: ', error instanceof Error ? error.message : error);
 
 			if (error instanceof NotFoundError) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
@@ -363,7 +369,7 @@ export class UserController {
 			await this.userService.removeUserInBlocklist(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
 		} catch (error) {
-			console.error('Error while unblocking user: ', error.message);
+			console.error('Error while unblocking user: ', error instanceof Error ? error.message : error);
 
 			if (error instanceof NotFoundError) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
@@ -402,7 +408,7 @@ export class UserController {
 			intraId: debugUserId,
 			id: debugUserId,
 			intraImage: 'someDebugIntraImage',
-			customImage: 'http://localhost:8080/user/uploads?filename=' + '0_0' + '.png',
+			customImage: 'http://localhost:8080/user/uploads?filename=0_0.png',
 			status: 'offline',
 		});
 
