@@ -1,5 +1,5 @@
 //Game.tsx
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useGameLoop from '../../hooks/useGameLoop';
 import useTitle from '../../hooks/useTitle';
 import useFetchGameData from '../game_jj/useFetchGameData';
@@ -50,6 +50,7 @@ export default function Game() {
 
 	useTitle('Play Pong');
 	useGameLoop({
+		isPlayerOne,
 		aspectRatio,
 		ballWidth,
 		paddleGap,

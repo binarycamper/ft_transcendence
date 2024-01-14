@@ -18,6 +18,7 @@ const keyMapR = {
 };
 
 type Props = {
+	isPlayerOne: boolean;
 	aspectRatio: number;
 	ballAccel?: number;
 	ballSpeed?: number;
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export default function useGameLoop(props: Props) {
+	const { isPlayerOne, ...otherProps } = props;
 	const keyStateRef = useRef(useKeyHook());
 	const requestRef = useRef(0);
 	// const intervalRef = useRef(0);
@@ -53,7 +55,7 @@ export default function useGameLoop(props: Props) {
 		const score = createScore();
 		const ball = createBall({ aspectRatio, ballAccel, ballSpeed, ballWidth, walls });
 		const lpaddle = createPaddle({
-			// keyMap: keyMapL,
+			keyMap: keyMapL,
 			keyState,
 			paddleGap,
 			paddleHeight,
@@ -77,7 +79,11 @@ export default function useGameLoop(props: Props) {
 		function update(thisTime: number) {
 			const delta = (thisTime - lastTime) / 1000 || 0;
 			// const delta = 16.7 / 1000; /* for debugging */
-
+			if (isPlayerOne) {
+				lpaddle.update(delta, ball); // Player one controls the left paddle
+			} else {
+				rpaddle.update(delta, ball); // Player two controls the right paddle
+			}
 			/* only for debugging */
 			if (keyState.NumpadAdd) ball.speed += 1;
 			if (keyState.NumpadSubtract) ball.speed -= 1;
@@ -97,5 +103,5 @@ export default function useGameLoop(props: Props) {
 			cancelAnimationFrame(requestRef.current);
 			// clearInterval(intervalRef.current);
 		};
-	}, [props]);
+	}, [props, isPlayerOne]);
 }
