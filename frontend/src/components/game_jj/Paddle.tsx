@@ -1,29 +1,26 @@
-// Paddle.tsx
+import React from 'react';
+import '../../css/game.css';
+
 interface PaddleProps {
-	position: number;
-	isLeft: boolean;
-	gameWidth: number;
-	gameHeight: number;
-	paddleHeight: number;
+	position: number; // Vertical position of the paddle
+	isLeft: boolean; // Determines if the paddle is on the left or right
+	gameWidth: number; // Width of the game arena
+	gameHeight: number; // Height of the game arena
 }
 
-const Paddle: React.FC<PaddleProps> = ({
-	position,
-	isLeft,
-	gameWidth,
-	gameHeight,
-	paddleHeight,
-}) => {
-	const paddleWidthPercent = 2; // Example: paddle width is 2% of gameWidth
-	const paddleOffsetPercent = 5; // Example: paddle offset from the side is 5%
+const Paddle: React.FC<PaddleProps> = ({ position, isLeft, gameWidth, gameHeight }) => {
+	const paddleWidth = 10; // Width of the paddle, you can adjust this as needed
+	const paddleHeightPercentage = 20; // Paddle height as a percentage of game height
+	const paddleHeight = (gameHeight * paddleHeightPercentage) / 100; // Calculate relative height
 
 	const paddleStyle = {
-		top: `${(position / gameHeight) * 100}%`, // Calculate top as a percentage of gameHeight
-		left: isLeft ? `${paddleOffsetPercent}%` : undefined,
-		right: !isLeft ? `${paddleOffsetPercent}%` : undefined,
-		width: `${(paddleWidthPercent / 100) * gameWidth}px`, // Convert width percentage to px
-		height: `${(paddleHeight / gameHeight) * 100}%`, // Calculate height as a percentage of gameHeight
-		// Other styles...
+		position: 'absolute',
+		width: `${paddleWidth}px`,
+		height: `${paddleHeight}px`, // Now this is responsive to gameHeight
+		backgroundColor: 'black',
+		left: isLeft ? '0px' : `calc(100% - ${paddleWidth}px)`, // Correctly aligns the right paddle
+		top: `50%`,
+		transform: `translateY(-50%) translateY(${position}px)`, // Adjusts for the paddle's height
 	};
 
 	return <div className="paddle" style={paddleStyle} />;

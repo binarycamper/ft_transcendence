@@ -255,7 +255,7 @@ export class EventsGateway {
 				}
 
 				await this.gameService.saveGame(game);
-				this.gameService.startGameLoop(game.id);
+				//this.gameService.startGameLoop(game.id);
 
 				// Notify both players that the game has started
 				this.server.to(`user_${game.playerOne.id}`).emit('gameStart', game);
@@ -268,6 +268,7 @@ export class EventsGateway {
 			// Handle error appropriately
 		}
 	}
+
 	//################################tools for handlePlayerReady###########################################################
 
 	private setRandomBallDirection(game: Game): void {
@@ -299,60 +300,6 @@ export class EventsGateway {
 			this.server.to(`user_${game.playerTwo.id}`).emit('handlePaddleUpdate', game);
 		} else {
 			this.server.to(`user_${game.playerOne.id}`).emit('handlePaddleUpdate', game);
-		}
-	}
-
-	@SubscribeMessage('scoreUpdate')
-	async handleScoreUpdate(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() data: { scorePlayerOne: number; scorePlayerTwo: number },
-	) {
-		const isAuthenticated = await this.verifyAuthentication(client);
-		if (!isAuthenticated.isAuthenticated) {
-			console.log('Invalid credentials');
-			return;
-		}
-
-		console.log('data: ', data);
-		// Assuming you have a method in your game service to handle the score update
-		const updatedGame = await this.gameService.updateScore(
-			isAuthenticated.userId,
-			data.scorePlayerOne,
-			data.scorePlayerTwo,
-		);
-		if (!updatedGame) {
-			// Handle error, could not find game or update score
-			console.error('Could not update score');
-			return;
-		}
-
-		const maxScore = 10;
-		if (updatedGame.scorePlayerOne >= maxScore) {
-			this.server.to(`user_${updatedGame.playerOne.id}`).emit('gameWon', updatedGame);
-		} else if (updatedGame.scorePlayerTwo >= 10) {
-			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('gameWon', updatedGame);
-		} else {
-			// Emit the updated game state to both players
-			this.server.to(`user_${updatedGame.playerOne.id}`).emit('newBall', updatedGame);
-			this.server.to(`user_${updatedGame.playerTwo.id}`).emit('newBall', updatedGame);
-		}
-	}
-
-	@SubscribeMessage('gameResize')
-	async handleGameResize(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() data: { newGameWidth: number; newGameHeight: number },
-	) {
-		const game = await this.gameService.findGameByUserId(client.data.user.id);
-		if (game) {
-			if (client.data.user.id === game.playerOne.id) {
-				game.playerOneGameWidth = data.newGameWidth;
-				game.playerOneGameHeight = data.newGameHeight;
-			} else if (client.data.user.id === game.playerTwo.id) {
-				game.playerTwoGameWidth = data.newGameWidth;
-				game.playerTwoGameHeight = data.newGameHeight;
-			}
-			await this.gameService.saveGame(game); // Save the updated game state
 		}
 	}
 }
