@@ -289,17 +289,32 @@ export class EventsGateway {
 	//#######################################################################################################################
 
 	@SubscribeMessage('keydown')
-	async keyHook(@ConnectedSocket() client: Socket, @MessageBody() data: { key: string }) {
+	async keyDownHook(@ConnectedSocket() client: Socket, @MessageBody() data: { event: string }) {
 		const isAuthenticated = await this.verifyAuthentication(client);
 		if (!isAuthenticated.isAuthenticated) {
 			console.log('Invalid credentials');
 			return;
 		}
-		const game = await this.gameService.updatePaddle(isAuthenticated.userId, data.key);
-		if (isAuthenticated.userId === game.playerOne.id) {
+		const game = await this.gameService.updatePaddle(isAuthenticated.userId, data.event);
+		/*	if (isAuthenticated.userId === game.playerOne.id) {
 			this.server.to(`user_${game.playerTwo.id}`).emit('handlePaddleUpdate', game);
 		} else {
 			this.server.to(`user_${game.playerOne.id}`).emit('handlePaddleUpdate', game);
+		}*/
+	}
+
+	@SubscribeMessage('keyup')
+	async keyUpHook(@ConnectedSocket() client: Socket, @MessageBody() data: { event: string }) {
+		const isAuthenticated = await this.verifyAuthentication(client);
+		if (!isAuthenticated.isAuthenticated) {
+			console.log('Invalid credentials');
+			return;
 		}
+		const game = await this.gameService.updatePaddle(isAuthenticated.userId, data.event);
+		/*	if (isAuthenticated.userId === game.playerOne.id) {
+			this.server.to(`user_${game.playerTwo.id}`).emit('handlePaddleUpdate', game);
+		} else {
+			this.server.to(`user_${game.playerOne.id}`).emit('handlePaddleUpdate', game);
+		}*/
 	}
 }

@@ -4,6 +4,7 @@ import createBall from '../components/Game/Ball';
 import createPaddle from '../components/Game/Paddle';
 import createScore from '../components/Game/Score';
 import createWall from '../components/Game/Wall';
+import { socket } from '../services/socket';
 
 const keyMapL = {
 	up: 'KeyW',
@@ -35,7 +36,7 @@ export default function useGameLoop(props: Props) {
 	const keyStateRef = useRef(useKeyHook());
 	const requestRef = useRef(0);
 	// const intervalRef = useRef(0);
-
+	console.log('keystate: ', keyStateRef);
 	useEffect(() => {
 		const {
 			aspectRatio,
@@ -54,7 +55,10 @@ export default function useGameLoop(props: Props) {
 		const walls = createWall(aspectRatio * wallHeight);
 		const score = createScore();
 		const ball = createBall({ aspectRatio, ballAccel, ballSpeed, ballWidth, walls });
+		let myPaddle;
+
 		const lpaddle = createPaddle({
+			isControllable: isPlayerOne,
 			keyMap: keyMapL,
 			keyState,
 			paddleGap,
@@ -64,7 +68,9 @@ export default function useGameLoop(props: Props) {
 			side: 'left',
 			walls,
 		});
+
 		const rpaddle = createPaddle({
+			isControllable: !isPlayerOne,
 			keyMap: keyMapR,
 			keyState,
 			paddleGap,
@@ -75,15 +81,20 @@ export default function useGameLoop(props: Props) {
 			walls,
 		});
 
+		if (isPlayerOne) {
+			myPaddle = lpaddle;
+		} else {
+			myPaddle = rpaddle;
+		}
+
 		let lastTime: number;
 		function update(thisTime: number) {
 			const delta = (thisTime - lastTime) / 1000 || 0;
+
 			// const delta = 16.7 / 1000; /* for debugging */
-			if (isPlayerOne) {
-				lpaddle.update(delta, ball); // Player one controls the left paddle
-			} else {
-				rpaddle.update(delta, ball); // Player two controls the right paddle
-			}
+			lpaddle.update(delta, ball); // Player one controls the left paddle
+			rpaddle.update(delta, ball); // Player two controls the right paddle
+
 			/* only for debugging */
 			if (keyState.NumpadAdd) ball.speed += 1;
 			if (keyState.NumpadSubtract) ball.speed -= 1;

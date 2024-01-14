@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { socket } from '../services/socket';
 
+type UseKeyHookProps = {
+	onKeyChange?: (key: string, isPressed: boolean) => void;
+};
 export type KeyMap = {
 	up: string;
 	down: string;
@@ -21,16 +25,19 @@ export default function useKeyHook(): KeyState {
 			}
 			if (event.repeat) return;
 			keyState[event.code] = true;
+			//console.log('keyDown', event);
+			socket.emit('keydown', { event: event.code });
 			/* console.log(`D: ${event.code} [${event.key}]`); */
 		}
 		function handleKeyUp(event: KeyboardEvent) {
 			keyState[event.code] = false;
 			/* console.log(`U: ${event.code} [${event.key}]`); */
+			//console.log('keyUp: ', event);
+			socket.emit('keyUp', { event: event.code });
 		}
 
 		window.addEventListener('keydown', handleKeyDown);
 		window.addEventListener('keyup', handleKeyUp);
-		console.log('KeyHook added');
 
 		return () => {
 			window.removeEventListener('keyup', handleKeyUp);

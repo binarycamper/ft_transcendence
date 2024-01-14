@@ -1,10 +1,10 @@
-//Paddle.ts
 import { KeyMap, KeyState } from '../../hooks/useKeyHook';
 import type { Line } from './intersection';
 import { Ball } from './Ball';
 import { Wall } from './Wall';
 
 export type Paddle = {
+	isControllable: boolean;
 	bottom: number;
 	left: number;
 	line: Line;
@@ -18,7 +18,6 @@ export type Paddle = {
 };
 
 type Props = {
-	// computer?: boolean;
 	keyMap?: KeyMap;
 	keyState?: KeyState;
 	paddleGap: number;
@@ -27,10 +26,11 @@ type Props = {
 	paddleWidth: number;
 	side: 'left' | 'right';
 	walls: Wall;
+	isControllable: boolean;
 };
 
 export default function createPaddle({
-	// computer,
+	isControllable,
 	keyMap,
 	keyState,
 	paddleGap,
@@ -76,80 +76,36 @@ export default function createPaddle({
 			}
 		},
 
-		update: function updateComputer(delta: number, ball: Ball) {
-			if (
-				(side === 'right' && ball.dir.x < 0) ||
-				(side === 'left' && ball.dir.x > 0) ||
-				ball.right < 0 ||
-				ball.left > 100
-			) {
-				return void computerMoveCenter(delta);
+		update(delta: number) {
+			// Paddle update logic for controllable paddles
+			if (isControllable && keyMap && keyState) {
+				const speed = keyState[keyMap.mod] ? paddleSpeed / 2 : paddleSpeed;
+				if (keyState[keyMap.up]) this.move(-speed * delta);
+				if (keyState[keyMap.down]) this.move(speed * delta);
 			}
-			const ballDiam = ball.bottom - ball.top;
-			const ballCenter = ball.top + ballDiam / 2;
-			const d = ballCenter - (this.top + paddleHeight / 2);
-			const speed = Math.abs(d) < paddleSpeed * delta ? Math.abs(d) : paddleSpeed;
-			this.move((d < 0 ? -speed : speed) * delta);
 		},
 	};
 
-	if (keyMap && keyState) {
-		paddlePrototype.update = function updatePlayer(delta: number) {
-			const speed = keyState[keyMap.mod] ? paddleSpeed / 2 : paddleSpeed;
-			if (keyState[keyMap.up]) paddlePrototype.move(-speed * delta);
-			if (keyState[keyMap.down]) paddlePrototype.move(speed * delta);
-		};
-	}
-
-	/* auxiliary functions */
-	function computerMoveCenter(delta: number) {
-		const d = paddleCenter - paddlePrototype.top;
-		const speed = Math.abs(d) < paddleSpeed * delta ? Math.abs(d) : paddleSpeed / 2;
-		paddlePrototype.move((d < 0 ? -speed : speed) * delta);
-	}
-
 	paddlePrototype.top = paddleCenter;
 
-	if (side === 'left') {
-		const leftPaddle = Object.create(paddlePrototype, {
-			left: {
-				get() {
-					return paddleGap;
-				},
+	return Object.create(paddlePrototype, {
+		left: {
+			get() {
+				return side === 'left' ? paddleGap : 100 - paddleGap - paddleWidth;
 			},
-			right: {
-				get() {
-					return paddleGap + paddleWidth;
-				},
+		},
+		right: {
+			get() {
+				return side === 'left' ? paddleGap + paddleWidth : 100 - paddleGap;
 			},
-			line: {
-				get() {
-					return { start: { x: this.right, y: this.top }, end: { x: this.right, y: this.bottom } };
-				},
+		},
+		line: {
+			get() {
+				return {
+					start: { x: side === 'left' ? this.right : this.left, y: this.top },
+					end: { x: side === 'left' ? this.right : this.left, y: this.bottom },
+				};
 			},
-		}) as Paddle;
-		return leftPaddle;
-	}
-	if (side === 'right') {
-		const rightPaddle = Object.create(paddlePrototype, {
-			left: {
-				get() {
-					return 100 - paddleGap - paddleWidth;
-				},
-			},
-			right: {
-				get() {
-					return 100 - paddleGap;
-				},
-			},
-			line: {
-				get() {
-					return { start: { x: this.left, y: this.top }, end: { x: this.left, y: this.bottom } };
-				},
-			},
-		}) as Paddle;
-		return rightPaddle;
-	}
-
-	throw new Error("`side` must be either 'left' or 'right'");
+		},
+	}) as Paddle;
 }

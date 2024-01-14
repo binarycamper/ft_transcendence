@@ -146,8 +146,14 @@ export class GameService {
 
 		// Determine which player is making the move
 		const isPlayerOne = userId === game.playerOne.id;
+		//console.log('key = ', key);
+		if (key === 'KeyW' || key === 'ArrowUp' || key === 'w') {
+			key = 'up';
+		} else if (key === 'KeyS' || key === 'ArrowDown' || key === 's') {
+			key = 'down';
+		} else return;
+		//console.log('key: ', key);
 
-		// Calculate new paddle position based on key press
 		const paddleMovement = key === 'up' ? -1 : 1;
 		if (isPlayerOne) {
 			game.playerOnePaddle = Math.max(
@@ -161,6 +167,7 @@ export class GameService {
 			);
 		}
 		await this.gameRepository.save(game);
+
 		return game;
 	}
 
