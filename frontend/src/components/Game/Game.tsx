@@ -10,6 +10,8 @@ import { useUser } from '../game_jj/UserContext';
 interface Player {
 	id: string;
 	name: string;
+	customImage: string;
+	intraImage: string;
 }
 
 // Create contexts and provide initial values
@@ -25,6 +27,7 @@ export default function Game() {
 	const { currUser, setCurrUser } = useUser();
 	const [enemy, setEnemy] = useState<Player | null>(null);
 	const [isPlayerOne, setIsPlayerOne] = useState(false);
+	const [LeftPaddlePos, setLeftPaddlePos] = useState(0);
 
 	useFetchGameData();
 
@@ -57,6 +60,8 @@ export default function Game() {
 		paddleHeight,
 		paddleWidth,
 		wallHeight,
+		LeftPaddlePos: game ? game.playerOnePaddle : 50,
+		RightPaddlePos: game ? game.playerTwoPaddle : 50,
 	});
 
 	return (

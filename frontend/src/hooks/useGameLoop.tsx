@@ -19,6 +19,8 @@ const keyMapR = {
 };
 
 type Props = {
+	RightPaddlePos: number;
+	LeftPaddlePos: number;
 	isPlayerOne: boolean;
 	aspectRatio: number;
 	ballAccel?: number;
@@ -32,11 +34,12 @@ type Props = {
 };
 
 export default function useGameLoop(props: Props) {
-	const { isPlayerOne, ...otherProps } = props;
+	const { isPlayerOne, LeftPaddlePos, RightPaddlePos, ...otherProps } = props;
 	const keyStateRef = useRef(useKeyHook());
 	const requestRef = useRef(0);
 	// const intervalRef = useRef(0);
-	console.log('keystate: ', keyStateRef);
+	//console.log('keystate: ', keyStateRef);
+
 	useEffect(() => {
 		const {
 			aspectRatio,
@@ -55,7 +58,6 @@ export default function useGameLoop(props: Props) {
 		const walls = createWall(aspectRatio * wallHeight);
 		const score = createScore();
 		const ball = createBall({ aspectRatio, ballAccel, ballSpeed, ballWidth, walls });
-		let myPaddle;
 
 		const lpaddle = createPaddle({
 			isControllable: isPlayerOne,
@@ -67,6 +69,7 @@ export default function useGameLoop(props: Props) {
 			paddleWidth,
 			side: 'left',
 			walls,
+			initialPos: LeftPaddlePos,
 		});
 
 		const rpaddle = createPaddle({
@@ -79,13 +82,8 @@ export default function useGameLoop(props: Props) {
 			paddleWidth,
 			side: 'right',
 			walls,
+			initialPos: RightPaddlePos,
 		});
-
-		if (isPlayerOne) {
-			myPaddle = lpaddle;
-		} else {
-			myPaddle = rpaddle;
-		}
 
 		let lastTime: number;
 		function update(thisTime: number) {

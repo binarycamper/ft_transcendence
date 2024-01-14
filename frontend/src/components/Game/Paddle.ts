@@ -4,6 +4,7 @@ import { Ball } from './Ball';
 import { Wall } from './Wall';
 
 export type Paddle = {
+	initialPos: number;
 	isControllable: boolean;
 	bottom: number;
 	left: number;
@@ -18,6 +19,7 @@ export type Paddle = {
 };
 
 type Props = {
+	initialPos: number;
 	keyMap?: KeyMap;
 	keyState?: KeyState;
 	paddleGap: number;
@@ -30,6 +32,7 @@ type Props = {
 };
 
 export default function createPaddle({
+	initialPos,
 	isControllable,
 	keyMap,
 	keyState,
@@ -41,7 +44,7 @@ export default function createPaddle({
 	walls,
 }: Props): Paddle {
 	const paddleRef = document.getElementById(`paddle-${side}`)!;
-	const paddleCenter = 50 - paddleHeight / 2;
+	//const paddleCenter = 50 - paddleHeight / 2;
 
 	const paddlePrototype = {
 		get top() {
@@ -86,7 +89,8 @@ export default function createPaddle({
 		},
 	};
 
-	paddlePrototype.top = paddleCenter;
+	paddlePrototype.top = initialPos; //databank info!
+	//paddlePrototype.top = paddleCenter;
 
 	return Object.create(paddlePrototype, {
 		left: {
