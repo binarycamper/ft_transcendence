@@ -4,6 +4,8 @@ import React, { createContext, useState, useContext } from 'react';
 interface CurrUser {
 	id: string;
 	name: string;
+	customImage?: string; // optional
+	intraImage?: string; // optional
 }
 
 interface UserContextType {

@@ -57,7 +57,7 @@ export default function useGameLoop(props: Props) {
 
 		const walls = createWall(aspectRatio * wallHeight);
 		const score = createScore();
-		const ball = createBall({ aspectRatio, ballAccel, ballSpeed, ballWidth, walls });
+		const ball = createBall({ aspectRatio, ballAccel, ballSpeed, ballWidth, walls, game });
 
 		const lpaddle = createPaddle({
 			isControllable: isPlayerOne,
