@@ -50,7 +50,15 @@ export function Profile() {
 			<p>Name: {profile.name}</p>
 			<p>Nickname: {profile.nickname}</p>
 			<p>Email: {profile.email}</p>
-			<p>Achievements: {`${profile.achievements}, `}</p>
+			<p>
+				Achievements:{' '}
+				{profile.achievements.map((achievement, index) => (
+					<span key={index}>
+						{achievement}
+						{index < profile.achievements.length - 1 ? ', ' : ''}
+					</span>
+				))}
+			</p>
 			<p>Ladder Level: {profile.ladderLevel}</p>
 			<p>Wins: {profile.gamesWon}</p>
 			<p>Losses: {profile.gamesLost}</p>

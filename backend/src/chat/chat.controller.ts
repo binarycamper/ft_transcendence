@@ -104,6 +104,9 @@ export class ChatController {
 			// Add the new chat room to the user's chat rooms
 			user.chatRooms.push(chatRoom);
 
+			//TODO: only one time!
+			user.achievements.push('ChatCreator');
+
 			// Save the updated user entity
 			await this.userService.updateUser(user);
 

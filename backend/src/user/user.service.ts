@@ -64,6 +64,7 @@ export class UserService {
 				'friends',
 				'blocklist',
 				'chatRooms',
+				'achievements',
 			],
 			relations: ['friends', 'blocklist', 'chatRooms'],
 		});
