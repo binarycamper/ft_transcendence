@@ -1,3 +1,4 @@
+import { Tooltip } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -12,6 +13,7 @@ type Friend = {
 	nickname: string;
 	status: string;
 	gamesWon: number;
+	achievements: string[];
 };
 
 // type PublicProfileProps = {
@@ -55,6 +57,19 @@ export function PublicProfile() {
 		fetchFriendProfile();
 	}, [friendName]);
 
+	//Care if you change that here change it also in Profile.page.tsx! Ty
+	function getAchievementDescription(achievement) {
+		const descriptions = {
+			'Room Architect 🏗️': 'Awarded for creating a chat room.',
+			'Social Butterfly 🦋': 'Earned by being actively social and inviting friends to chat rooms.',
+			'ChatRoom Lurker 👀': 'Given for spending a significant amount of time in chat rooms.',
+			'Peacekeeper 🛡️': 'Achieved by maintaining order and decorum in chat rooms.',
+			// Add more mappings as needed
+		};
+
+		return descriptions[achievement] || 'No description available.';
+	}
+
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}
@@ -73,6 +88,17 @@ export function PublicProfile() {
 					<p>Ladder Level: {friendProfile.ladderLevel}</p>
 					<p>Wins: {friendProfile.gamesWon}</p>
 					<p>Losses: {friendProfile.gamesLost}</p>
+					<p>
+						Achievements:{' '}
+						{friendProfile.achievements.map((achievement, index) => (
+							<Tooltip key={index} label={getAchievementDescription(achievement)} withArrow>
+								<span>
+									{achievement}
+									{index < friendProfile.achievements.length - 1 ? ', ' : ''}
+								</span>
+							</Tooltip>
+						))}
+					</p>
 				</div>
 			)}
 		</div>

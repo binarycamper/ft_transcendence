@@ -21,6 +21,7 @@ export function Profile() {
 		has2FA,
 	} = useProfile();
 
+	//Care if you change that here change it also in PublicProfile.page.tsx! Ty
 	function getAchievementDescription(achievement) {
 		const descriptions = {
 			'Room Architect 🏗️': 'Awarded for creating a chat room.',
