@@ -104,9 +104,9 @@ export class ChatController {
 			// Add the new chat room to the user's chat rooms
 			user.chatRooms.push(chatRoom);
 
-			if (!user.achievements.includes('Room Architect')) {
+			if (!user.achievements.includes('Room Architect 🏗️')) {
 				// Push the 'ChatCreator' achievement only if it's not already there
-				user.achievements.push('Room Architect');
+				user.achievements.push('Room Architect 🏗️');
 			}
 
 			// Save the updated user entity
@@ -243,8 +243,8 @@ export class ChatController {
 			// TODO: Add request system here like the friendrequest does, or similiar...
 			await this.chatService.addUserToChatRoom(roomId, userToInvite);
 			const user = await this.userService.findProfileById(req.user.id);
-			if (!user.achievements.includes('Social Butterfly')) {
-				user.achievements.push('Social Butterfly');
+			if (!user.achievements.includes('Social Butterfly 🦋')) {
+				user.achievements.push('Social Butterfly 🦋');
 				await this.userService.updateUser(user);
 			}
 			// Return a success response if the invitation was sent
@@ -312,8 +312,8 @@ export class ChatController {
 		// Add the user to the room
 		try {
 			const userToAdd = await this.userService.findProfileById(userId);
-			if (!userToAdd.achievements.includes('ChatRoom Lurker')) {
-				userToAdd.achievements.push('ChatRoom Lurker');
+			if (!userToAdd.achievements.includes('ChatRoom Lurker 👀')) {
+				userToAdd.achievements.push('ChatRoom Lurker 👀');
 			}
 			// Add the user to the room
 			await this.chatService.addUserToChatRoom(roomId, userToAdd);
@@ -333,8 +333,8 @@ export class ChatController {
 		try {
 			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId, req.user.id);
 			const user = await this.userService.findProfileById(req.user.id);
-			if (!user.achievements.includes('Peacekeeper')) {
-				user.achievements.push('Peacekeeper');
+			if (!user.achievements.includes('Peacekeeper 🛡️')) {
+				user.achievements.push('Peacekeeper 🛡️');
 				await this.userService.updateUser(user);
 			}
 			return { message: 'User successfully kicked' };

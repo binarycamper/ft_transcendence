@@ -1,7 +1,7 @@
 import useProfile from '../hooks/useProfile';
 import useTitle from '../hooks/useTitle';
 import handleProfileDelete from '../services/handleProfileDelete';
-import { Container, Title } from '@mantine/core';
+import { Container, Title, Tooltip } from '@mantine/core';
 
 export function Profile() {
 	useTitle('Profile');
@@ -20,6 +20,18 @@ export function Profile() {
 		toggleProfileImage,
 		has2FA,
 	} = useProfile();
+
+	function getAchievementDescription(achievement) {
+		const descriptions = {
+			'Room Architect 🏗️': 'Awarded for creating multiple chat rooms.',
+			'Social Butterfly 🦋': 'Earned by being actively social and inviting friends to chat rooms.',
+			'ChatRoom Lurker 👀': 'Given for spending a significant amount of time in chat rooms.',
+			'Peacekeeper 🛡️': 'Achieved by maintaining order and decorum in chat rooms.',
+			// Add more mappings as needed
+		};
+
+		return descriptions[achievement] || 'No description available.';
+	}
 
 	if (!profile) {
 		return <div>Loading profile...</div>;
@@ -53,10 +65,12 @@ export function Profile() {
 			<p>
 				Achievements:{' '}
 				{profile.achievements.map((achievement, index) => (
-					<span key={index}>
-						{achievement}
-						{index < profile.achievements.length - 1 ? ', ' : ''}
-					</span>
+					<Tooltip key={index} label={getAchievementDescription(achievement)} withArrow>
+						<span>
+							{achievement}
+							{index < profile.achievements.length - 1 ? ', ' : ''}
+						</span>
+					</Tooltip>
 				))}
 			</p>
 			<p>Ladder Level: {profile.ladderLevel}</p>
