@@ -6,17 +6,6 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 • The user should be able to invite other users to play a Pong game through the chat interface. (ChatRoom.page /chat/invite Backend Response)
 
-```
-
-(frontend)
--handle errors correctly when receiving response..., backend response error gets sended but frontend dont care, see inspect network
-
-(frontend 'upload Image' button)
-- optinal: image-upload extension check, only images allowed and Mb size limit and format. provides immediate feedback to the user and reduced Server Load
-- optinal: Use CAPTCHA, will prevent DoS attacks. But is also limited already in backend
-
-```
-
 - Every User Input should use dto!! Form Validation.
 
 ```
@@ -35,7 +24,6 @@ Insert error logs here
 ## jjesberg
 
 ```
-◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 - Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it.
 ```
 
@@ -92,5 +80,6 @@ customization options
   ◦ The channel owner is a channel administrator. They can set other users as administrators.
 - The user who has created a new channel is automatically set as the channel owner until they leave it.
   ◦ The channel owner can set a password required to access the channel, change it, and also remove it.
+  ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 
 #### 5. Game
