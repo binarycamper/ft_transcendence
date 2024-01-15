@@ -1,14 +1,14 @@
 #!/bin/sh
 
-if   [ "$NODE_ENV" = 'development' ]; then
+if [ "$NODE_ENV" = 'development' ]; then
 	echo development
 	npm install
-	npm run-script dev -- --host
+	npm run dev -- --host
 elif [ "$NODE_ENV" = 'production' ]; then
 	echo production
-	rm -rf ./build
+	#rm -rf ./build
 	npm install
-	npm run-script build
+	npm run build
 fi
 
 

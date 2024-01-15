@@ -11,6 +11,7 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended-requiring-type-checking',
 		'plugin:@typescript-eslint/recommended-type-checked',
 		'plugin:@typescript-eslint/stylistic-type-checked',
+		'eslint-config-prettier',
 	],
 	ignorePatterns: ['.eslintrc.cjs', '/dist', 'vite.config.ts'],
 	parser: '@typescript-eslint/parser',

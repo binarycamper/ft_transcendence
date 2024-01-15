@@ -26,6 +26,7 @@ services:
     ports:
       - '8080:8080'
       - '8090:8090'
+      - '9229:9229'
     restart: unless-stopped
     volumes:
       - ${BACKEND_VOLUME}:/usr/src/app
