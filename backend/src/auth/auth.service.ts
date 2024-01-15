@@ -34,15 +34,15 @@ export class AuthService {
 		const tokenResponse = await axios.post<OAuthTokenResponse>(
 			'https://api.intra.42.fr/oauth/token',
 			{
-				clientId,
-				clientSecret,
+				client_id: clientId,
+				client_secret: clientSecret,
 				code,
-				grantType: 'authorization_code',
-				redirectURI: 'http://localhost:8080/auth/callback',
+				grant_type: 'authorization_code',
+				redirect_uri: 'http://localhost:8080/auth/callback',
 			},
 		);
 
-		return tokenResponse.data.accessToken;
+		return tokenResponse.data.access_token;
 	}
 
 	/* This method retrieves user data from 42's API. */

@@ -45,7 +45,7 @@ export class AuthController {
 	@Get('signup')
 	signup(@Res() res: Response) {
 		const clientId = this.configService.get<string>('INTRA_UID');
-		const url = `https://api.intra.42.fr/oauth/authorize?clientId=${clientId}&redirectURI=http://localhost:8080/auth/callback&responseType=code`;
+		const url = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=http://localhost:8080/auth/callback&response_type=code`;
 		return res.json({ url });
 	}
 

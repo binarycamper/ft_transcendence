@@ -10,5 +10,5 @@ export interface IntraUser {
 }
 
 export interface OAuthTokenResponse {
-	accessToken: string;
+	access_token: string;
 }

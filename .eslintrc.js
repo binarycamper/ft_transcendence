@@ -17,7 +17,6 @@ module.exports = {
 	root: true,
 	rules: {
 		'@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
-		camelcase: ['warn'],
 		'consistent-return': ['error', { treatUndefinedAsUnspecified: true }],
 		'default-param-last': ['error'],
 		'dot-notation': ['warn'],
@@ -57,6 +56,7 @@ module.exports = {
 		'require-await': ['error'],
 		yoda: ['warn'],
 		/*
+		camelcase: ['warn'],
 		'func-style': ['warn', 'declaration', { allowArrowFunctions: false }],
 		'no-magic-numbers': ['warn'],
 		'no-unused-private-class-members': ['error'],
