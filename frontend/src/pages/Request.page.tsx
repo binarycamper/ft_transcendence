@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { socket } from '../services/socket';
 
 const listStyles: React.CSSProperties = {
 	listStyle: 'none',
@@ -206,19 +207,22 @@ export function FriendRequest() {
 		[],
 	);
 
-	const openChat = useCallback(() => {
+	const openChat = useCallback(async () => {
 		if (selectedFriend) {
-			window.location.href = '/chatroom';
+			await new Promise<void>((resolve) => {
+				// Perform your asynchronous operations here, then resolve the promise
+				window.location.href = '/chatroom';
+				resolve(undefined); // Pass 'undefined' to satisfy the type requirement
+			});
 		}
 	}, [selectedFriend]);
 
-	// Function to send an invite (placeholder function for now)
-	const sendInvite = useCallback(async () => {
+	const sendInvite = useCallback(() => {
 		if (selectedFriend) {
-			console.log(`Send invite to ${selectedFriend.name}`);
-			setSelectedFriend(null);
+			socket.emit('game-invite', { friendId: selectedFriend.id });
+			console.log('Game invite sent to socket server');
 		}
-	}, [selectedFriend]); // Add dependencies
+	}, [selectedFriend]);
 
 	const goToBlocklist = useCallback(() => {
 		navigate('/blocklist');

@@ -23,7 +23,7 @@ export function Profile() {
 
 	function getAchievementDescription(achievement) {
 		const descriptions = {
-			'Room Architect 🏗️': 'Awarded for creating multiple chat rooms.',
+			'Room Architect 🏗️': 'Awarded for creating a chat room.',
 			'Social Butterfly 🦋': 'Earned by being actively social and inviting friends to chat rooms.',
 			'ChatRoom Lurker 👀': 'Given for spending a significant amount of time in chat rooms.',
 			'Peacekeeper 🛡️': 'Achieved by maintaining order and decorum in chat rooms.',
