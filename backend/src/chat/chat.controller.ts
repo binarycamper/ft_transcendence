@@ -104,8 +104,10 @@ export class ChatController {
 			// Add the new chat room to the user's chat rooms
 			user.chatRooms.push(chatRoom);
 
-			//TODO: only one time!
-			user.achievements.push('ChatCreator');
+			if (!user.achievements.includes('Room Architect')) {
+				// Push the 'ChatCreator' achievement only if it's not already there
+				user.achievements.push('Room Architect');
+			}
 
 			// Save the updated user entity
 			await this.userService.updateUser(user);
@@ -240,6 +242,11 @@ export class ChatController {
 			}
 			// TODO: Add request system here like the friendrequest does, or similiar...
 			await this.chatService.addUserToChatRoom(roomId, userToInvite);
+			const user = await this.userService.findProfileById(req.user.id);
+			if (!user.achievements.includes('Social Butterfly')) {
+				user.achievements.push('Social Butterfly');
+				await this.userService.updateUser(user);
+			}
 			// Return a success response if the invitation was sent
 			return { message: 'Invitation sent successfully.' };
 		} catch (error) {
@@ -305,8 +312,12 @@ export class ChatController {
 		// Add the user to the room
 		try {
 			const userToAdd = await this.userService.findProfileById(userId);
+			if (!userToAdd.achievements.includes('ChatRoom Lurker')) {
+				userToAdd.achievements.push('ChatRoom Lurker');
+			}
 			// Add the user to the room
 			await this.chatService.addUserToChatRoom(roomId, userToAdd);
+			await this.userService.updateUser(userToAdd);
 			return { message: 'Joined the room successfully.' };
 		} catch (error) {
 			// Log the error and throw an appropriate exception
@@ -321,6 +332,11 @@ export class ChatController {
 	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
 			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId, req.user.id);
+			const user = await this.userService.findProfileById(req.user.id);
+			if (!user.achievements.includes('Peacekeeper')) {
+				user.achievements.push('Peacekeeper');
+				await this.userService.updateUser(user);
+			}
 			return { message: 'User successfully kicked' };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -478,6 +494,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	async create(@Body() createChatDto: FriendRequestDto, @Req() req: Request, @Res() res: Response) {
 		//console.log('friendrequest arrived, dto: ', createChatDto);
+
 		if (createChatDto.recipient === req.user.name) {
 			res.status(HttpStatus.BAD_REQUEST).json({
 				statusCode: HttpStatus.BAD_REQUEST,
