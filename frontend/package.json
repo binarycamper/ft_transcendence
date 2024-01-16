@@ -16,12 +16,14 @@
 		"@zxcvbn-ts/language-common": "3.0.4",
 		"@zxcvbn-ts/language-en": "3.0.2",
 		"axios": "^1.6.3",
+		"js-cookie": "^3.0.5",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.21.1",
 		"socket.io-client": "^4.7.2"
 	},
 	"devDependencies": {
+		"@types/js-cookie": "^3.0.6",
 		"@types/react": "^18.2.45",
 		"@types/react-dom": "^18.2.18",
 		"@types/sanitize-html": "^2.9.5",
