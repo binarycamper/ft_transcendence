@@ -6,7 +6,6 @@ import {
 	Get,
 	HttpException,
 	HttpStatus,
-	Param,
 	Post,
 	Query,
 	Req,

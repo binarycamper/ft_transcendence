@@ -108,8 +108,8 @@ export class MatchmakingController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('queue')
-	async viewQueue() {
-		return await this.matchmakingService.viewQueue();
+	viewQueue() {
+		return this.matchmakingService.viewQueue();
 	}
 
 	@UseGuards(JwtAuthGuard)

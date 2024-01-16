@@ -131,15 +131,13 @@ export class MatchmakingService {
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw error;
-			} 
-			else if (error instanceof Error) {
-                console.error(`Failed to leave queue: ${error.message}`, error.stack);
-                throw new InternalServerErrorException(`Failed to leave queue: ${error.message}`);
-			}
-			else {
+			} else if (error instanceof Error) {
+				console.error(`Failed to leave queue: ${error.message}`, error.stack);
+				throw new InternalServerErrorException(`Failed to leave queue: ${error.message}`);
+			} else {
 				console.error('An unknown error occurred', error);
-                throw new InternalServerErrorException('An unknown error occurred');
-            }
+				throw new InternalServerErrorException('An unknown error occurred');
+			}
 		}
 	}
 
