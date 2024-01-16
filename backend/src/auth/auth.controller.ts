@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Get,
@@ -23,6 +24,10 @@ import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { Verify2FADto } from './DTO/verify2FA.Dto';
+import { NewPasswordDto, SendResetPasswordEmailDto } from './DTO/NewPassword.Dto';
+import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
+import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
+import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
 const COOKIE_MAX_AGE = 7 * 86_400_000; /* 7 days */
 
@@ -185,11 +190,10 @@ export class AuthController {
 		}
 	}
 
-	//dto rk
 	@Post('reset-password')
-	async resetPassword(@Body() body: { email: string }, @Res() res: Response) {
+	async resetPassword(@Body() email: SendResetPasswordEmailDto, @Res() res: Response) {
 		try {
-			const response = await this.authService.resetPassword(body.email);
+			const response = await this.authService.resetPassword(email.email);
 
 			return res.status(HttpStatus.OK).json({ message: response.message });
 		} catch (error) {
@@ -201,11 +205,34 @@ export class AuthController {
 		}
 	}
 
-	//dto rk
 	@Post('update-password')
-	async updatePassword(@Body() body: { token: string; password: string }, @Res() res: Response) {
+	async updatePassword(
+		@Body()
+		newPasswordDto: NewPasswordDto,
+		@Res() res: Response,
+	) {
 		try {
-			const response = await this.authService.updatePassword(body.token, body.password);
+			const options = {
+				translations: zxcvbnEnPackage.translations,
+				graphs: zxcvbnCommonPackage.adjacencyGraphs,
+				dictionary: {
+					...zxcvbnCommonPackage.dictionary,
+					...zxcvbnEnPackage.dictionary,
+				},
+			};
+			zxcvbnOptions.setOptions(options);
+			const result = zxcvbn(newPasswordDto.newPassword);
+			if (result.feedback.warning) {
+				throw new BadRequestException('Insecure Password');
+			}
+			const result2 = zxcvbn(newPasswordDto.confirmPassword);
+			if (result2.feedback.warning) {
+				throw new BadRequestException('Insecure Password');
+			}
+			if (newPasswordDto.newPassword !== newPasswordDto.confirmPassword) {
+				throw new BadRequestException('Passwords do not match');
+			}
+			const response = await this.authService.updatePassword(newPasswordDto);
 
 			return res.status(HttpStatus.OK).json({ message: response.message });
 		} catch (error) {
@@ -217,12 +244,12 @@ export class AuthController {
 		}
 	}
 
-	//dto rk
-	@Get('verify-reset-token/:token')
-	async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
-		const isValid = await this.authService.verifyResetToken(token);
-		if (!isValid)
-			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
-		return res.status(HttpStatus.OK).json({ message: 'Valid token' });
-	}
+	// //dto rk
+	// @Get('verify-reset-token/:token')
+	// async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
+	// 	const isValid = await this.authService.verifyResetToken(token);
+	// 	if (!isValid)
+	// 		return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
+	// 	return res.status(HttpStatus.OK).json({ message: 'Valid token' });
+	// }
 }
