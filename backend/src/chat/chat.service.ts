@@ -219,20 +219,15 @@ export class ChatService {
 			where: { id: roomId },
 			relations: ['users'],
 		});
-
 		if (!chatRoom) {
 			throw new NotFoundException(`Chat room with ID ${roomId} not found.`);
 		}
-
 		const isUserAlreadyInRoom = chatRoom.users.some((user) => user.id === userToAdd.id);
-
 		if (isUserAlreadyInRoom) {
 			throw new BadRequestException(`User ${userToAdd.name} is already in the chat room.`);
 		}
-
 		chatRoom.users.push(userToAdd);
 		await this.chatRoomRepository.save(chatRoom);
-
 		return chatRoom;
 	}
 

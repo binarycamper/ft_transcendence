@@ -122,7 +122,7 @@ export function ChatRoomList() {
 
 			if (response.ok) {
 				//console.log(`Joined room with ID: ${roomId}`);
-				window.location.href = 'http://localhost:5173/chatroom';
+				//window.location.href = 'http://localhost:5173/chatroom';
 			} else {
 				const errorData = await response.json();
 				setJoinError(`Failed to join room: ${errorData.message}`);

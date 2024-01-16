@@ -284,7 +284,7 @@ export class ChatController {
 		if (chatRoom.type === 'private') {
 			throw new UnauthorizedException('ChatRoom is private, you will need an invite.');
 		}
-		console.log('chatroom pw :', chatRoom.password.length);
+		//console.log('chatroom pw :', chatRoom.password.length);
 
 		if (chatRoom.type === 'public' && chatRoom.password !== '') {
 			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);
@@ -315,9 +315,10 @@ export class ChatController {
 			if (!userToAdd.achievements.includes('ChatRoom Lurker 👀')) {
 				userToAdd.achievements.push('ChatRoom Lurker 👀');
 			}
+			await this.userService.updateUser(userToAdd);
+
 			// Add the user to the room
 			await this.chatService.addUserToChatRoom(roomId, userToAdd);
-			await this.userService.updateUser(userToAdd);
 			return { message: 'Joined the room successfully.' };
 		} catch (error) {
 			// Log the error and throw an appropriate exception
