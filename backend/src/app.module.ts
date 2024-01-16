@@ -7,6 +7,8 @@ import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
 import { MatchmakingModule } from './matchmaking/matchmaking.module';
+/* import { ServeStaticModule } from '@nestjs/serve-static'; */
+/* import { join } from 'path'; */
 
 @Module({
 	imports: [
@@ -25,6 +27,9 @@ import { MatchmakingModule } from './matchmaking/matchmaking.module';
 		UserModule,
 		ChatModule,
 		MatchmakingModule,
+		/* ServeStaticModule.forRoot({
+			rootPath: join(__dirname, '../node_modules/@socket.io/admin-ui/ui/dist'),
+		}), */
 	],
 	controllers: [AppController],
 	providers: [AppService],

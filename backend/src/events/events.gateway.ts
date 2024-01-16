@@ -16,6 +16,7 @@ import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { randomUUID } from 'crypto';
 import { GameService } from 'src/game/game.service';
 import { AuthenticatedSocket, DecodedToken, SocketWithUserData } from './dto/dto';
+/* import { instrument } from '@socket.io/admin-ui'; */
 
 @WebSocketGateway({
 	cors: {
@@ -35,6 +36,13 @@ export class EventsGateway {
 		private userService: UserService,
 		private gameService: GameService,
 	) {}
+
+	/* afterInit() {
+		instrument(this.server, {
+			auth: false,
+			mode: 'development',
+		});
+	} */
 
 	// async verifyAuthentication(
 	// 	client: SocketWithUserData,
