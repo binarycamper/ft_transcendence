@@ -18,7 +18,8 @@ import ResetPassword from './pages/ResetPassword.page';
 import ResetAccount from './pages/ResetAccount.page';
 import VerifyResetToken from './pages/VerifyResetToken.page';
 import { MatchmakingQueuePage } from './pages/Queue.page';
-import Game from './pages/Game.page';
+import PongPage from './pages/Pong.page';
+import { PongGameWrapper } from './components/Pong/PongGame';
 
 const router = createBrowserRouter([
 	{
@@ -45,7 +46,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'play',
-				element: <MatchmakingQueuePage />,
+				element: <PongPage />,
 			},
 			{
 				path: 'profile',
@@ -62,6 +63,22 @@ const router = createBrowserRouter([
 			{
 				path: '/login',
 				element: <Login />,
+			},
+			{
+				path: '*',
+				element: <ErrorPage />,
+			},
+			{
+				path: '/game',
+				children: [
+					{
+						path: ':id',
+						element: <PongGameWrapper />,
+						loader: async ({ params }) => {
+							return fetch(`http://localhost:8080/pong/${params.id}`);
+						},
+					},
+				],
 			},
 		],
 	},
@@ -88,10 +105,6 @@ const router = createBrowserRouter([
 	{
 		path: '/publicprofile',
 		element: <PublicProfile />,
-	},
-	{
-		path: '/game',
-		element: <Game />,
 	},
 	{
 		path: '/reset-account',

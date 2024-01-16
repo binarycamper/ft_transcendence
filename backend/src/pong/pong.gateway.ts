@@ -7,7 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { parse } from 'uuid';
+import { parse } from 'cookie';
 import { PongGameSettings } from './classes/PongGame';
 import { PongService } from './pong.service';
 
