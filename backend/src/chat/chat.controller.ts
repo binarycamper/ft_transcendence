@@ -278,13 +278,15 @@ export class ChatController {
 		if (!chatRoom) {
 			throw new NotFoundException('Chat room not found.');
 		}
+
 		/*if (chatRoom.ownerName === req.user.name) {
 			throw new UnauthorizedException('You are already the owner of that Chatroom!');
 		}*/
+
 		if (chatRoom.type === 'private') {
 			throw new UnauthorizedException('ChatRoom is private, you will need an invite.');
 		}
-		//console.log('chatroom pw :', chatRoom.password.length);
+		//console.log('chatroom pw_len :', chatRoom.password.length);
 
 		if (chatRoom.type === 'public' && chatRoom.password !== '') {
 			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);
