@@ -25,6 +25,7 @@ export default function Header() {
 							<Tabs.Tab value="/profile">Profile</Tabs.Tab>
 							<Tabs.Tab value="/friends">FriendList</Tabs.Tab>
 							<Tabs.Tab value="/settings">Settings</Tabs.Tab>
+							<Tabs.Tab value="/matchhistory">history</Tabs.Tab>
 						</Tabs.List>
 					</Tabs>
 				</Group>

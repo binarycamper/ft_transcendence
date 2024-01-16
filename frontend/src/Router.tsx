@@ -20,6 +20,7 @@ import VerifyResetToken from './pages/VerifyResetToken.page';
 import { MatchmakingQueuePage } from './pages/Queue.page';
 import PongPage from './pages/Pong.page';
 import { PongGameWrapper } from './components/Pong/PongGame';
+import { MatchHistory } from './pages/MatchHistory.page';
 
 const router = createBrowserRouter([
 	{
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
 			{
 				path: 'chatroomlist',
 				element: <ChatRoomList />,
+			},
+			{
+				path: '/matchhistory',
+				element: <MatchHistory />,
 			},
 			{
 				path: 'play',
