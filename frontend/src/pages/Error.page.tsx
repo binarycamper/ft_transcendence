@@ -1,22 +1,24 @@
-// ErrorPage.tsx
 import { useRouteError } from 'react-router-dom';
+import useTitle from '../hooks/useTitle';
 
-// Define a type that represents the expected shape of your error object
-type RouteError = {
-	statusText?: string;
+interface RouteError {
 	message?: string;
-};
+	statusText?: string;
+}
 
 export function ErrorPage() {
-	const error = useRouteError() as RouteError; // Cast the error to your defined type
-
+	useTitle('Page not found • pong');
+	const error = useRouteError() as RouteError;
 	console.error(error);
 
 	return (
 		<div id="error-page">
 			<h2>Error</h2>
 			<p>
-				<i>{error.statusText || error.message}</i>
+				<i>{error?.statusText ?? error?.message}</i>
+			</p>
+			<p>
+				<i>404 Page Not Found</i>
 			</p>
 		</div>
 	);
