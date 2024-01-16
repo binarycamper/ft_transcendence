@@ -113,7 +113,8 @@ export default function useFetchFriendList() {
 			});
 			if (!response.ok) {
 				const errorData = await response.json();
-				setError(errorData.message || 'Failed to send friend request.');
+				const message = errorData.message ? errorData.message : 'Failed to send friend request.';
+				setError(message);
 			} else {
 				const result = await response.json();
 				console.log(result);
