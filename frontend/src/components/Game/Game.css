@@ -50,7 +50,7 @@
 	position: absolute;
 	width: var(--paddle-width);
 	height: var(--paddle-height);
-	top: calc(50 * var(--paddle-height) / 2 * 1%);
+	top: calc(50% - var(--paddle-height) / 2);
 	/* transform: translateY(-50%); */
 	background-color: lightgray;
 }
@@ -67,8 +67,8 @@
 	/* will-change: left, top; */
 	width: var(--ball-width);
 	height: calc(var(--ball-width) * var(--canvas-aspect-ratio));
-	left: calc(50 * var(--ball-width) / 2 * 1%);
-	top: calc(50 * var(--ball-width) * var(--canvas-aspect-ratio) / 2 * 1%);
+	left: calc(50% - var(--ball-width) / 2);
+	top: calc(50% - var(--ball-width) * var(--canvas-aspect-ratio) / 2);
 	/* transform: translate(-50%, -50%); */
 	border-radius: 50%;
 	background-color: orange;
