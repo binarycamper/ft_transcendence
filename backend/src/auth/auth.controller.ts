@@ -6,6 +6,7 @@ import {
 	Get,
 	HttpException,
 	HttpStatus,
+	Param,
 	Post,
 	Query,
 	Req,
@@ -232,12 +233,12 @@ export class AuthController {
 		}
 	}
 
-	// //dto rk
-	// @Get('verify-reset-token/:token')
-	// async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
-	// 	const isValid = await this.authService.verifyResetToken(token);
-	// 	if (!isValid)
-	// 		return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
-	// 	return res.status(HttpStatus.OK).json({ message: 'Valid token' });
-	// }
+	//dto rk
+	@Get('verify-reset-token/:token')
+	async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
+		const isValid = await this.authService.verifyResetToken(token);
+		if (!isValid)
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
+		return res.status(HttpStatus.OK).json({ message: 'Valid token' });
+	}
 }

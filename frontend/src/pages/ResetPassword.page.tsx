@@ -10,11 +10,11 @@ export default function ResetPassword() {
 	const [confirmPassword, setConfirmPassword] = useState('');
 	const { token } = useParams();
 	const navigate = useNavigate();
-	const [passwordWarning, setPasswordWarning] = useState<Array<string>>([]);
+	const [passwordWarning, setPasswordWarning] = useState<string[]>([]);
 	const [passwordError, setPasswordError] = useState('');
 	const [info, setInfo] = useState('');
 	const [confirmPasswordError, setConfirmPasswordError] = useState('');
-	const [confirmPasswordWarning, setConfirmPasswordWarning] = useState<Array<string>>([]);
+	const [confirmPasswordWarning, setConfirmPasswordWarning] = useState<string[]>([]);
 
 	function validatePassword(password: string) {
 		let error = false;
