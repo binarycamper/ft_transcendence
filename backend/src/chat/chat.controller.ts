@@ -22,10 +22,12 @@ import { ChatService } from './chat.service';
 import { Request, Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import {
+	AcceptRequestDto,
 	ChangePasswordDto,
 	ClearChatRoomDto,
 	CreateChatRoomDto,
 	FriendRequestDto,
+	GetFriendChatDto,
 	InviteRoomDto,
 	MuteUserDto,
 	RoomIdUserIdDTO,
@@ -483,9 +485,9 @@ export class ChatController {
 	//delivers chathistory between two friends, or between chatroom and memebers.
 	@Get('history')
 	@UseGuards(JwtAuthGuard)
-	async getFriendChat(@Req() req: Request, @Query('friendId') friendId: string) {
+	async getFriendChat(@Req() req: Request, @Query() getFriendChatDto: GetFriendChatDto) {
 		try {
-			return await this.chatService.findFriendChat(req.user.id, friendId);
+			return await this.chatService.findFriendChat(req.user.id, getFriendChatDto.friendId);
 		} catch (error) {
 			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -495,8 +497,8 @@ export class ChatController {
 	@Delete('delete-chat')
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async deleteMyChats(@Query('friendId') friendId: string, @Req() req: Request) {
-		return await this.chatService.deleteChat(friendId, req.user.id);
+	async deleteMyChats(@Query() getFriendChatDto: GetFriendChatDto, @Req() req: Request) {
+		return await this.chatService.deleteChat(getFriendChatDto.friendId, req.user.id);
 	}
 
 	//########################FrienRequests#############################
@@ -565,13 +567,9 @@ export class ChatController {
 	//decline a friend-request && deletes it
 	@Post('decline')
 	@UseGuards(JwtAuthGuard)
-	async declineRequest(
-		@Query('messageid') messageId: string,
-		@Req() req: Request,
-		@Res() res: Response,
-	) {
+	async declineRequest(@Query() acceptRequestdto: AcceptRequestDto, @Res() res: Response) {
 		try {
-			await this.chatService.declineRequest(messageId);
+			await this.chatService.declineRequest(acceptRequestdto.messageid);
 			return res.status(HttpStatus.NO_CONTENT).send('friend request declined!');
 		} catch (error) {
 			if (error instanceof Error) {

@@ -124,3 +124,14 @@ export class UnMuteUserDto {
 	@IsString()
 	userIdToUnMute: string;
 }
+export class GetFriendChatDto {
+	@IsString()
+	@IsNotEmpty()
+	friendId: string;
+}
+
+export class AcceptRequestDto {
+	@IsString()
+	@IsNotEmpty()
+	messageid: string;
+}
