@@ -53,11 +53,8 @@ export class AuthController {
 	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
 		const { email, password } = loginDto;
 		const response: User = await this.userService.findUserIdForLogin(email); //User has only id inside!
-		const userId = response.id;
-		console.log('userId= ', userId);
-		if (!userId) throw new UnauthorizedException('Invalid email.');
-
-		const user: User = await this.userService.findUserCreditsById(userId); //User has id & credentials inside!
+		if (!response) throw new UnauthorizedException('Invalid email.');
+		const user: User = await this.userService.findUserCreditsById(response.id); //User has id & credentials inside!
 		if (!user) return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
 
 		if (!user.password || !(await bcrypt.compare(password, user.password)))
