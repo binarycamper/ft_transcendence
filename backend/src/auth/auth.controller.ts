@@ -36,8 +36,6 @@ export class AuthController {
 		private readonly authService: AuthService,
 		private readonly configService: ConfigService,
 		private userService: UserService,
-		@InjectRepository(User)
-		private readonly userRepository: Repository<User>,
 	) {}
 
 	@Get('status')
@@ -70,7 +68,7 @@ export class AuthController {
 		//If TwoAuth is enable then skip login and response ok, Fronent creates Qr Code Site
 		if (user.has2FA) {
 			user.status = 'fresh';
-			await this.userRepository.save(user);
+			await this.userService.updateUser(user);
 			const jwtToken = await this.authService.createAccessToken(user.id);
 			if (!jwtToken) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 
@@ -156,7 +154,7 @@ export class AuthController {
 			secure: process.env.NODE_ENV !== 'development',
 		});
 		user.status = 'online';
-		await this.userRepository.save(user);
+		await this.userService.updateUser(user);
 		return response.status(HttpStatus.OK).json({ accessToken: jwtToken, userId: user.id });
 	}
 
@@ -176,9 +174,8 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	async toggle2FA(@Req() req: Request, @Res() res: Response, @Body() body: { has2FA: boolean }) {
 		try {
-			const user = await this.userRepository.findOne({ where: { id: req.user.id } });
+			const user = await this.userService.findProfileById(req.user.id);
 			const response = await this.authService.toggle2FA(body.has2FA, user);
-
 			return res.status(HttpStatus.OK).json({ has2FA: response.newStatus });
 		} catch (error) {
 			if (error instanceof HttpException)

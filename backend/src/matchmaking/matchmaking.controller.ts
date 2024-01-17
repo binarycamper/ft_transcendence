@@ -116,8 +116,8 @@ export class MatchmakingController {
 	@Post('leave')
 	async leaveQueue(@Req() req: Request, @Res() res: Response) {
 		try {
-			const queue = await this.matchmakingService.findMyQueue(req.user);
 			const user = await this.userService.findProfileById(req.user.id);
+			const queue = await this.matchmakingService.findMyQueue(user);
 			if (queue) {
 				user.status = 'online';
 				await this.userService.updateUser(user);
