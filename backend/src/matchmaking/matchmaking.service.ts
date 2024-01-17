@@ -11,7 +11,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Matchmaking } from './matchmaking.entity';
 import { User } from 'src/user/user.entity';
-import { UserService } from 'src/user/user.service';
 import { EventsGateway } from 'src/events/events.gateway';
 import { Game } from 'src/game/game.entity';
 
