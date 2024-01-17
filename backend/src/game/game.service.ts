@@ -84,7 +84,7 @@ export class GameService {
 		});
 	}
 
-	async findUserById(userId: string): Promise<Game | undefined> {
+	async findGameByUserId(userId: string): Promise<Game | undefined> {
 		return await this.gameRepository.findOne({
 			where: [{ playerOne: { id: userId } }, { playerTwo: { id: userId } }],
 			order: {
@@ -128,7 +128,7 @@ export class GameService {
 	}
 
 	async updateGame(gameUpdateDto: GameUpdateDto, userId: string) {
-		const game = await this.findGameById(userId);
+		const game = await this.findGameByUserId(userId);
 		if (!game) {
 			throw new InternalServerErrorException('Game not found');
 		}

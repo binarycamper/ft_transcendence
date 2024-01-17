@@ -22,6 +22,8 @@ import { GameService } from 'src/game/game.service';
 import { Request, Response } from 'express';
 import { EventsGateway } from 'src/events/events.gateway';
 import { Game } from 'src/game/game.entity';
+import { User } from 'src/user/user.entity';
+import { Matchmaking } from './matchmaking.entity';
 
 @Controller('matchmaking')
 export class MatchmakingController {
@@ -78,8 +80,8 @@ export class MatchmakingController {
 	@Post('join')
 	async joinQueue(@Req() req: Request, @Res() res: Response) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
-			const myqueue = await this.matchmakingService.findMyQueue(user);
+			const user: User = await this.userService.findProfileById(req.user.id);
+			const myqueue: Matchmaking = await this.matchmakingService.findMyQueue(user);
 
 			if (myqueue) {
 				if (!myqueue.isActive) {
@@ -91,7 +93,7 @@ export class MatchmakingController {
 				});
 			}
 
-			const queue = await this.matchmakingService.joinQueue(user);
+			const queue: Matchmaking = await this.matchmakingService.joinQueue(user);
 			user.status = 'inqueue';
 			await this.userService.updateUser(user);
 
@@ -107,17 +109,11 @@ export class MatchmakingController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('queue')
-	viewQueue() {
-		return this.matchmakingService.viewQueue();
-	}
-
-	@UseGuards(JwtAuthGuard)
 	@Post('leave')
 	async leaveQueue(@Req() req: Request, @Res() res: Response) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
-			const queue = await this.matchmakingService.findMyQueue(user);
+			const user: User = await this.userService.findProfileById(req.user.id);
+			const queue: Matchmaking = await this.matchmakingService.findMyQueue(user);
 			if (queue) {
 				user.status = 'online';
 				await this.userService.updateUser(user);
@@ -144,24 +140,24 @@ export class MatchmakingController {
 		@Body('opponentName') opponentName: string,
 	) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Requesting user not found.' });
 			}
 
-			const opponent = await this.userService.findProfileByName(opponentName);
+			const opponent: User = await this.userService.findProfileByName(opponentName);
 			if (!opponent) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'Opponent user not found.' });
 			}
 
 			// Assuming 'createNewGame' sets 'acceptedOne' to true for the user who created the game
-			const game = await this.gameService.createNewGame(user, opponent);
+			const game: Game = await this.gameService.createNewGame(user, opponent);
 			if (!game) {
 				//console.log('no game created...');
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'No game found.' });
 			}
-			const allAccepted = game.acceptedOne && game.acceptedTwo;
-			const statusMessage = allAccepted
+			const allAccepted: boolean = game.acceptedOne && game.acceptedTwo;
+			const statusMessage: string = allAccepted
 				? 'Both players are ready. Game can start.'
 				: 'Waiting for the other player to join.';
 
@@ -186,15 +182,15 @@ export class MatchmakingController {
 		@Body('opponentName') opponentName: string,
 	) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
-			const opponent = await this.userService.findProfileByName(opponentName);
+			const user: User = await this.userService.findProfileById(req.user.id);
+			const opponent: User = await this.userService.findProfileByName(opponentName);
 			//const opponentQueue = await this.matchmakingService.findQueueWithId(opponent.id);
 			//opponentQueue.isActive = true;
 			//await this.matchmakingService.saveQueue(opponentQueue);
 			//const myqueue = await this.matchmakingService.findQueueWithId(req.user.id);
 
 			await this.matchmakingService.leaveQueue(req.user.id);
-			const game: Game = await this.gameService.findUserById(opponent.id);
+			const game: Game = await this.gameService.findGameByUserId(opponent.id);
 			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
@@ -215,12 +211,12 @@ export class MatchmakingController {
 	@Get('check-queue')
 	async checkQueue(@Req() req: Request, @Res() res: Response) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user) {
 				throw new NotFoundException('User not found.');
 			}
 
-			const queue = await this.matchmakingService.findMyQueue(user);
+			const queue: Matchmaking = await this.matchmakingService.findMyQueue(user);
 			if (queue) {
 				if (!queue.isActive) {
 					queue.isActive = true;
@@ -248,18 +244,18 @@ export class MatchmakingController {
 	@Post('timeout')
 	async handleTimeout(@Req() req: Request, @Res() res: Response) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
 			}
-			const game = await this.gameService.findUserById(user.id);
+			const game: Game = await this.gameService.findGameByUserId(user.id);
 			//console.log('delete game, if there is an old unaccepted game: ', game);
 			if (game) {
 				await this.gameService.deleteGame(game);
 			}
 			// Handle the timeout logic here
 			// For example, you might want to set the queue to inactive
-			const queue = await this.matchmakingService.findMyQueue(user);
+			const queue: Matchmaking = await this.matchmakingService.findMyQueue(user);
 			if (queue) {
 				if (queue.accepted) {
 					// Player accepted the match but the game did not start
@@ -293,18 +289,18 @@ export class MatchmakingController {
 	@Post('rejoin-queue')
 	async rejoinQueue(@Req() req: Request, @Res() res: Response) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found.' });
 			}
 
-			const game = await this.gameService.findUserById(user.id);
-			//console.log('delete game, if there is an old unaccepted game: ', game);
+			const game: Game = await this.gameService.findGameByUserId(user.id);
+
 			if (game) {
 				await this.gameService.deleteGame(game);
 			}
 
-			const queue = await this.matchmakingService.findMyQueue(user);
+			const queue: Matchmaking = await this.matchmakingService.findMyQueue(user);
 			if (queue) {
 				queue.isActive = true;
 				await this.matchmakingService.saveQueue(queue);

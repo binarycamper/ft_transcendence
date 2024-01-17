@@ -113,13 +113,6 @@ export class MatchmakingService {
 		return matchmakingEntry;
 	}
 
-	viewQueue(): { message: string } {
-		// Placeholder logic to view the current matchmaking queue
-		// Implement actual logic to retrieve and return queue information
-		console.log(`Viewing the current matchmaking queue`);
-		return { message: `Current matchmaking queue` };
-	}
-
 	async leaveQueue(thisUserId: string): Promise<void> {
 		try {
 			const queue = await this.findQueueWithId(thisUserId);
