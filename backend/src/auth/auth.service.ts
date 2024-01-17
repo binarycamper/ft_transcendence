@@ -271,26 +271,30 @@ export class AuthService {
 			subject: 'Password Reset',
 			text: `Hello,
 
-		We received a request to reset your password. If you did not make this request, please\n
-		ignore this email. Otherwise, you can reset your password by using the link below:
+			We received a request to reset your password. If you did not make this request, please
+			ignore this email. Otherwise, you can reset your password by using the link below:
 
-		${resetPasswordUrl}
+			${resetPasswordUrl}
 
-		This link will expire in 20min. If you need any further assistance, feel free to reach out\n
-		to our support team.
+			Please note: After resetting your password, you will also need to reconfigure your two-factor authentication (2FA) settings.
 
-		Best regards,
-		Transcendence-Crew`,
+			This link will expire in 20min. If you need any further assistance, feel free to reach out
+			to our support team.
+
+			Best regards,
+			Transcendence-Crew`,
 			html: `<p>Hello,</p>
-		<p>We received a request to reset your password. If you did not make this request, please\n
-		ignore this email. Otherwise, you can reset your password by clicking on the link below:</p
-		<br/>
-		<p><a href="${resetPasswordUrl}">Reset Your Password</a></p>
-		<br/>
-		<p>This link will expire in 20min. If you need any further assistance, feel free to reach out\n
-		to our support team.</p>
-		<br/>
-		<p>Best regards,<br/>Transcendence-Crew</p>`,
+			<p>We received a request to reset your password. If you did not make this request, please
+			ignore this email. Otherwise, you can reset your password by clicking on the link below:</p
+			<br/>
+			<p><a href="${resetPasswordUrl}">Reset Your Password</a></p>
+			<br/>
+			<p>Please note: After resetting your password, you will also need to reconfigure your two-factor authentication (2FA) settings.</p>
+			<br/>
+			<p>This link will expire in 20min. If you need any further assistance, feel free to reach out
+			to our support team.</p>
+			<br/>
+			<p>Best regards,<br/>Transcendence-Crew</p>`,
 		};
 
 		transporter.sendMail(mailOptions, (error, info) => {
