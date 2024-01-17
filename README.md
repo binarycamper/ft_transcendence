@@ -10,37 +10,17 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 ```
 ERROR Notes, need to be debuged:
-
 ---------------------------------------------------------------------------------------------------------
-[1. Error]: CompleteProfile.tsx:158 !!
-Warning: Each child in a list should have a unique "key" prop.
-
-Check the render method of `CompleteProfile`. See https://reactjs.org/link/warning-keys for more information.
-div
-CompleteProfile@http://localhost:5173/src/pages/CompleteProfile.tsx:18:45
-RenderedRoute@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3546:7
-RenderErrorBoundary@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3503:5
-DataRoutes@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:4649:7
-Router@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3928:7
-RouterProvider@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:4466:7
-Router
-MantineThemeProvider@http://localhost:5173/node_modules/.vite/deps/@mantine_core.js?v=6d897e74:2824:30
-MantineProvider@http://localhost:5173/node_modules/.vite/deps/@mantine_core.js?v=6d897e74:3165:25
-App@http://localhost:5173/src/App.tsx:20:14 suppress-nextjs-warning.ts:7:20
-    error suppress-nextjs-warning.ts:7
-    React 5
-    CompleteProfile CompleteProfile.tsx:158
----------------------------------------------------------------------------------------------------------
-[2. Error]: User ohne account: !!
+[1. Error]: User ohne account: !!
 Firefox kann keine Verbindung zu dem Server unter ws://localhost:8080/socket.io/?EIO=4&transport=websocket&sid=NYxhcjHul4plKnplAAAU aufbauen. websocket.js:43:26
 App: Disconnected: io server disconnect App.tsx:16:11
 Die Verbindung zu ws://localhost:8080/socket.io/?EIO=4&transport=websocket&sid=NYxhcjHul4plKnplAAAU wurde unterbrochen, während die Seite geladen wurde. websocket.js:43:26
 ---------------------------------------------------------------------------------------------------------
-[3. Error]: direkt nachdem login mit intrauser!
+[2. Error]: direkt nachdem login mit intrauser!
 Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2
 Das Cookie "token" verfügt über keinen gültigen Wert für das "SameSite"-Attribut. Bald werden Cookies ohne das "SameSite"-Attribut oder mit einem ungültigen Wert dafür als "Lax" behandelt. Dadurch wird das Cookie nicht länger an Kontexte gesendet, die zu einem Drittanbieter gehören. Falls Ihre Anwendung das Cookie in diesen Kontexten benötigt, fügen Sie bitte das Attribut "SameSite=None" zu ihm hinzu. Weitere Informationen zum "SameSite"-Attribut finden Sie unter https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite.
 ---------------------------------------------------------------------------------------------------------
-[4. Error]: http://localhost:5173/settings !!!
+[3. Error]: http://localhost:5173/settings !!!
 Warning: Received NaN for the `value` attribute. If this is expected, cast the value to a string.
 input
 label

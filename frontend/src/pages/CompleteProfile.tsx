@@ -178,8 +178,9 @@ export function CompleteProfile() {
 								</div>
 							)}
 							{passwordWarning &&
-								passwordWarning.map((warning) => (
+								passwordWarning.map((warning, index) => (
 									<div
+										key={index} // Add a unique key here
 										style={{
 											background: '#FFB46B',
 											border: 'solid #FF7F00',

@@ -24,7 +24,6 @@ declare namespace Express {
 		resetPasswordToken: string;
 		resetPasswordUrl: string;
 		status: 'fresh' | 'online' | 'offline' | 'ingame';
-		status: 'fresh' | 'online' | 'offline' | 'ingame';
 		TFASecret?: string;
 		unconfirmed2FASecret?: string;
 	}

@@ -22,7 +22,6 @@ export class MatchmakingService {
 	constructor(
 		@InjectRepository(Matchmaking)
 		private matchmakingRepository: Repository<Matchmaking>,
-		private userService: UserService,
 		@Inject(forwardRef(() => EventsGateway))
 		private eventsGateway: EventsGateway,
 	) {

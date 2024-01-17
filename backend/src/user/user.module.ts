@@ -12,7 +12,7 @@ import { Game } from 'src/game/game.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, AuthToken, FriendRequest, ChatRoom, Game]),
+		TypeOrmModule.forFeature([User, AuthToken, FriendRequest, ChatRoom]),
 		JwtModule.register({
 			secret: process.env.JWT_SECRET, // The secret key to sign the JWTs
 			signOptions: { expiresIn: '1d' }, // Set an appropriate expiration time for the tokens
