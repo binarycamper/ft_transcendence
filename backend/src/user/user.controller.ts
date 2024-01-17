@@ -304,7 +304,8 @@ export class UserController {
 		@Body() addFriendDto: AddFriendDto,
 		@Res() res: Response,
 	): Promise<Response> {
-		const { user } = req;
+		const userId = req.user.id;
+		const user = await this.userService.findProfileById(userId);
 		try {
 			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
 			if (!updatedUser) {
@@ -321,7 +322,8 @@ export class UserController {
 	@Post('block-user')
 	@UseGuards(JwtAuthGuard)
 	async blockUser(@Req() req: Request, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
-		const { user } = req;
+		const userId = req.user.id;
+		const user = await this.userService.findProfileById(userId);
 		const userToBlock = await this.userService.findUserbyName(blockUserDto.userName);
 		if (!userToBlock) {
 			res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
@@ -372,7 +374,8 @@ export class UserController {
 		@Query() unblockUserDto: UnblockUserDto,
 		@Res() res: Response,
 	) {
-		const { user } = req;
+		const userId = req.user.id;
+		const user = await this.userService.findProfileById(userId);
 		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
 			await this.userService.removeUserInBlocklist(user, userToBlock.name);
