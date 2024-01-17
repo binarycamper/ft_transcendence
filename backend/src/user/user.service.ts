@@ -245,10 +245,11 @@ export class UserService {
 				// Remove the friend from the user's list of friends
 				user.friends = user.friends.filter((friend) => friend.id !== friendId);
 				await transactionalEntityManager.save(user);
-			} else {
-				console.log('User does not have this friend on their list, user friends: ', user);
-				return { removed, message };
 			}
+			// else {
+			// 	console.log('User does not have this friend on their list, user friends: ', user);
+			// 	return { removed, message };
+			// }
 
 			const friend = await transactionalEntityManager.findOne(User, {
 				where: { id: friendId },
@@ -338,7 +339,7 @@ export class UserService {
 		//console.log('usernickname: ', userToUpdate.nickname);
 		//console.log('newname: ', newName);
 
-		if (userToUpdate.nickname == newName) return false;
+		if (userToUpdate.nickname === newName) return false;
 		userToUpdate.nickname = newName;
 		await this.userRepository.save(userToUpdate);
 		return true;

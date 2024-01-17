@@ -27,6 +27,7 @@ module.exports = {
 		'new-cap': ['warn'],
 		'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 		'react/react-in-jsx-scope': 'off',
+		'@typescript-eslint/prefer-nullish-coalescing': 'off',
 	},
 	settings: {
 		react: { version: 'detect' },

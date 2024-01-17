@@ -118,7 +118,9 @@ export default function useProfile() {
 			let responseData;
 			if (response.status === HttpStatusCode.BadRequest) {
 				responseData = await response.json(); // Read and store the response body
-				const errorMessage = responseData.message || 'There was an error processing your request.';
+				const errorMessage = responseData.message
+					? responseData.message
+					: 'There was an error processing your request.';
 				console.log(errorMessage);
 				const userGuidance =
 					'Please ensure the file is an image with one of the following types: .jpg, .jpeg, .png';

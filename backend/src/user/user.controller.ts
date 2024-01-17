@@ -135,7 +135,7 @@ export class UserController {
 			//	this.logger.error(`Error deleting user: ${error.message}`, error.stack);
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException('User not found');
-			} else if(error instanceof HttpException) {
+			} else if (error instanceof HttpException) {
 				// If error is an instance of HttpException, rethrow it
 				throw error;
 			} else {
@@ -189,17 +189,17 @@ export class UserController {
 			return false;
 		}
 	}
-	
+
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
-	getImage(@Query() getImageDto: GetImageDto, @Req() req, @Res() res: Response) {
+	getImage(@Query() getImageDto: GetImageDto, @Req() req: User, @Res() res: Response) {
 		// Construct the full file path
 		let fullPath: string = UPLOAD_PATH + getImageDto.filename;
 
 		//works not in public profile but in own
 		//TODO: delete me before eval.
-		if (/^deb\d+$/.test(req.user.name)) {
+		if (/^deb\d+$/.test(req.name)) {
 			fullPath = `${UPLOAD_PATH}0_0.png`;
 		}
 
@@ -243,7 +243,7 @@ export class UserController {
 	//Get List of friends of that user
 	@Get('friends')
 	@UseGuards(JwtAuthGuard)
-	async getFriends(@Req() req: Request, @Res() res: Response): Promise<Response>  {
+	async getFriends(@Req() req: Request, @Res() res: Response): Promise<Response> {
 		const userId = req.user.id;
 		try {
 			const user = await this.userService.findProfileById(userId);
@@ -262,7 +262,9 @@ export class UserController {
 			return res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
 		} catch (error) {
 			//console.error('Error retrieving friends:', error);
-			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving friends' });
+			return res
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.json({ message: 'Error retrieving friends' });
 		}
 	}
 
@@ -270,31 +272,38 @@ export class UserController {
 	@UseGuards(JwtAuthGuard)
 	async removeFriend(
 		@Query() removeFriendDto: RemoveFriendDto,
-		@Req() req: Request,
+		@Req() req: User,
 		@Res() res: Response,
 	) {
 		try {
-			await this.userService.removeFriend(req.user.id, removeFriendDto.friendid);
+			const id = req; // Destrukturierung von req.user
+			const { friendid } = removeFriendDto;
+			await this.userService.removeFriend(id.id, friendid);
 			return res.status(HttpStatus.NO_CONTENT).send();
 		} catch (error) {
-			let message = 'An error occurred';
+			const { message } = error as Error;
+			let responseMessage = 'An error occurred';
 			let status = HttpStatus.INTERNAL_SERVER_ERROR;
 
 			if (error instanceof NotFoundException) {
 				status = HttpStatus.NOT_FOUND;
-				message = error.message;
+				responseMessage = message;
 			} else if (error instanceof Error) {
 				// Safe to access error.message
-				message = error.message;
+				responseMessage = message;
 			}
 
-			return res.status(status).json({ message });
+			return res.status(status).json({ responseMessage });
 		}
 	}
 
 	@Post('add-friend')
 	@UseGuards(JwtAuthGuard)
-	async addFriend(@Req() req: Request, @Body() addFriendDto: AddFriendDto, @Res() res: Response): Promise<Response> {
+	async addFriend(
+		@Req() req: Request,
+		@Body() addFriendDto: AddFriendDto,
+		@Res() res: Response,
+	): Promise<Response> {
 		const { user } = req;
 		try {
 			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
@@ -369,7 +378,10 @@ export class UserController {
 			await this.userService.removeUserInBlocklist(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
 		} catch (error) {
-			console.error('Error while unblocking user: ', error instanceof Error ? error.message : error);
+			console.error(
+				'Error while unblocking user: ',
+				error instanceof Error ? error.message : error,
+			);
 
 			if (error instanceof NotFoundError) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
@@ -412,7 +424,7 @@ export class UserController {
 			status: 'offline',
 		});
 
-		const debugToken = await this.userService.createDebugToken(debugUser);
+		const debugToken = this.userService.createDebugToken(debugUser);
 
 		// Respond with the newly created debug user's ID and the fake token
 		res.status(HttpStatus.CREATED).json({

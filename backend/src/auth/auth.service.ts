@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { v4 as uuidv4 } from 'uuid';
+import { NewPasswordDto } from './DTO/NewPassword.Dto';
 
 @Injectable()
 export class AuthService {
@@ -55,40 +56,6 @@ export class AuthService {
 
 		return response.data;
 	}
-
-	/* This method creates a new user or updates it if it already exists. */
-	// private async createUserOrUpdate(userData: any): Promise<User> {
-	// 	//console.log('userData= ', userData);
-	// 	let user = await this.userRepository.findOne({ where: { intraId: userData.id } });
-	// 	let UserId;
-	// 	let state = 'fresh';
-	// 	let pw = 'hashed-pw';
-	// 	if (!user) {
-	// 		UserId = uuidv4();
-	// 	} else {
-	// 		state = user.status;
-	// 		UserId = user.id;
-	// 		pw = user.password;
-	// 	}
-	// 	const userPayload = {
-	// 		id: UserId,
-	// 		name: userData.login,
-	// 		email: userData.email,
-	// 		password: pw,
-	// 		status: state,
-	// 		intraId: userData.id,
-	// 		imageUrl: userData.image?.versions?.medium,
-	// 		isTwoFactorAuthenticationEnabled: false,
-	// 	};
-
-	// 	if (!user) {
-	// 		user = this.userRepository.create(userPayload);
-	// 	} else {
-	// 		this.userRepository.merge(user, userPayload);
-	// 	}
-	// 	await this.userRepository.save(user);
-	// 	return user;
-	// }
 
 	private async createUserOrUpdate(intraUser: IntraUser): Promise<User> {
 		const user: User = await this.userRepository.findOne({ where: { intraId: intraUser.id } });
@@ -302,8 +269,28 @@ export class AuthService {
 			from: '"Support" <transcendence502@gmail.com>',
 			to: email,
 			subject: 'Password Reset',
-			text: `Please use the following link to reset your password: ${resetPasswordUrl}`,
-			html: `<p>Please use the following link to reset your password: <a href="${resetPasswordUrl}">${resetPasswordUrl}</a></p>`,
+			text: `Hello,
+
+		We received a request to reset your password. If you did not make this request, please\n
+		ignore this email. Otherwise, you can reset your password by using the link below:
+
+		${resetPasswordUrl}
+
+		This link will expire in 20min. If you need any further assistance, feel free to reach out\n
+		to our support team.
+
+		Best regards,
+		Transcendence-Crew`,
+			html: `<p>Hello,</p>
+		<p>We received a request to reset your password. If you did not make this request, please\n
+		ignore this email. Otherwise, you can reset your password by clicking on the link below:</p
+		<br/>
+		<p><a href="${resetPasswordUrl}">Reset Your Password</a></p>
+		<br/>
+		<p>This link will expire in 20min. If you need any further assistance, feel free to reach out\n
+		to our support team.</p>
+		<br/>
+		<p>Best regards,<br/>Transcendence-Crew</p>`,
 		};
 
 		transporter.sendMail(mailOptions, (error, info) => {
@@ -315,16 +302,18 @@ export class AuthService {
 		});
 	}
 
-	async updatePassword(token: string, newPassword: string): Promise<{ message: string }> {
+	async updatePassword(password: NewPasswordDto): Promise<{ message: string }> {
 		const user = await this.userRepository.findOne({
 			where: {
 				resetPasswordExpires: MoreThan(new Date()),
-				resetPasswordToken: token,
+				resetPasswordToken: password.token,
 			},
 		});
 		if (!user) throw new Error('Invalid or expired password reset token');
 
-		user.password = await bcrypt.hash(newPassword, 10);
+		if (password.newPassword !== password.confirmPassword)
+			throw new Error('Passwords do not match');
+		user.password = await bcrypt.hash(password.newPassword, 10);
 		user.resetPasswordToken = null;
 		user.resetPasswordExpires = null;
 		user.has2FA = false;
