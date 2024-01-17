@@ -82,7 +82,7 @@ export class AuthController {
 			});
 		}
 
-		const jwtToken = await this.authService.createAccessToken(user.id);
+		const jwtToken: string = await this.authService.createAccessToken(user.id);
 		if (!jwtToken) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 
 		res.clearCookie('token');
@@ -111,7 +111,7 @@ export class AuthController {
 			secure: true,
 		});
 
-		const redirectUrl = new URL('http://localhost:5173/completeprofile');
+		const redirectUrl: URL = new URL('http://localhost:5173/completeprofile');
 		redirectUrl.searchParams.append('require2FA', String(result.require2FA));
 		redirectUrl.searchParams.append('token', result.accessToken);
 		redirectUrl.searchParams.append('userId', result.userId);
