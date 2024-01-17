@@ -310,7 +310,6 @@ export class AuthService {
 			},
 		});
 		if (!user) throw new Error('Invalid or expired password reset token');
-
 		if (password.newPassword !== password.confirmPassword)
 			throw new Error('Passwords do not match');
 		user.password = await bcrypt.hash(password.newPassword, 10);

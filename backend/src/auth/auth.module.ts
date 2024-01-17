@@ -9,12 +9,13 @@ import { Module } from '@nestjs/common';
 import { StatusGuard } from './guards/status.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from '../user/user.module';
+import { User } from 'src/user/user.entity';
 
 @Module({
 	controllers: [AuthController],
 	exports: [AuthService],
 	imports: [
-		TypeOrmModule.forFeature([AuthToken]),
+		TypeOrmModule.forFeature([AuthToken, User]),
 		HttpModule,
 		UserModule,
 		ConfigModule.forRoot(),
