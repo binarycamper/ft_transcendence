@@ -79,8 +79,7 @@ export class ChatController {
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req: Request) {
 		try {
-			const userId = req.user.id; // Get the user ID from the request
-			const user = await this.userService.findProfileById(userId);
+			const user = await this.userService.findProfileById(req.user.id);
 
 			// Check the number of chat rooms the user already has
 			const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
@@ -151,12 +150,11 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	async getChatRoomChat(@Req() req: Request, @Query() clearChatRoomDto: ClearChatRoomDto) {
 		try {
-			const userId = req.user.id;
-			const user = await this.userService.findProfileById(userId);
+			const user = await this.userService.findProfileById(req.user.id);
 			const chatRoom = await this.chatService.getChatRoomById(clearChatRoomDto.chatroomId);
 
 			// Ensure the user is a member of the chat room
-			if (!chatRoom.users.some((u) => u.id === userId)) {
+			if (!chatRoom.users.some((u) => u.id === req.user.id)) {
 				throw new ForbiddenException('User is not a member of this chat room.');
 			}
 
@@ -505,7 +503,8 @@ export class ChatController {
 			});
 		} else {
 			try {
-				const friendRequest = await this.chatService.create(createChatDto, req.user);
+				const user = await this.userService.findProfileById(req.user.id);
+				const friendRequest = await this.chatService.create(createChatDto, user);
 				res.status(HttpStatus.CREATED).json(friendRequest);
 			} catch (error) {
 				res.status(HttpStatus.BAD_REQUEST).json({
@@ -539,7 +538,8 @@ export class ChatController {
 	) {
 		//console.log(`Accepting request with messageId: ${messageId}`);
 		try {
-			await this.chatService.acceptRequest(messageId, req.user);
+			const user = await this.userService.findProfileById(req.user.id);
+			await this.chatService.acceptRequest(messageId, user);
 			return res.status(HttpStatus.OK).send('Friend accepted!');
 		} catch (error) {
 			if (error instanceof Error) {

@@ -80,7 +80,7 @@ export class UserController {
 					'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
 			});
 		}
-		const isProfileComplete = await this.userService.isProfilecreated(req.user?.id);
+		const isProfileComplete: boolean = await this.userService.isProfilecreated(req.user?.id);
 		if (isProfileComplete) {
 			throw new HttpException('Profile already complete!', HttpStatus.SEE_OTHER);
 		}
@@ -111,7 +111,7 @@ export class UserController {
 	@Get('profile')
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	async getProfile(@Req() req: Request) {
-		const userProfileData = await this.userService.findProfileById(req.user.id);
+		const userProfileData: User = await this.userService.findProfileById(req.user.id);
 		// Exclude password and other sensitive fields from the result
 		//console.log('user profile data: ', userProfile.status);
 		const { password, id, ...result } = userProfileData;
@@ -123,7 +123,8 @@ export class UserController {
 	@UseGuards(JwtAuthGuard)
 	async deleteUser(@Req() req: Request): Promise<{ message: string }> {
 		try {
-			await this.userService.deleteUserById(req.user.id, req.user.customImage);
+			const user = await this.userService.findProfileById(req.user.id);
+			await this.userService.deleteUserById(req.user.id, user.customImage);
 			req.res.clearCookie('token', { sameSite: 'none', secure: true });
 			return { message: 'User deleted successfully' };
 		} catch (error) {
