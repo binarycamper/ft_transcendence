@@ -15,8 +15,8 @@ import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
 		UserModule,
 		ChatModule,
 		GameModule,
-		forwardRef(() => MatchmakingModule), // Use forwardRef here
-		TypeOrmModule.forFeature([ChatMessage]),
+		forwardRef(() => MatchmakingModule),
+		TypeOrmModule.forFeature([ChatMessage]), //TODO jj
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: '1d' },

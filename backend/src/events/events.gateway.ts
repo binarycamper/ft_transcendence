@@ -16,6 +16,10 @@ import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { randomUUID } from 'crypto';
 import { GameService } from 'src/game/game.service';
 import { AuthenticatedSocket, DecodedToken, SocketWithUserData } from './dto/dto';
+import { ChatMessage } from 'src/chat/chat.entity';
+import { Mute } from 'src/chat/mute.entity';
+import { User } from 'src/user/user.entity';
+import { Game } from 'src/game/game.entity';
 /* import { instrument } from '@socket.io/admin-ui'; */
 
 @WebSocketGateway({
@@ -165,7 +169,7 @@ export class EventsGateway {
 				return;
 			}
 			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
-			const message = await this.chatService.saveMessage(
+			const message: ChatMessage = await this.chatService.saveMessage(
 				data.receiverId,
 				isAuthenticated.userId,
 				data.content,
@@ -209,18 +213,18 @@ export class EventsGateway {
 			}
 
 			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
-			const { mutes } = chatRoom;
+			const mutes: Mute[] = chatRoom.mutes;
 			const activeMute = mutes.find(
 				(mute) => mute.userId === isAuthenticated.userId && new Date(mute.endTime) > new Date(),
 			);
 			if (activeMute) {
 				const endTime = new Date(activeMute.endTime);
-				const remainingTime = endTime.getTime() - new Date().getTime();
+				const remainingTime: number = endTime.getTime() - new Date().getTime();
 
 				let timeMessage = '';
 
-				const remainingSeconds = Math.ceil(remainingTime / 1000); // convert to seconds
-				const remainingMinutes = Math.ceil(remainingTime / (1000 * 60)); // convert to minutes
+				const remainingSeconds: number = Math.ceil(remainingTime / 1000); // convert to seconds
+				const remainingMinutes: number = Math.ceil(remainingTime / (1000 * 60)); // convert to minutes
 
 				// If the remaining time is less than 5 minutes, display in seconds
 				if (remainingSeconds <= 5 * 60) {
@@ -240,13 +244,13 @@ export class EventsGateway {
 				return;
 			}
 			// Check if there are any expired mutes and delete them.
-			const expiredMutes = mutes.filter((mute) => new Date(mute.endTime) <= new Date());
+			const expiredMutes: Mute[] = mutes.filter((mute) => new Date(mute.endTime) <= new Date());
 			for (const expiredMute of expiredMutes) {
 				await this.chatService.deleteMute(expiredMute.id);
 			}
 
 			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
-			const message = await this.chatService.saveChatRoomMessage(
+			const message: ChatMessage = await this.chatService.saveChatRoomMessage(
 				data.chatRoomId,
 				isAuthenticated.userId,
 				data.content,
@@ -255,9 +259,9 @@ export class EventsGateway {
 
 			// Emit the message to all ChatROomUsers if they're online
 			//console.log('chatroom users: ', chatRoom.users);
-			const currUser = await this.userService.findProfileById(isAuthenticated.userId);
+			const currUser: User = await this.userService.findProfileById(isAuthenticated.userId);
 			for (const user of chatRoom.users) {
-				const recipient = await this.userService.findProfileById(user.id);
+				const recipient: User = await this.userService.findProfileById(user.id);
 				if (recipient.blocklist.some((blockedUser) => blockedUser.id === currUser.id)) {
 					//console.log('User is blocked!');
 					// If the sender is on the recipient's blocklist, censor the message
@@ -298,7 +302,7 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-			const game = await this.gameService.findUserById(isAuthenticated.userId);
+			const game: Game = await this.gameService.findUserById(isAuthenticated.userId);
 			if (game) {
 				if (game.playerOne.id === isAuthenticated.userId) {
 					game.acceptedOne = true;

@@ -33,21 +33,15 @@ export class UserService {
 	}
 
 	async findAllFriends(user: User): Promise<User[]> {
-		// Assuming 'user' is the user entity of the currently logged-in user
-		// and it has a 'friends' property that is a self-referencing many-to-many relation.
-
-		// You need to load the friends relation, you can do this using the find method with options
-		const friends = await this.userRepository.find({
+		const friends: User[] = await this.userRepository.find({
 			relations: ['friends'],
 			where: { id: user.id },
 		});
-
-		// The 'friends' property of the user entity should now be populated.
-		return friends.map((friend) => friend.friends).flat();
+		return friends;
 	}
 
 	async findProfileById(userId: string): Promise<User> {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { id: userId },
 			select: [
 				'id',
@@ -77,7 +71,7 @@ export class UserService {
 	//findUserCreditsById
 
 	async findUserCreditsById(userId: string): Promise<User> {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { id: userId },
 			select: [
 				'id',
@@ -102,7 +96,7 @@ export class UserService {
 		return user;
 	}
 	async findProfileByName(friendName: string): Promise<User> {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { name: friendName },
 			relations: ['friends', 'blocklist'],
 		});
@@ -110,14 +104,15 @@ export class UserService {
 	}
 
 	async findUserIdByMail(email: string) {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { email: email },
 		});
-		return user ? user.id : undefined;
+		return user;
+		//return user ? user.id : undefined; //if u need that write your own getter
 	}
 
 	async findUserIdForLogin(email: string) {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { email: email },
 			select: ['id'],
 		});
@@ -125,7 +120,7 @@ export class UserService {
 	}
 
 	async findUserbyName(name: string): Promise<User> {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { name: name },
 			select: ['id', 'email', 'name', 'nickname', 'status', 'intraImage', 'customImage'],
 		});
@@ -135,7 +130,7 @@ export class UserService {
 	//used from socket.io it event.gateway.ts
 	async setUserOnline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'online' in the database
-		const user = await this.userRepository.findOne({ where: { id: userId } });
+		const user: User = await this.userRepository.findOne({ where: { id: userId } });
 		if (user && user.status !== 'fresh') {
 			user.status = 'online';
 			await this.userRepository.save(user);
@@ -144,7 +139,7 @@ export class UserService {
 	//used from socket.io it event.gateway.ts
 	async setUserOffline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'offline' in the database
-		const user = await this.userRepository.findOne({ where: { id: userId } });
+		const user: User = await this.userRepository.findOne({ where: { id: userId } });
 		if (user && user.status !== 'fresh') {
 			user.status = 'offline';
 			await this.userRepository.save(user);
@@ -153,7 +148,7 @@ export class UserService {
 
 	//completes the users account, with the last step: create pw.
 	async complete(userId: string, password: string): Promise<User> {
-		const user = await this.userRepository.findOneBy({ id: userId });
+		const user: User = await this.userRepository.findOneBy({ id: userId });
 		if (!user) {
 			throw new Error('User not found');
 		}
@@ -168,7 +163,7 @@ export class UserService {
 
 	//returns true when profile is created completely
 	async isProfilecreated(userId: string): Promise<boolean> {
-		const user = await this.userRepository.findOne({ where: { id: userId } });
+		const user: User = await this.userRepository.findOne({ where: { id: userId } });
 
 		if (!user) {
 			throw new Error('User not found');
@@ -178,7 +173,7 @@ export class UserService {
 	}
 
 	async deleteUserById(userId: string, userImage: string): Promise<void> {
-		const user = await this.userRepository.findOne({
+		const user: User = await this.userRepository.findOne({
 			where: { id: userId },
 			relations: ['friends'],
 		});
@@ -187,7 +182,7 @@ export class UserService {
 		}
 
 		// Get all friend requests where the user is either the sender or the recipient
-		const friendRequests = await this.friendRequestRepository.find({
+		const friendRequests: FriendRequest[] = await this.friendRequestRepository.find({
 			where: [{ senderId: userId }, { recipientId: userId }],
 		});
 
@@ -198,7 +193,7 @@ export class UserService {
 
 		//Deletes uploaded customImage
 		if (userImage) {
-			const imagePath = UPLOAD_PATH + userImage.split('?filename=').pop();
+			const imagePath: string = UPLOAD_PATH + userImage.split('?filename=').pop();
 			try {
 				if (fs.existsSync(imagePath)) {
 					await unlink(imagePath);
@@ -208,7 +203,7 @@ export class UserService {
 			}
 		}
 
-		const authToken = await this.authTokenRepository.findOne({
+		const authToken: AuthToken = await this.authTokenRepository.findOne({
 			where: { userId: user.id },
 		});
 
@@ -232,7 +227,7 @@ export class UserService {
 		let message = '';
 
 		await this.userRepository.manager.transaction(async (transactionalEntityManager) => {
-			const user = await transactionalEntityManager.findOne(User, {
+			const user: User = await transactionalEntityManager.findOne(User, {
 				where: { id: userId },
 				relations: ['friends'],
 			});
@@ -251,7 +246,7 @@ export class UserService {
 			// 	return { removed, message };
 			// }
 
-			const friend = await transactionalEntityManager.findOne(User, {
+			const friend: User = await transactionalEntityManager.findOne(User, {
 				where: { id: friendId },
 				relations: ['friends'],
 			});
@@ -285,7 +280,7 @@ export class UserService {
 	}
 
 	async saveUserImage(userId: string, file: Express.Multer.File): Promise<void> {
-		const user = await this.findProfileById(userId);
+		const user: User = await this.findProfileById(userId);
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
@@ -316,7 +311,7 @@ export class UserService {
 	//checks if given 'newName' is unique
 	async isNameUnique(userId: string, newName: string): Promise<boolean> {
 		// Logic to check if the name is unique
-		const existingUser = await this.userRepository.findOne({
+		const existingUser: User = await this.userRepository.findOne({
 			where: {
 				nickname: newName,
 				id: Not(userId), // Exclude the current user from the check
@@ -328,7 +323,7 @@ export class UserService {
 
 	//Changes User.name entry database
 	async updateUserNickName(userId: string, newName: string): Promise<boolean> {
-		const userToUpdate = await this.userRepository.findOne({
+		const userToUpdate: User = await this.userRepository.findOne({
 			where: {
 				id: userId,
 			},
@@ -347,14 +342,14 @@ export class UserService {
 
 	async addFriend(user: User, friendName: string): Promise<User> {
 		// Retrieve the user with their current friends
-		const userWithFriends = await this.userRepository.findOne({
+		const userWithFriends: User = await this.userRepository.findOne({
 			where: { id: user.id },
 			relations: ['friends'],
 		});
 		if (!userWithFriends) {
 			throw new Error('User not found');
 		}
-		const friendToAdd = await this.userRepository.findOne({
+		const friendToAdd: User = await this.userRepository.findOne({
 			where: { name: friendName },
 		});
 		if (!friendToAdd) {
@@ -365,7 +360,7 @@ export class UserService {
 			throw new Error('Users cannot add themselves as a friend');
 		}
 		// Check if they are already friends
-		const alreadyFriends = userWithFriends.friends.some((f) => f.id === friendToAdd.id);
+		const alreadyFriends: boolean = userWithFriends.friends.some((f) => f.id === friendToAdd.id);
 		if (alreadyFriends) {
 			throw new Error('Already friends');
 		}
@@ -376,7 +371,7 @@ export class UserService {
 
 	async blockUser(currUser: User, userName: string): Promise<User> {
 		// Retrieve the user with their current relations
-		const userWithRelations = await this.userRepository.findOne({
+		const userWithRelations: User = await this.userRepository.findOne({
 			where: { id: currUser.id },
 			relations: ['friends', 'blocklist'],
 		});
@@ -385,7 +380,7 @@ export class UserService {
 		}
 
 		// Check if the user is already in the blocklist
-		const isAlreadyBlocked = userWithRelations.blocklist.some(
+		const isAlreadyBlocked: boolean = userWithRelations.blocklist.some(
 			(blockedUser) => blockedUser.name === userName,
 		);
 		if (isAlreadyBlocked) {
@@ -393,7 +388,7 @@ export class UserService {
 		}
 
 		//get UserToBlock with relations
-		const userToBlock = await this.userRepository.findOne({
+		const userToBlock: User = await this.userRepository.findOne({
 			where: { name: userName },
 			relations: ['friends', 'blocklist'],
 		});
@@ -409,7 +404,7 @@ export class UserService {
 
 	async findBlockedUsers(userId: string): Promise<User[]> {
 		try {
-			const user = await this.userRepository.findOne({
+			const user: User = await this.userRepository.findOne({
 				where: { id: userId },
 				relations: ['blocklist'],
 			});
@@ -427,7 +422,7 @@ export class UserService {
 
 	async removeUserInBlocklist(currUser: User, userName: string): Promise<User> {
 		// Retrieve the user with their current relations
-		const userWithRelations = await this.userRepository.findOne({
+		const userWithRelations: User = await this.userRepository.findOne({
 			where: { id: currUser.id },
 			relations: ['friends', 'blocklist'],
 		});
@@ -436,7 +431,7 @@ export class UserService {
 		}
 
 		// Find the user to be removed from the blocklist
-		const userIndex = userWithRelations.blocklist.findIndex(
+		const userIndex: number = userWithRelations.blocklist.findIndex(
 			(blockedUser) => blockedUser.name === userName,
 		);
 

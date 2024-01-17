@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class EventsService {
@@ -9,18 +10,18 @@ export class EventsService {
 
 	async userConnected(email: string) {
 		try {
-			const userId = await this.userService.findUserIdByMail(email);
-			if (userId) {
-				const user = await this.userService.findProfileById(userId);
+			let user: User = await this.userService.findUserIdByMail(email);
+			if (user.id) {
+				user = await this.userService.findProfileById(user.id);
 				if (user && user.status !== 'online' && user.status !== 'ingame') {
-					console.log('User tracked online ', userId);
-					await this.userService.setUserOnline(userId);
+					console.log('User tracked online ', user.id);
+					await this.userService.setUserOnline(user.id);
 				}
 
 				// Wenn der Benutzer wieder verbunden ist, löschen Sie das Timeout, falls vorhanden
-				if (this.userConnectionMap.has(userId)) {
-					clearTimeout(this.userConnectionMap.get(userId));
-					this.userConnectionMap.delete(userId);
+				if (this.userConnectionMap.has(user.id)) {
+					clearTimeout(this.userConnectionMap.get(user.id));
+					this.userConnectionMap.delete(user.id);
 				}
 			} else {
 				console.log('User not found for email: ', email);
@@ -56,21 +57,21 @@ export class EventsService {
 	// test new
 	async userDisconnected(email: string) {
 		try {
-			const userId = await this.userService.findUserIdByMail(email);
+			const user: User = await this.userService.findUserIdByMail(email);
 
-			if (userId) {
+			if (user.id) {
 				const timeout = setTimeout(() => {
 					this.userService
-						.setUserOffline(userId)
+						.setUserOffline(user.id)
 						.then(() => {
-							console.log('User tracked offline: ', userId);
+							console.log('User tracked offline: ', user.id);
 						})
 						.catch((error) => {
 							console.error('Error setting user offline:', error);
 						});
 				}, 2_000);
 
-				this.userConnectionMap.set(userId, timeout);
+				this.userConnectionMap.set(user.id, timeout);
 			} else {
 				console.log('User not found: ', email);
 			}
