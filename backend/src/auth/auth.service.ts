@@ -234,7 +234,6 @@ export class AuthService {
 				'email',
 				'id',
 				'name',
-				'password',
 				'resetPasswordExpires',
 				'resetPasswordToken',
 				'resetPasswordUrl',
