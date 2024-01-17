@@ -86,7 +86,7 @@ export class ChatController {
 			const user: User = await this.userService.findProfileById(req.user.id);
 			// Check the number of chat rooms the user already has
 			const chatRoomCount: number = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
-			const MAX_CHATROOMS: number = 5;
+			const MAX_CHATROOMS = 5;
 			// If the user already has the maximum number of chat rooms, throw an error
 			if (chatRoomCount >= MAX_CHATROOMS) {
 				throw new ForbiddenException(
