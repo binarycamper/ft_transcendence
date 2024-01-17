@@ -272,13 +272,13 @@ export class UserController {
 	@UseGuards(JwtAuthGuard)
 	async removeFriend(
 		@Query() removeFriendDto: RemoveFriendDto,
-		@Req() req: User,
+		@Req() req: Request,
 		@Res() res: Response,
 	) {
 		try {
-			const id = req; // Destrukturierung von req.user
+			const user = req.user; // Destrukturierung von req.user
 			const { friendid } = removeFriendDto;
-			await this.userService.removeFriend(id.id, friendid);
+			await this.userService.removeFriend(user.id, friendid);
 			return res.status(HttpStatus.NO_CONTENT).send();
 		} catch (error) {
 			const { message } = error as Error;
