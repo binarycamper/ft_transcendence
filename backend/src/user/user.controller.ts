@@ -49,7 +49,6 @@ let number = 0;
 
 @Controller('user')
 export class UserController {
-	private readonly logger = new Logger(UserController.name);
 	constructor(private readonly userService: UserService) {}
 
 	@Get('id')
@@ -62,8 +61,7 @@ export class UserController {
 	@Get('is-profile-complete')
 	@UseGuards(JwtAuthGuard)
 	async isProfileComplete(@Req() req: Request): Promise<{ isComplete: boolean }> {
-		const userId = req.user?.id;
-		const isComplete = await this.userService.isProfilecreated(userId);
+		const isComplete = await this.userService.isProfilecreated(req.user?.id);
 		return { isComplete };
 	}
 
@@ -75,15 +73,14 @@ export class UserController {
 		@Req() req: Request,
 		@Res() res: Response,
 	) {
-		const userId = req.user?.id;
-		if (!userId) {
+		if (!req.user?.id) {
 			throw new UnauthorizedException({
 				status: HttpStatus.UNAUTHORIZED,
 				error:
 					'Access Denied: You are not authorized to access this resource or your profile is not in a state that requires completion.',
 			});
 		}
-		const isProfileComplete = await this.userService.isProfilecreated(userId);
+		const isProfileComplete = await this.userService.isProfilecreated(req.user?.id);
 		if (isProfileComplete) {
 			throw new HttpException('Profile already complete!', HttpStatus.SEE_OTHER);
 		}
@@ -104,19 +101,17 @@ export class UserController {
 		if (result.feedback.warning) {
 			throw new BadRequestException('Insecure Password');
 		}
-		await this.userService.complete(userId, completeProfileDto.password);
+		await this.userService.complete(req.user?.id, completeProfileDto.password);
 		return res
 			.status(HttpStatus.OK)
-			.json({ message: 'Profile updated successfully', userId: userId });
+			.json({ message: 'Profile updated successfully', userId: req.user?.id });
 	}
 
 	//Get the profile, must be complete user, render own profile, or redirect to signup if client has no account
 	@Get('profile')
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	async getProfile(@Req() req: Request) {
-		const userId = req.user.id;
-		const userProfileData = await this.userService.findProfileById(userId);
-
+		const userProfileData = await this.userService.findProfileById(req.user.id);
 		// Exclude password and other sensitive fields from the result
 		//console.log('user profile data: ', userProfile.status);
 		const { password, id, ...result } = userProfileData;
@@ -193,13 +188,13 @@ export class UserController {
 	//get ProfileImage of user
 	@UseGuards(JwtAuthGuard)
 	@Get('uploads')
-	getImage(@Query() getImageDto: GetImageDto, @Req() req: User, @Res() res: Response) {
+	getImage(@Query() getImageDto: GetImageDto, @Req() req: Request, @Res() res: Response) {
 		// Construct the full file path
 		let fullPath: string = UPLOAD_PATH + getImageDto.filename;
 
 		//works not in public profile but in own
 		//TODO: delete me before eval.
-		if (/^deb\d+$/.test(req.name)) {
+		if (/^deb\d+$/.test(req.user.name)) {
 			fullPath = `${UPLOAD_PATH}0_0.png`;
 		}
 
@@ -218,17 +213,15 @@ export class UserController {
 		@Req() req: Request,
 		@Res() res: Response,
 	) {
-		const userId = req.user.id;
 		const newName = editNicknameDto.nickname;
-
 		// Check if the new name is unique
-		const isNameTaken = await this.userService.isNameUnique(userId, newName);
+		const isNameTaken = await this.userService.isNameUnique(req.user.id, newName);
 		if (isNameTaken) {
 			throw new BadRequestException('This Nickname is already taken.');
 		}
 
 		try {
-			const returnStatus = await this.userService.updateUserNickName(userId, newName);
+			const returnStatus = await this.userService.updateUserNickName(req.user.id, newName);
 			if (returnStatus) {
 				res.status(HttpStatus.OK).json({ message: 'Nickname updated successfully' });
 			} else {
@@ -244,9 +237,8 @@ export class UserController {
 	@Get('friends')
 	@UseGuards(JwtAuthGuard)
 	async getFriends(@Req() req: Request, @Res() res: Response): Promise<Response> {
-		const userId = req.user.id;
 		try {
-			const user = await this.userService.findProfileById(userId);
+			const user = await this.userService.findProfileById(req.user.id);
 			if (!user) {
 				return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
 			}
@@ -276,9 +268,8 @@ export class UserController {
 		@Res() res: Response,
 	) {
 		try {
-			const user = req.user; // Destrukturierung von req.user
 			const { friendid } = removeFriendDto;
-			await this.userService.removeFriend(user.id, friendid);
+			await this.userService.removeFriend(req.user.id, friendid);
 			return res.status(HttpStatus.NO_CONTENT).send();
 		} catch (error) {
 			const { message } = error as Error;
@@ -304,8 +295,7 @@ export class UserController {
 		@Body() addFriendDto: AddFriendDto,
 		@Res() res: Response,
 	): Promise<Response> {
-		const userId = req.user.id;
-		const user = await this.userService.findProfileById(userId);
+		const user = await this.userService.findProfileById(req.user.id);
 		try {
 			const updatedUser = await this.userService.addFriend(user, addFriendDto.friendName);
 			if (!updatedUser) {
@@ -322,8 +312,7 @@ export class UserController {
 	@Post('block-user')
 	@UseGuards(JwtAuthGuard)
 	async blockUser(@Req() req: Request, @Query() blockUserDto: BlockUserDto, @Res() res: Response) {
-		const userId = req.user.id;
-		const user = await this.userService.findProfileById(userId);
+		const user = await this.userService.findProfileById(req.user.id);
 		const userToBlock = await this.userService.findUserbyName(blockUserDto.userName);
 		if (!userToBlock) {
 			res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
@@ -333,6 +322,7 @@ export class UserController {
 			res.status(HttpStatus.BAD_REQUEST).json({ message: 'You cannot block yourself.' });
 			return;
 		}
+		//TODO: Delete open friendrequests! of user and userToBlock
 		try {
 			await this.userService.blockUser(user, userToBlock.name);
 			await this.userService.removeFriend(user.id, userToBlock.id);
@@ -374,8 +364,7 @@ export class UserController {
 		@Query() unblockUserDto: UnblockUserDto,
 		@Res() res: Response,
 	) {
-		const userId = req.user.id;
-		const user = await this.userService.findProfileById(userId);
+		const user = await this.userService.findProfileById(req.user.id);
 		const userToBlock = await this.userService.findProfileById(unblockUserDto.userid);
 		try {
 			await this.userService.removeUserInBlocklist(user, userToBlock.name);
