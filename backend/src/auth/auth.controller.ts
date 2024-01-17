@@ -16,17 +16,15 @@ import {
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './DTO/Login.Dto';
-import { Repository } from 'typeorm';
-import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { Verify2FADto } from './DTO/verify2FA.Dto';
 import { NewPasswordDto, SendResetPasswordEmailDto } from './DTO/NewPassword.Dto';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
+import { User } from 'src/user/user.entity';
 
 const COOKIE_MAX_AGE = 7 * 86_400_000; /* 7 days */
 
@@ -54,12 +52,12 @@ export class AuthController {
 	@Post('login')
 	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
 		const { email, password } = loginDto;
-		const response = await this.userService.findUserIdForLogin(email);
+		const response: User = await this.userService.findUserIdForLogin(email); //User has only id inside!
 		const userId = response.id;
 		console.log('userId= ', userId);
 		if (!userId) throw new UnauthorizedException('Invalid email.');
 
-		const user = await this.userService.findUserCreditsById(userId);
+		const user: User = await this.userService.findUserCreditsById(userId); //User has id & credentials inside!
 		if (!user) return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
 
 		if (!user.password || !(await bcrypt.compare(password, user.password)))
@@ -135,11 +133,10 @@ export class AuthController {
 	@Post('2fa/verify-2fa')
 	@UseGuards(JwtAuthGuard)
 	async verify2FA(@Req() req: Request, @Body() verifyDto: Verify2FADto, @Res() response: Response) {
-		const userId: string = req.user.id;
-		const user = await this.userService.findProfileById(userId);
+		const user: User = await this.userService.findProfileById(req.user.id);
 		if (!user) throw new UnauthorizedException('User not found');
 
-		const isValid = await this.authService.verify2FAToken(user, verifyDto.token);
+		const isValid: boolean = await this.authService.verify2FAToken(user, verifyDto.token);
 		if (!isValid)
 			return response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid 2FA token' });
 
@@ -161,9 +158,7 @@ export class AuthController {
 	@Get('2fa/setup')
 	@UseGuards(JwtAuthGuard)
 	async setup2FA(@Req() req: Request): Promise<{ qrCodeUrl: string }> {
-		const userId: string = req.user.id;
-
-		const user = await this.userService.findProfileById(userId);
+		const user: User = await this.userService.findProfileById(req.user.id);
 		if (!user) throw new Error('User not found');
 
 		const { qrCodeUrl } = await this.authService.setup2FA(user);
@@ -174,7 +169,7 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	async toggle2FA(@Req() req: Request, @Res() res: Response, @Body() body: { has2FA: boolean }) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			const response = await this.authService.toggle2FA(body.has2FA, user);
 			return res.status(HttpStatus.OK).json({ has2FA: response.newStatus });
 		} catch (error) {

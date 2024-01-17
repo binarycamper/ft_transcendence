@@ -33,6 +33,10 @@ import {
 } from './dto/chatRoom.dto';
 import * as bcrypt from 'bcryptjs';
 import { StatusGuard } from 'src/auth/guards/status.guard';
+import { User } from 'src/user/user.entity';
+import { ChatRoom } from './chatRoom.entity';
+import { ChatMessage } from './chat.entity';
+import { FriendRequest } from './friendRequest.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -79,11 +83,10 @@ export class ChatController {
 	@Post('chatroom')
 	async createChatRoom(@Body() chatRoomData: CreateChatRoomDto, @Req() req: Request) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
-
+			const user: User = await this.userService.findProfileById(req.user.id);
 			// Check the number of chat rooms the user already has
-			const chatRoomCount = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
-			const MAX_CHATROOMS = 5;
+			const chatRoomCount: number = user.chatRooms.length; // Assuming user.chatRooms is an array of chat rooms
+			const MAX_CHATROOMS: number = 5;
 			// If the user already has the maximum number of chat rooms, throw an error
 			if (chatRoomCount >= MAX_CHATROOMS) {
 				throw new ForbiddenException(
@@ -91,7 +94,9 @@ export class ChatController {
 				);
 			}
 
-			const existingChatRoom = await this.chatService.findChatRoomByName(chatRoomData.name);
+			const existingChatRoom: ChatRoom = await this.chatService.findChatRoomByName(
+				chatRoomData.name,
+			);
 			if (existingChatRoom) {
 				throw new BadRequestException('Chat room name already in use.');
 			}
@@ -135,7 +140,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard, StatusGuard)
 	async myChatRooms(@Req() req: Request, @Res() res: Response) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			res.status(HttpStatus.OK).json(user.chatRooms);
 		} catch (error) {
 			// Handle any errors that occur
@@ -150,15 +155,19 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	async getChatRoomChat(@Req() req: Request, @Query() clearChatRoomDto: ClearChatRoomDto) {
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
-			const chatRoom = await this.chatService.getChatRoomById(clearChatRoomDto.chatroomId);
+			const user: User = await this.userService.findProfileById(req.user.id);
+			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(
+				clearChatRoomDto.chatroomId,
+			);
 
 			// Ensure the user is a member of the chat room
 			if (!chatRoom.users.some((u) => u.id === req.user.id)) {
 				throw new ForbiddenException('User is not a member of this chat room.');
 			}
 
-			const chatHistory = await this.chatService.findChatRoomChat(clearChatRoomDto.chatroomId);
+			const chatHistory: ChatMessage[] = await this.chatService.findChatRoomChat(
+				clearChatRoomDto.chatroomId,
+			);
 
 			// Censor messages from blocked users
 			const censoredHistory = chatHistory.map((message) => {
@@ -210,7 +219,7 @@ export class ChatController {
 		//console.log('roomId: ', roomId);
 		//console.log('userNameToInvite: ', userNameToInvite);
 		try {
-			const chatRoom = await this.chatService.getChatRoomById(roomId);
+			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(roomId);
 			if (!chatRoom) {
 				throw new NotFoundException('Chat room not found.');
 			}
@@ -227,7 +236,7 @@ export class ChatController {
 			}
 
 			//check if Username is a existing user
-			const userToInvite = await this.userService.findProfileByName(userNameToInvite);
+			const userToInvite: User = await this.userService.findProfileByName(userNameToInvite);
 			if (!userToInvite) {
 				throw new NotFoundException('The user you are trying to invite does not exist.');
 			}
@@ -240,7 +249,7 @@ export class ChatController {
 			}
 			// TODO: Add request system here like the friendrequest does, or similiar...
 			await this.chatService.addUserToChatRoom(roomId, userToInvite);
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user.achievements.includes('Social Butterfly 🦋')) {
 				user.achievements.push('Social Butterfly 🦋');
 				await this.userService.updateUser(user);
@@ -269,10 +278,10 @@ export class ChatController {
 		@Req() req: Request,
 		@Body() inviteRoomDto: InviteRoomDto,
 	): Promise<{ message: string }> {
-		const userId = req.user.id;
+		const userId: string = req.user.id;
 		const { roomId } = inviteRoomDto;
 		// Get the chat room details
-		const chatRoom = await this.chatService.getChatRoomById(roomId);
+		const chatRoom: ChatRoom = await this.chatService.getChatRoomById(roomId);
 		if (!chatRoom) {
 			throw new NotFoundException('Chat room not found.');
 		}
@@ -287,7 +296,10 @@ export class ChatController {
 		//console.log('chatroom pw_len :', chatRoom.password.length);
 
 		if (chatRoom.type === 'public' && chatRoom.password !== '') {
-			const isPasswordMatch = await bcrypt.compare(inviteRoomDto.password, chatRoom.password);
+			const isPasswordMatch: boolean = await bcrypt.compare(
+				inviteRoomDto.password,
+				chatRoom.password,
+			);
 			if (!isPasswordMatch) {
 				throw new UnauthorizedException('Incorrect password.');
 			}
@@ -311,7 +323,7 @@ export class ChatController {
 
 		// Add the user to the room
 		try {
-			const userToAdd = await this.userService.findProfileById(userId);
+			const userToAdd: User = await this.userService.findProfileById(userId);
 			if (!userToAdd.achievements.includes('ChatRoom Lurker 👀')) {
 				userToAdd.achievements.push('ChatRoom Lurker 👀');
 			}
@@ -333,7 +345,7 @@ export class ChatController {
 	async kickUser(@Body() kickUserDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
 			await this.chatService.kickUserFromRoom(kickUserDto.roomId, kickUserDto.userId, req.user.id);
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user.achievements.includes('Peacekeeper 🛡️')) {
 				user.achievements.push('Peacekeeper 🛡️');
 				await this.userService.updateUser(user);
@@ -387,7 +399,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	async revokeAdmin(@Body() roomIdUserIdDto: RoomIdUserIdDTO, @Req() req: Request) {
 		try {
-			const chatRoom = await this.chatService.getChatRoomById(roomIdUserIdDto.roomId);
+			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(roomIdUserIdDto.roomId);
 			if (!chatRoom) {
 				throw new NotFoundException(`Chat room with ID ${roomIdUserIdDto.roomId} not found.`);
 			}
@@ -431,11 +443,11 @@ export class ChatController {
 	@Post('change-password')
 	@UseGuards(JwtAuthGuard)
 	async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto) {
-		const userId = req.user.id;
+		const userId: string = req.user.id;
 		const { roomId, oldPassword, newPassword } = changePasswordDto;
 
 		//TODO: Write seperate function to get Room credits and exclude pw in getChatRoomById
-		const chatRoom = await this.chatService.getChatRoomById(roomId);
+		const chatRoom: ChatRoom = await this.chatService.getChatRoomById(roomId);
 		if (!chatRoom) {
 			throw new NotFoundException('Chat room not found.');
 		}
@@ -459,7 +471,7 @@ export class ChatController {
 		if (newPassword === '') {
 			chatRoom.password = '';
 		} else {
-			const hashedPassword = await bcrypt.hash(newPassword, 10);
+			const hashedPassword: string = await bcrypt.hash(newPassword, 10);
 			chatRoom.password = hashedPassword;
 		}
 		await this.chatService.updateChatRoom(chatRoom);
@@ -473,8 +485,7 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	async getFriendChat(@Req() req: Request, @Query('friendId') friendId: string) {
 		try {
-			const userId = req.user.id;
-			return await this.chatService.findFriendChat(userId, friendId);
+			return await this.chatService.findFriendChat(req.user.id, friendId);
 		} catch (error) {
 			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -503,8 +514,8 @@ export class ChatController {
 			});
 		} else {
 			try {
-				const user = await this.userService.findProfileById(req.user.id);
-				const friendRequest = await this.chatService.create(createChatDto, user);
+				const user: User = await this.userService.findProfileById(req.user.id);
+				const friendRequest: FriendRequest = await this.chatService.create(createChatDto, user);
 				res.status(HttpStatus.CREATED).json(friendRequest);
 			} catch (error) {
 				res.status(HttpStatus.BAD_REQUEST).json({
@@ -538,7 +549,7 @@ export class ChatController {
 	) {
 		//console.log(`Accepting request with messageId: ${messageId}`);
 		try {
-			const user = await this.userService.findProfileById(req.user.id);
+			const user: User = await this.userService.findProfileById(req.user.id);
 			await this.chatService.acceptRequest(messageId, user);
 			return res.status(HttpStatus.OK).send('Friend accepted!');
 		} catch (error) {
