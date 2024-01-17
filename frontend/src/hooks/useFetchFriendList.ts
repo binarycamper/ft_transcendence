@@ -22,6 +22,7 @@ type Friend = {
 	nickname: string;
 	status: string;
 	gamesWon: number;
+	achievements: string[];
 };
 
 export default function useFetchFriendList() {

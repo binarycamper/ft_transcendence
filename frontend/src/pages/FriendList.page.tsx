@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import useFetchFriendList from '../hooks/useFetchFriendList';
+import { Tooltip } from '@mantine/core';
 
 const styles: { [key: string]: React.CSSProperties } = {
 	container: {
@@ -75,6 +76,19 @@ export function FriendList() {
 		successMessage,
 	} = useFetchFriendList();
 
+	//Care if you change that here change it also in Profile.page.tsx! Ty
+	function getAchievementDescription(achievement) {
+		const descriptions = {
+			'Room Architect 🏗️': 'Awarded for creating a chat room.',
+			'Social Butterfly 🦋': 'Earned by being actively social and inviting friends to chat rooms.',
+			'ChatRoom Lurker 👀': 'Given for spending a significant amount of time in chat rooms.',
+			'Peacekeeper 🛡️': 'Achieved by maintaining order and decorum in chat rooms.',
+			// Add more mappings as needed
+		};
+
+		return descriptions[achievement] || 'No description available.';
+	}
+
 	return (
 		<div style={styles.container}>
 			<h1 style={styles.heading}>My Friends</h1>
@@ -129,6 +143,17 @@ export function FriendList() {
 					<p>Ladder Level: {friendProfile.ladderLevel}</p>
 					<p>Wins: {friendProfile.gamesWon}</p>
 					<p>Losses: {friendProfile.gamesLost}</p>
+					<p>
+						Achievements:{' '}
+						{friendProfile.achievements.map((achievement, index) => (
+							<Tooltip key={index} label={getAchievementDescription(achievement)} withArrow>
+								<span>
+									{achievement}
+									{index < friendProfile.achievements.length - 1 ? ', ' : ''}
+								</span>
+							</Tooltip>
+						))}
+					</p>
 					{/* Render additional details here */}
 				</div>
 			)}
