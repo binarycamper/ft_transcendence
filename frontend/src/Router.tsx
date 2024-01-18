@@ -7,7 +7,6 @@ import { CompleteProfile } from './pages/CompleteProfile';
 import { ErrorPage } from './pages/Error.page';
 import { FriendList } from './pages/FriendList.page';
 import { FriendRequest } from './pages/Request.page';
-import { HomePage } from './pages/Home.page';
 import { Login } from './pages/Login.page';
 import { Profile } from './pages/Profile.page';
 import { PublicProfile } from './pages/PublicProfile.page';
@@ -17,7 +16,6 @@ import { ChatRoomList } from './pages/ChatRoomList.page';
 import ResetPassword from './pages/ResetPassword.page';
 import ResetAccount from './pages/ResetAccount.page';
 import VerifyResetToken from './pages/VerifyResetToken.page';
-import { MatchmakingQueuePage } from './pages/Queue.page';
 import PongPage from './pages/Pong.page';
 import { PongGameWrapper } from './components/Pong/PongGame';
 import { MatchHistory } from './pages/MatchHistory.page';
@@ -48,10 +46,6 @@ const router = createBrowserRouter([
 			{
 				path: '/matchhistory',
 				element: <MatchHistory />,
-			},
-			{
-				path: 'queue',
-				element: <MatchmakingQueuePage />,
 			},
 			{
 				path: 'play',

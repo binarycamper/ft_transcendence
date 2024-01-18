@@ -4,12 +4,14 @@ import { parse } from 'cookie';
 import { PongGateway } from './pong.gateway';
 import { randomBytes } from 'crypto';
 import { Socket } from 'socket.io';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class PongService {
 	constructor(
 		// @Inject(forwardRef(() => PongGateway))
 		private readonly pongGateway: PongGateway,
+		private userService: UserService,
 	) {
 		this.startUpdateLoop();
 	}
@@ -44,7 +46,97 @@ export class PongService {
 		});
 	}
 
+	/*
+	Game:  PongGame {
+   gameURL: 'HCD7UXlA63UW',
+   status: 'finished',
+   gameState: PongGameState {
+     ballPos: { x: -23.228290498564867, y: 54.95736534980804 },
+     gameOver: true,
+     paddleL: 47.77525544666691,
+     paddleR: 40.1023505421576,
+     ready: false,
+     scoreL: 0,
+     scoreR: 11
+   },
+   gameSettings: PongGameSettings {
+     aspectRatio: { x: 4, y: 3 },
+     ballAccel: 2,
+     ballSpeed: 60,
+     ballWidth: 2.5,
+     computer: false,
+     paddleGap: 2.5,
+     paddleHeight: 20,
+     paddleSpeed: 60,
+     paddleWidth: 2,
+     side: 'left',
+     wallHeight: 2,
+     keyMapP1: { up: 'ArrowUp', down: 'ArrowDown', mod: 'ShiftRight' },
+     keyMapP2: { up: 'KeyW', down: 'KeyS', mod: 'ShiftLeft' }
+   },
+   player1: PongPlayer {
+     side: 'left',
+     computer: false,
+     anonymous: false,
+     id: '5b48efd6-43e8-4235-96b3-ad8d43c95d55-sid=00k60yRd7NuujSq26JEgvj',
+     ready: false,
+     keyState: PongKeyState { down: false, mod: false, up: true }
+   },
+   player2: PongPlayer {
+     side: 'right',
+     computer: true,
+     anonymous: true,
+     id: '',
+     ready: true
+   },
+   pongEngine: PongGameEngine {
+     walls: Wall { upper: [Object], lower: [Object] },
+     ball: Ball {
+       gameState: [PongGameState],
+       walls: [Wall],
+       diam: [Object],
+       lastDir: [Object],
+       dir: [Object],
+       aspectRatio: 1.3333333333333333,
+       ballAccel: 2,
+       defaultSpeed: 60,
+       speed: 62
+     },
+     score: Score { gameState: [PongGameState], OFFSET: 20 },
+     paddleL: PaddleL {
+       side: 'left',
+       gameState: [PongGameState],
+       player: [PongPlayer],
+       walls: [Wall],
+       centerAlignment: 40,
+       computer: false,
+       keyState: [PongKeyState],
+       paddleGap: 2.5,
+       paddleHeight: 20,
+       paddleSpeed: 60,
+       paddleWidth: 2,
+       update: [Function (anonymous)]
+     },
+     paddleR: PaddleR {
+       side: 'right',
+       gameState: [PongGameState],
+       player: [PongPlayer],
+       walls: [Wall],
+       centerAlignment: 40,
+       computer: true,
+       keyState: undefined,
+       paddleGap: 2.5,
+       paddleHeight: 20,
+       paddleSpeed: 60,
+       paddleWidth: 2,
+       update: [Function (anonymous)]
+     },
+     previousTimestamp: 38661.50911
+   }
+ }*/
+
 	storeHistory(game: PongGame) {
+		console.log('Game: ', game);
 		this.gameMap.delete(game.gameURL);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}

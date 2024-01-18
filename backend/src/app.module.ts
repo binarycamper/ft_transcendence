@@ -6,7 +6,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
-import { MatchmakingModule } from './matchmaking/matchmaking.module';
 import { PongModule } from './pong/pong.module';
 /* import { ServeStaticModule } from '@nestjs/serve-static'; */
 /* import { join } from 'path'; */
@@ -27,7 +26,6 @@ import { PongModule } from './pong/pong.module';
 		AuthModule,
 		UserModule,
 		ChatModule,
-		MatchmakingModule,
 		PongModule,
 		/* ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '../node_modules/@socket.io/admin-ui/ui/dist'),

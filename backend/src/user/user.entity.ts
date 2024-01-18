@@ -1,6 +1,5 @@
 import { IsEmail } from 'class-validator';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
-import { Game } from 'src/game/game.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 
 @Entity()
@@ -75,10 +74,4 @@ export class User {
 
 	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.users)
 	chatRooms: ChatRoom[];
-
-	@OneToMany(() => Game, (game) => game.playerOne)
-	gamesAsPlayerOne: Game[];
-
-	@OneToMany(() => Game, (game) => game.playerTwo)
-	gamesAsPlayerTwo: Game[];
 }

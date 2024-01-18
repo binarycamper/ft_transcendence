@@ -14,12 +14,10 @@ import { ChatService } from 'src/chat/chat.service';
 import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { randomUUID } from 'crypto';
-import { GameService } from 'src/game/game.service';
 import { AuthenticatedSocket, DecodedToken, SocketWithUserData } from './dto/dto';
 import { ChatMessage } from 'src/chat/chat.entity';
 import { Mute } from 'src/chat/mute.entity';
 import { User } from 'src/user/user.entity';
-import { Game } from 'src/game/game.entity';
 /* import { instrument } from '@socket.io/admin-ui'; */
 
 @WebSocketGateway({
@@ -38,7 +36,6 @@ export class EventsGateway {
 		private jwtService: JwtService,
 		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
 		private userService: UserService,
-		private gameService: GameService,
 	) {}
 
 	/* afterInit() {
@@ -289,41 +286,6 @@ export class EventsGateway {
 			} else {
 				console.error('An unknown error occurred in handleMessage');
 			}
-		}
-	}
-
-	//########################Game#############################
-
-	@SubscribeMessage('playerReady')
-	async handlePlayerReady(@ConnectedSocket() client: AuthenticatedSocket) {
-		try {
-			const isAuthenticated = this.verifyAuthentication(client);
-			if (!isAuthenticated.isAuthenticated) {
-				console.log('Invalid credentials');
-				return;
-			}
-			const game: Game = await this.gameService.findGameByUserId(isAuthenticated.userId);
-			if (game) {
-				if (game.playerOne.id === isAuthenticated.userId) {
-					game.acceptedOne = true;
-				} else if (game.playerTwo.id === isAuthenticated.userId) {
-					game.acceptedTwo = true;
-				}
-
-				await this.gameService.saveGame(game);
-
-				// If both players are ready, emit a 'gameStart' event to both players
-				if (game.acceptedOne && game.acceptedTwo) {
-					console.log('start signal sended!');
-					game.startTime = new Date();
-					await this.gameService.saveGame(game);
-					this.server.to(game.playerOne.id).emit('gameStart', game);
-					this.server.to(game.playerTwo.id).emit('gameStart', game);
-				}
-			}
-		} catch (error) {
-			console.error(`Error in handlePlayerReady: ${error}`);
-			// Handle error appropriately
 		}
 	}
 }

@@ -7,7 +7,6 @@ import { User } from '../user/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { FriendRequest } from 'src/chat/friendRequest.entity';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
-import { Game } from 'src/game/game.entity';
 
 @Module({
 	imports: [

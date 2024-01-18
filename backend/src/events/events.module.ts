@@ -7,16 +7,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { ChatModule } from 'src/chat/chat.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatMessage } from 'src/chat/chat.entity';
-import { GameModule } from 'src/game/game.module';
-import { MatchmakingModule } from 'src/matchmaking/matchmaking.module';
 
 @Module({
 	imports: [
 		UserModule,
 		ChatModule,
-		GameModule,
-		forwardRef(() => MatchmakingModule),
-		TypeOrmModule.forFeature([ChatMessage]), //TODO jj
+		TypeOrmModule.forFeature([ChatMessage]),
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: '1d' },
