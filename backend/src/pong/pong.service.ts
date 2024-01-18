@@ -143,7 +143,8 @@ export class PongService {
 
 	async storeHistory(game: PongGame) {
 		console.log('Game: ', game);
-
+		const endTime = new Date();
+		const timePlayed = (endTime.getTime() - game.startTime.getTime()) / 1000;
 		//Update the USer status.
 		const player1 = await this.userService.findProfileById(game.player1.id);
 		const player2 = await this.userService.findProfileById(game.player2.id);
@@ -159,8 +160,10 @@ export class PongService {
 			winnerId = player1.id;
 		} else if (game.gameState.scoreL < game.gameState.scoreR) {
 			winnerId = player2.id;
+		} else {
+			this.gameMap.delete(game.gameURL);
+			return;
 		}
-		// If the scores are equal, you might set winnerId to null or handle a draw according to your logic
 
 		// Save the game history
 		const history = new History();
@@ -168,11 +171,10 @@ export class PongService {
 		history.playerTwo = player2;
 		history.scorePlayerOne = game.gameState.scoreL;
 		history.scorePlayerTwo = game.gameState.scoreR;
-		// Assuming the game's start time is stored somewhere, or using the current time
-		history.startTime = game.startTime; // Replace with actual start time if available
-		history.endTime = new Date(); // The game just finished
+		history.startTime = game.startTime;
+		history.endTime = new Date();
+		history.timePlayed = timePlayed;
 		history.winnerId = winnerId;
-		// Correctly save the history entity to the database
 		await this.historyRepository.save(history);
 
 		this.gameMap.delete(game.gameURL);

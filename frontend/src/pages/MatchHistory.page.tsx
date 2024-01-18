@@ -2,24 +2,123 @@ import { useEffect, useState } from 'react';
 import useTitle from '../hooks/useTitle';
 import { Container, Title, Table } from '@mantine/core';
 
-type Match = {
-	date: string; // or Date if you are using actual Date objects
+type MatchHistoryItem = {
+	date: string;
 	opponent: string;
 	result: string;
-	score: string; // or number, depending on what data type you use for scores
-	// Add more fields as necessary
+	score: string;
+};
+
+type History = {
+	id: string;
+	playerOne: { id: string; name: string };
+	playerTwo: { id: string; name: string };
+	scorePlayerOne: number;
+	scorePlayerTwo: number;
+	startTime: string;
+	endTime: string;
+	timePlayed: string;
+	winnerId: string;
 };
 
 export function MatchHistory() {
 	useTitle('Match History');
+	const [loading, setLoading] = useState(true);
+	const [matches, setMatches] = useState<MatchHistoryItem[]>([]);
+	const [userId, setUserId] = useState<string | null>(null);
 
-	// Placeholder data structure, replace with your actual data retrieval logic
-	const [matches, setMatches] = useState<Match[]>([]);
+	async function getUserIdFromServer() {
+		try {
+			const response = await fetch('http://localhost:8080/user/id', {
+				method: 'GET',
+				credentials: 'include',
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			const text = await response.text();
+			if (!text) {
+				throw new Error('Response body is empty');
+			}
+			try {
+				const data = JSON.parse(text);
+				return data;
+			} catch (error) {
+				throw new Error('Failed to parse JSON response');
+			}
+		} catch (error) {
+			console.error('Error fetching user ID:', error);
+			throw error;
+		}
+	}
 
 	useEffect(() => {
-		// Fetch match history data and set it to state
-		// setMatches(fetchedData);
+		const fetchUserId = async () => {
+			try {
+				const data = await getUserIdFromServer();
+				setUserId(data.id);
+			} catch (error) {
+				console.error('Error retrieving user ID:', error);
+			}
+		};
+
+		fetchUserId();
 	}, []);
+
+	useEffect(() => {
+		const fetchMatchHistory = async () => {
+			if (!userId) return;
+
+			try {
+				const response = await fetch('http://localhost:8080/pong/all-history', {
+					method: 'GET',
+					credentials: 'include',
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				const text = await response.text();
+				if (!text) {
+					// If the response body is empty
+					setMatches([]);
+					return;
+				}
+
+				try {
+					const data: History[] = JSON.parse(text);
+					if (data.length === 0) {
+						setMatches([]);
+						setLoading(false);
+
+						return;
+					}
+					const mappedData = data.map((history) => ({
+						date: new Date(history.startTime).toLocaleDateString(),
+						opponent: history.playerTwo.name,
+						result: history.winnerId === userId ? 'Won' : 'Lost',
+						score: `${history.scorePlayerOne} - ${history.scorePlayerTwo}`,
+					}));
+					setMatches(mappedData);
+				} catch (error) {
+					console.error('Failed to parse JSON response:', error);
+					setMatches([]);
+				}
+			} catch (error) {
+				console.error('Fetch error: ', error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchMatchHistory();
+	}, [userId]);
+
+	if (loading) {
+		return <div>Loading match history...</div>;
+	}
 
 	if (matches.length === 0) {
 		return <div>Loading match history...</div>;
@@ -35,7 +134,6 @@ export function MatchHistory() {
 						<th>Opponent</th>
 						<th>Result</th>
 						<th>Score</th>
-						// Add more columns as needed
 					</tr>
 				</thead>
 				<tbody>
@@ -45,7 +143,6 @@ export function MatchHistory() {
 							<td>{match.opponent}</td>
 							<td>{match.result}</td>
 							<td>{match.score}</td>
-							// Add more data as needed
 						</tr>
 					))}
 				</tbody>

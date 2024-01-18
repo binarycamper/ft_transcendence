@@ -26,6 +26,9 @@ export class History {
 	@Column({ type: 'timestamp', nullable: true })
 	endTime: Date;
 
+	@Column({ type: 'int', nullable: true }) // Storing time played as an integer of seconds
+	timePlayed: number;
+
 	@Column({ nullable: true })
 	winnerId: string;
 }
