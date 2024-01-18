@@ -27,6 +27,7 @@ export default class PongGame {
 	player2: PongPlayer;
 	pongEngine: PongGameEngine;
 	status: PongGameStatus = 'pending';
+	startTime: Date = new Date();
 }
 
 type PongGameStatus = 'finished' | 'paused' | 'pending' | 'running';

@@ -5,6 +5,10 @@ import { PongGateway } from './pong.gateway';
 import { randomBytes } from 'crypto';
 import { Socket } from 'socket.io';
 import { UserService } from 'src/user/user.service';
+import { History } from './history.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PongService {
@@ -12,6 +16,8 @@ export class PongService {
 		// @Inject(forwardRef(() => PongGateway))
 		private readonly pongGateway: PongGateway,
 		private userService: UserService,
+		@InjectRepository(History)
+		private historyRepository: Repository<History>,
 	) {
 		this.startUpdateLoop();
 	}
@@ -145,8 +151,36 @@ export class PongService {
 		player2.status = 'online';
 		this.userService.updateUser(player1);
 		this.userService.updateUser(player2);
+
+		//save the game.
+		// Determine the winner
+		let winnerId = null;
+		if (game.gameState.scoreL > game.gameState.scoreR) {
+			winnerId = player1.id;
+		} else if (game.gameState.scoreL < game.gameState.scoreR) {
+			winnerId = player2.id;
+		}
+		// If the scores are equal, you might set winnerId to null or handle a draw according to your logic
+
+		// Save the game history
+		const history = new History();
+		history.playerOne = player1;
+		history.playerTwo = player2;
+		history.scorePlayerOne = game.gameState.scoreL;
+		history.scorePlayerTwo = game.gameState.scoreR;
+		// Assuming the game's start time is stored somewhere, or using the current time
+		history.startTime = game.startTime; // Replace with actual start time if available
+		history.endTime = new Date(); // The game just finished
+		history.winnerId = winnerId;
+		// Correctly save the history entity to the database
+		await this.historyRepository.save(history);
+
 		this.gameMap.delete(game.gameURL);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
+	}
+
+	findAllHistory(): Promise<History[]> {
+		return this.historyRepository.find({ relations: ['playerOne', 'playerTwo'] });
 	}
 
 	getPongGameById(gameURL: string) {

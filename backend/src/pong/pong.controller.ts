@@ -2,6 +2,7 @@ import { Controller, Get, Param, Res } from '@nestjs/common';
 import { PongService } from './pong.service';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { History } from './history.entity';
 
 @Controller('pong')
 export class PongController {
@@ -25,5 +26,11 @@ export class PongController {
 		const { gameSettings, gameState } = pongGameData;
 		return { gameSettings, gameState };
 		// return pongGameData; /* only for debugging */
+	}
+
+	//DEBUG
+	@Get('all-history')
+	async getAll(): Promise<History[]> {
+		return this.pongService.findAllHistory();
 	}
 }
