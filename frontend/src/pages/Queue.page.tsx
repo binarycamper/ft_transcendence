@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import Prompt from '../components/Prompt';
 import { socket } from '../services/socket';
+import Settings, {
+	defaultSettings,
+	getSettingsLocalStorage,
+} from '../components/Pong/GameDefaults';
 
 export function MatchmakingQueuePage() {
 	const [timer, setTimer] = useState<number | null>(null);
@@ -131,6 +135,15 @@ export function MatchmakingQueuePage() {
 		};
 	}, [matchFound, timer]);
 
+	function getGameSettings() {
+		const savedSettings = getSettingsLocalStorage();
+		// if (!savedSettings) return defaultSettings; /* reference */
+		if (!savedSettings)
+			return JSON.parse(JSON.stringify(defaultSettings)) as Settings; /* deep copy */
+
+		return { ...defaultSettings, ...savedSettings };
+	}
+
 	async function handleAcceptMatch() {
 		try {
 			clearMatchTimer();
@@ -145,8 +158,16 @@ export function MatchmakingQueuePage() {
 			if (response.ok) {
 				const data = await response.json();
 				if (data.game?.acceptedOne === true && data.game?.acceptedTwo === true) {
-					console.log('MAtch FOund! TODO: Guten Morgen Richard game should start here....');
-					//window.location.href = 'http://localhost:5173/';
+					console.log('MAtch FOund! TODO Richard game should start here....^11');
+					const gameSettings = getGameSettings();
+					socket.emit('create-match', gameSettings);
+					socket.on('match-created', (data) => {
+						socket.emit('enemy-join', {
+							url: `http://localhost:5173/game/${data}`,
+							playerTwoId: data.game.playerTwo.id,
+						});
+						window.location.href = `http://localhost:5173/game/${data}`;
+					});
 				} else {
 					setHasAcceptedMatch(true);
 					// Set a timeout to wait for the other player
@@ -195,16 +216,23 @@ export function MatchmakingQueuePage() {
 	}
 
 	useEffect(() => {
-		function handleGameReady() {
-			//TODO: DOubleCHeck if User is still in the matchmaking Process // fetch to server and ask!
-			console.log('MAtch FOund! TODO: Guten Morgen Richard game should start here....');
-			//window.location.href = `http://localhost:5173/game`;
+		function handleGameReady(data) {
+			// TODO: Check if the user is still in the matchmaking process
+			console.log('Match found! The game should start here.... data: ', data);
+
+			// Use the received URL to redirect the user
+			if (data && data.url) {
+				console.log('Redirecting to game URL:', data.url);
+				window.location.href = data.url;
+			} else {
+				console.error('No URL received with join-match event');
+			}
 		}
 
-		socket.on('game-ready', handleGameReady);
+		socket.on('??', handleGameReady);
 
 		return () => {
-			socket.off('game-ready', handleGameReady); // Corrected cleanup
+			socket.off('??', handleGameReady); // Corrected cleanup
 		};
 	}, []);
 

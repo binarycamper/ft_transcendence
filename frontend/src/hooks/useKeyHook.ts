@@ -1,5 +1,5 @@
 import { getGameSettings } from '../components/Pong/GameDefaults';
-import { gameSocket as socket } from '../services/socket';
+import { socket as socket } from '../services/socket';
 import { useEffect } from 'react';
 
 export interface KeyMap {

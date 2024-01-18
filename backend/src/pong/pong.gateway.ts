@@ -2,7 +2,6 @@ import {
 	ConnectedSocket,
 	MessageBody,
 	SubscribeMessage,
-	WebSocketGateway,
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
@@ -12,14 +11,11 @@ import { PongGameSettings } from './classes/PongGame';
 import { PongService } from './pong.service';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
-@Injectable()
-@WebSocketGateway(8090, {
-	/* cors: {
-		credentials: true,
-		origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:8090'],
-	}, */
-	cors: { credentials: true, origin: 'http://localhost:5173' },
-})
+interface EnemyJoinData {
+	playerTwoId: string; // ID of the enemy player joining the game
+	url: string; // URL of the game room the enemy is joining
+	// Other properties as needed, e.g.,
+}
 /* export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect { */
 export class PongGateway {
 	constructor(
@@ -37,16 +33,6 @@ export class PongGateway {
 			mode: 'development',
 		});
 	} */
-
-	onModuleInit() {
-		this.server.on('connection', (socket) => {
-			console.log('Pong: client connected', socket.id);
-
-			socket.on('disconnect', (reason) => {
-				console.log(`Pong: disconnect ${socket.id} due to ${reason}`);
-			});
-		});
-	}
 
 	handleConnection(client: Socket) {
 		console.log('PongGateway: handleConnection', client.id);
@@ -187,5 +173,46 @@ export class PongGateway {
 		const playerId = this.parseCookie(client);
 		this.pongService.cancelPendingGame(playerId);
 		return 'success';
+	}
+
+	@SubscribeMessage('create-match')
+	async handleCreateMatch(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() gameSettings: PongGameSettings,
+	) {
+		console.log('create match started!');
+		// const isValid = this.pongService.validateSettings(gameSettings);
+		// if (!isValid) client.emit('invalid-custom-settings');
+		if (gameSettings.computer) {
+			console.log('computer!! SHould not work!, nobody needs computer');
+			return;
+		}
+
+		const userId = this.pongService.validateCookie(client);
+
+		const pongGame = this.pongService.createNewGame(gameSettings, userId);
+
+		await client.join(pongGame.gameURL);
+
+		client.emit('match-created', pongGame.gameURL);
+	}
+
+	@SubscribeMessage('enemy-join')
+	async handleEnemyJoin(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() data: EnemyJoinData,
+	): Promise<void> {
+		// Validate the user's cookie and get the user ID
+		console.log('enemy join started!');
+
+		const userId = this.pongService.validateCookie(client);
+
+		// Check if data has necessary properties
+		if (data && data.playerTwoId && data.url) {
+			// Emit the 'join-match' event to player two
+			this.server.to(`user_${data.playerTwoId}`).emit('join-match', { url: data.url });
+		} else {
+			console.error('Invalid data received in handleEnemyJoin');
+		}
 	}
 }

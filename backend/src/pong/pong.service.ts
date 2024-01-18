@@ -45,6 +45,7 @@ export class PongService {
 	}
 
 	storeHistory(game: PongGame) {
+		//TODO: JJ History, crab here
 		this.gameMap.delete(game.gameURL);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}

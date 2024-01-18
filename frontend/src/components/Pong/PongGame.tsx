@@ -2,7 +2,7 @@ import '../Game/Game.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useParams } from 'react-router-dom';
 import { ErrorPage } from '../../pages/Error.page';
-import { gameSocket as socket } from '../../services/socket';
+import { socket as socket } from '../../services/socket';
 import useKeyHook from '../../hooks/useKeyHook';
 import useTitle from '../../hooks/useTitle';
 

@@ -1,7 +1,7 @@
 import { Button, Loader } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { getGameSettings } from '../components/Pong/GameDefaults';
-import { gameSocket as socket } from '../services/socket';
+import { socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
 
 interface OnlineStats {
