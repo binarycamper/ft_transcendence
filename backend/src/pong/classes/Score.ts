@@ -25,6 +25,8 @@ export class Score {
 		} else if (ball.left > 100 + this.OFFSET) {
 			this.scoreL += 1;
 		} else return;
-		ball.reset();
+		if (this.scoreL >= 11 || this.scoreR >= 11) {
+			this.gameState.gameOver = true;
+		} else ball.reset();
 	}
 }
