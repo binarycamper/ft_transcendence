@@ -49,10 +49,6 @@ export default function PongPage() {
 		});
 	}
 
-	function createGame() {
-		return handleRequest('create-custom-game');
-	}
-
 	function joinGame() {
 		return handleRequest('join-game');
 	}
@@ -73,10 +69,6 @@ export default function PongPage() {
 
 	return (
 		<>
-			<Button onClick={createGame} disabled={isLoading}>
-				CREATE NEW GAME
-			</Button>
-			<div></div>
 			<Button onClick={joinGame} disabled={isLoading}>
 				JOIN GAME
 			</Button>

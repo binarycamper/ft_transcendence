@@ -23,12 +23,9 @@ function settingsReducer(state: Settings, action: Action): Settings {
 					[child]: value,
 				};
 			} else if (parent === 'side') {
-				newState[parent] = value;
-			} else if (parent === 'aspectRatio') {
-				newState[parent] = {
-					...newState[parent],
-					[child]: parseFloat(value),
-				};
+				if (value === 'left' || value === 'right') {
+					newState[parent] = value;
+				}
 			} else if (parent in defaultSettings) {
 				newState[parent] = parseFloat(value);
 			}
@@ -78,25 +75,6 @@ export default function GameSettings() {
 			{settings && (
 				<div>
 					<h2>Settings</h2>
-					<label>
-						Aspect Ratio X:
-						<input
-							type="number"
-							name="aspectRatio.x"
-							value={settings.aspectRatio.x}
-							onChange={handleInputChange}
-						/>
-					</label>
-					<br />
-					<label>
-						Aspect Ratio Y:
-						<input
-							type="number"
-							name="aspectRatio.y"
-							value={settings.aspectRatio.y}
-							onChange={handleInputChange}
-						/>
-					</label>
 					<br />
 					<label>
 						Ball Width:
@@ -139,10 +117,10 @@ export default function GameSettings() {
 					</label>
 					<br />
 					<label>
-						Wall Height:
+						Speed:
 						<input
 							type="number"
-							name="wallHeight"
+							name="speed"
 							value={settings.wallHeight}
 							onChange={handleInputChange}
 						/>
@@ -151,66 +129,6 @@ export default function GameSettings() {
 					<label>
 						Preferred Side:
 						<input type="text" name="side" value={settings.side} onChange={handleInputChange} />
-					</label>
-					<br />
-					<label>
-						P1 Up Key:
-						<input
-							type="text"
-							name="keyMapP1.up"
-							value={settings.keyMapP1.up}
-							onChange={handleInputChange}
-						/>
-					</label>
-					<br />
-					<label>
-						P1 Down Key:
-						<input
-							type="text"
-							name="keyMapP1.down"
-							value={settings.keyMapP1.down}
-							onChange={handleInputChange}
-						/>
-					</label>
-					<br />
-					<label>
-						P1 Modifier Key:
-						<input
-							type="text"
-							name="keyMapP1.mod"
-							value={settings.keyMapP1.mod}
-							onChange={handleInputChange}
-						/>
-					</label>
-					<br />
-					<label>
-						P2 Up Key:
-						<input
-							type="text"
-							name="keyMapP2.up"
-							value={settings.keyMapP2.up}
-							onChange={handleInputChange}
-						/>
-					</label>
-					<br />
-					<label>
-						P2 Down Key:
-						<input
-							type="text"
-							name="keyMapP2.down"
-							value={settings.keyMapP2.down}
-							onChange={handleInputChange}
-						/>
-					</label>
-					<br />
-					<label>
-						P2 Modifier Key:
-						<input
-							type="text"
-							name="keyMapP2.mod"
-							value={settings.keyMapP2.mod}
-							onChange={handleInputChange}
-						/>
 					</label>
 					<br />
 					<button onClick={saveSettings}>Save Settings</button>
