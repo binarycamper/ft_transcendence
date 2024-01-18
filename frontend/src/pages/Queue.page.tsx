@@ -145,7 +145,8 @@ export function MatchmakingQueuePage() {
 			if (response.ok) {
 				const data = await response.json();
 				if (data.game?.acceptedOne === true && data.game?.acceptedTwo === true) {
-					window.location.href = 'http://localhost:5173/game';
+					console.log('MAtch FOund! TODO: Guten Morgen Richard game should start here....');
+					//window.location.href = 'http://localhost:5173/';
 				} else {
 					setHasAcceptedMatch(true);
 					// Set a timeout to wait for the other player

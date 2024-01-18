@@ -50,6 +50,10 @@ const router = createBrowserRouter([
 				element: <MatchHistory />,
 			},
 			{
+				path: 'queue',
+				element: <MatchmakingQueuePage />,
+			},
+			{
 				path: 'play',
 				element: <PongPage />,
 			},
