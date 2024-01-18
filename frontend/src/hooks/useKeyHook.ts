@@ -53,10 +53,12 @@ export default function useKeyHook() {
 		}
 
 		function handleKeyDown(event: KeyboardEvent) {
+			/* console.log(`D: ${event.code} [${event.key}]`); */
 			handleKeyEvent(event, true);
 		}
 
 		function handleKeyUp(event: KeyboardEvent) {
+			/* console.log(`U: ${event.code} [${event.key}]`); */
 			handleKeyEvent(event, false);
 		}
 

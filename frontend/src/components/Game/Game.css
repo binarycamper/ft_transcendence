@@ -39,7 +39,7 @@
 	aspect-ratio: var(--canvas-aspect-ratio);
 	container-type: size;
 	/* margin-top: 100px; */
-	width: 80%;
+	width: 70%;
 	min-width: 40%;
 	max-width: 100%;
 	border-radius: 8px;

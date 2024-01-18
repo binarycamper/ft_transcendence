@@ -50,19 +50,15 @@ export class PongGateway {
 
 	handleConnection(client: Socket) {
 		console.log('PongGateway: handleConnection', client.id);
-		const req = client.request;
-		const cookies = req.headers.cookie;
-		if (!cookies) return;
-
-		// TODO if no cookie and not auth then spectator
-		const parsedCookies = parse(cookies);
-		const playerId = parsedCookies.playerID;
-		console.log(playerId);
+		const playerId = this.parseCookie(client);
+		this.pongService.handleConnection(playerId);
 	}
 
-	/* handleDisconnect(client: Socket) {
+	handleDisconnect(client: Socket) {
 		console.log('PongGateway: handleDisconnet', client.id);
-	} */
+		const playerId = this.parseCookie(client);
+		this.pongService.handleDisconnect(playerId);
+	}
 
 	@SubscribeMessage('checkId')
 	checkId(@ConnectedSocket() client: Socket, @MessageBody() id: string) {
@@ -71,9 +67,9 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('page-reload')
-	async handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
 		// console.log(gameURL);
-		await client.join(gameURL);
+		// await client.join(gameURL);
 		const userId = this.pongService.validateCookie(client);
 		const status = this.pongService.getUserStatusForGame(userId, gameURL);
 		console.log('STATUS', status);
@@ -81,7 +77,7 @@ export class PongGateway {
 
 		const pongGame = this.pongService.getPongGameById(gameURL);
 		client.on('update-keystate', (payload: any) => {
-			this.pongService.updateKeystate(pongGame, payload);
+			this.pongService.updateKeystate(pongGame, status, payload);
 		});
 	}
 
@@ -100,11 +96,96 @@ export class PongGateway {
 		const pongGame = this.pongService.createNewGame(gameSettings, userId);
 
 		await client.join(pongGame.gameURL);
+
+		// this.server.on('')
+		// wait for other player to join
+
+		// const gameURL = await this.waitPlayerJoined(client);
+		// console.log('Both players have joined the game:', gameURL);
+
+		client.emit('pong-game-created', pongGame.gameURL);
+
+		/* const playerJoinedPromise = new Promise((resolve) => {
+			client.on('player-joined', () => {
+				resolve();
+			});
+		});
+
+		await playerJoinedPromise;
+		console.log('Another player joined the game'); */
+	}
+
+	@SubscribeMessage('join-game')
+	async handleJoinGame(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() gameSettings: PongGameSettings,
+	) {
+		const userId = this.pongService.validateCookie(client);
+
+		const gameURL = this.pongService.joinPendingGame(userId);
+		if (gameURL) {
+			await client.join(gameURL);
+			this.server.to(gameURL).emit('pong-game-ready', gameURL);
+		} else {
+			const pongGame = this.pongService.createNewGame(gameSettings, userId);
+			await client.join(pongGame.gameURL);
+		}
+	}
+
+	@SubscribeMessage('play-with-computer')
+	async handlePlayWithComputer(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() gameSettings: PongGameSettings,
+	) {
+		const userId = this.pongService.validateCookie(client);
+		const pongGame = this.pongService.createNewGame(gameSettings, userId, true);
+
+		await client.join(pongGame.gameURL);
 		client.emit('pong-game-ready', pongGame.gameURL);
 	}
 
-	/* @SubscribeMessage('join-game')
-	async handleJoinGame(@ConnectedSocket() client: Socket) {
-		const userId = this.pongService.validateCookie(client);
-	} */
+	@SubscribeMessage('join-lobby')
+	async joinLobby(@ConnectedSocket() client: Socket) {
+		await client.join('lobby');
+		return this.pongService.getOnlineStats();
+	}
+
+	@SubscribeMessage('query-game-status')
+	queryGameStatus(@ConnectedSocket() client: Socket) {
+		const playerId = this.parseCookie(client);
+		return this.pongService.getPlayerGameStatus(playerId);
+	}
+
+	@SubscribeMessage('leave-lobby')
+	async leaveLobby(@ConnectedSocket() client: Socket) {
+		await client.leave('lobby');
+	}
+
+	@SubscribeMessage('join-room')
+	async joinRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		await client.join(gameURL);
+	}
+
+	@SubscribeMessage('leave-room')
+	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		await client.leave(gameURL);
+	}
+
+	parseCookie(client: Socket) {
+		const req = client.request;
+		const cookies = req.headers.cookie;
+		if (!cookies) return null;
+
+		const parsedCookies = parse(cookies);
+		const playerId = parsedCookies.playerID;
+
+		return playerId;
+	}
+
+	@SubscribeMessage('cancel-game-request')
+	cancelGameRequest(@ConnectedSocket() client: Socket) {
+		const playerId = this.parseCookie(client);
+		this.pongService.cancelPendingGame(playerId);
+		return 'success';
+	}
 }

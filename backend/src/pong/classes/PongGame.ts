@@ -26,7 +26,10 @@ export default class PongGame {
 	player1: PongPlayer;
 	player2: PongPlayer;
 	pongEngine: PongGameEngine;
+	status: PongGameStatus = 'pending';
 }
+
+type PongGameStatus = 'finished' | 'paused' | 'pending' | 'running';
 
 class PongGameEngine {
 	constructor(

@@ -30,7 +30,7 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: '/',
-				element: <HomePage />,
+				element: <PongPage />,
 			},
 			{
 				path: 'friendrequest',
