@@ -9,13 +9,14 @@ export class PongController {
 
 	@Get('create-cookie')
 	createSessionCookie(@Res() res: Response) {
-		// TODO improve this using library ?
+		// TODO improve this using library ? ? TODO: Subject
 		const playerId = uuidv4();
 		const code = this.pongService.generateRandomCode(22);
 		const cookie = `${playerId}-sid=${code}`;
 		return res.send({ key: 'playerID', value: cookie });
 	}
 
+	//TODO: DTO!!
 	@Get(':id')
 	getPongGameData(@Param('id') id: string) {
 		const pongGameData = this.pongService.getPongGameById(id);

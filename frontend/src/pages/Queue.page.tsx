@@ -197,7 +197,8 @@ export function MatchmakingQueuePage() {
 	useEffect(() => {
 		function handleGameReady() {
 			//TODO: DOubleCHeck if User is still in the matchmaking Process // fetch to server and ask!
-			window.location.href = `http://localhost:5173/game`;
+			console.log('MAtch FOund! TODO: Guten Morgen Richard game should start here....');
+			//window.location.href = `http://localhost:5173/game`;
 		}
 
 		socket.on('game-ready', handleGameReady);
