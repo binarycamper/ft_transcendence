@@ -1,7 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AuthToken } from './auth.entity';
 import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './guards/jwt.strategy';
@@ -15,7 +14,7 @@ import { User } from 'src/user/user.entity';
 	controllers: [AuthController],
 	exports: [AuthService],
 	imports: [
-		TypeOrmModule.forFeature([AuthToken, User]),
+		TypeOrmModule.forFeature([User]),
 		HttpModule,
 		UserModule,
 		ConfigModule.forRoot(),

@@ -1,5 +1,5 @@
 import '../Game/Game.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useParams } from 'react-router-dom';
 import { ErrorPage } from '../../pages/Error.page';
 import { gameSocket as socket } from '../../services/socket';
@@ -17,7 +17,7 @@ interface Props {
 
 export function PongGame({ gameSettings, gameState }: Props) {
 	const { aspectRatio, ballWidth, paddleGap, paddleHeight, paddleWidth, wallHeight } = gameSettings;
-	const canvasAspectRatio = aspectRatio.x / aspectRatio.y;
+	const canvasAspectRatio = useMemo(() => aspectRatio.x / aspectRatio.y, [aspectRatio]);
 
 	useTitle('Server Side Pong');
 
@@ -27,6 +27,11 @@ export function PongGame({ gameSettings, gameState }: Props) {
 	const { id } = useParams();
 	useEffect(() => {
 		socket.emit('page-reload', id);
+		socket.emit('join-room', id);
+
+		return () => {
+			socket.emit('leave-room', id);
+		};
 	}, [id]);
 
 	useEffect(() => {
@@ -39,6 +44,7 @@ export function PongGame({ gameSettings, gameState }: Props) {
 		};
 	}, []);
 
+	if (state.gameOver) return <div>GAME OVER</div>;
 	return (
 		<>
 			<div

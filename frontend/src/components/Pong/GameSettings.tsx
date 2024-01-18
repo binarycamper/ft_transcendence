@@ -22,6 +22,8 @@ function settingsReducer(state: Settings, action: Action): Settings {
 					...newState[parent],
 					[child]: value,
 				};
+			} else if (parent === 'side') {
+				newState[parent] = value;
 			} else if (parent === 'aspectRatio') {
 				newState[parent] = {
 					...newState[parent],
@@ -66,7 +68,7 @@ export default function GameSettings() {
 	}
 
 	if (!compareStuctureOfJSONs(settings, defaultSettings)) {
-		console.log('settingsState', defaultSettings);
+		// console.log('settingsState', settings);
 		console.log('Settings got corrupted! Resetting settings...');
 		resetToDefault();
 	}
@@ -144,6 +146,11 @@ export default function GameSettings() {
 							value={settings.wallHeight}
 							onChange={handleInputChange}
 						/>
+					</label>
+					<br />
+					<label>
+						Preferred Side:
+						<input type="text" name="side" value={settings.side} onChange={handleInputChange} />
 					</label>
 					<br />
 					<label>

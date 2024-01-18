@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
-import { AuthToken } from 'src/auth/auth.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import { unlink } from 'fs/promises';
@@ -21,8 +20,6 @@ export class UserService {
 	constructor(
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
-		@InjectRepository(AuthToken)
-		private readonly authTokenRepository: Repository<AuthToken>,
 		private jwtService: JwtService,
 		@InjectRepository(FriendRequest)
 		private friendRequestRepository: Repository<FriendRequest>,
@@ -203,15 +200,8 @@ export class UserService {
 			}
 		}
 
-		const authToken: AuthToken = await this.authTokenRepository.findOne({
-			where: { userId: user.id },
-		});
-
 		try {
 			await this.userRepository.manager.transaction(async (entityManager) => {
-				if (authToken) {
-					await entityManager.remove(authToken);
-				}
 				await entityManager.remove(user);
 			});
 		} catch (error) {

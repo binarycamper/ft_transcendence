@@ -7,16 +7,18 @@ export default class PongGame {
 	constructor(
 		public gameURL: string,
 		settings?: Partial<PongGameSettings>,
+		computer?: boolean,
 	) {
 		this.gameState = new PongGameState();
 		this.gameSettings = new PongGameSettings(settings);
 		this.player1 = new PongPlayer(this.gameSettings.side);
-		// TODO
-		this.player2 = new PongPlayer('right');
-		this.pongEngine = new PongGameEngine(this.gameSettings, this.gameState, [
+		this.player2 = new PongPlayer(this.gameSettings.side === 'left' ? 'right' : 'left', computer);
+		this.pongEngine = new PongGameEngine(
+			this.gameSettings,
+			this.gameState,
 			this.player1,
 			this.player2,
-		]);
+		);
 	}
 
 	gameSettings: PongGameSettings;
@@ -24,17 +26,26 @@ export default class PongGame {
 	player1: PongPlayer;
 	player2: PongPlayer;
 	pongEngine: PongGameEngine;
+	status: PongGameStatus = 'pending';
 }
 
-class PongGameEngine {
-	constructor(settings: PongGameSettings, gameState: PongGameState, player: PongPlayer[]) {
-		this.walls = new Wall(settings);
+type PongGameStatus = 'finished' | 'paused' | 'pending' | 'running';
 
-		// TODO sort player array
+class PongGameEngine {
+	constructor(
+		settings: PongGameSettings,
+		gameState: PongGameState,
+		player1: PongPlayer,
+		player2: PongPlayer,
+	) {
+		this.walls = new Wall(settings);
 		this.ball = new Ball(settings, gameState, this.walls);
-		this.paddleL = new PaddleL(settings, gameState, player[0], this.walls);
-		this.paddleR = new PaddleR(settings, gameState, player[1], this.walls);
 		this.score = new Score(gameState);
+
+		const playerL = player1.side === 'left' ? player1 : player2;
+		const playerR = player1.side === 'right' ? player1 : player2;
+		this.paddleL = new PaddleL(settings, gameState, playerL, this.walls);
+		this.paddleR = new PaddleR(settings, gameState, playerR, this.walls);
 	}
 
 	private readonly ball: Ball;
@@ -48,8 +59,8 @@ class PongGameEngine {
 		const delta = (currentTimestamp - this.previousTimestamp) / 1000 || 0;
 
 		this.ball.update(delta, this.paddleL, this.paddleR);
-		this.paddleL.update(delta);
-		this.paddleR.update(delta);
+		this.paddleL.update(delta, this.ball);
+		this.paddleR.update(delta, this.ball);
 		this.score.update(this.ball);
 
 		this.previousTimestamp = currentTimestamp;
@@ -80,6 +91,7 @@ export class PongGameSettings {
 
 export class PongGameState {
 	ballPos = { x: 0, y: 0 };
+	gameOver = false;
 	paddleL = 0;
 	paddleR = 0;
 	ready = false; // TODO status
@@ -94,15 +106,20 @@ export class PongKeyState {
 }
 
 export class PongPlayer {
-	constructor(side?: Side, id?: string) {
-		this.id = id;
-		this.side = side;
+	constructor(
+		readonly side: Side,
+		readonly computer = false,
+	) {
+		if (this.computer) {
+			this.anonymous = true;
+			this.ready = true;
+		} else {
+			this.keyState = new PongKeyState();
+		}
 	}
 
 	anonymous = false;
-	computer = false;
-	id: string;
-	keyState = new PongKeyState();
+	id = '';
+	keyState: PongKeyState;
 	ready = false;
-	side: Side;
 }

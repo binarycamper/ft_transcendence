@@ -10,6 +10,7 @@ abstract class Paddle {
 		readonly player: PongPlayer,
 		readonly walls: Wall,
 	) {
+		this.centerAlignment = 50 - settings.paddleHeight / 2;
 		this.computer = player.computer;
 		this.keyState = player.keyState;
 		this.paddleGap = settings.paddleGap;
@@ -17,8 +18,15 @@ abstract class Paddle {
 		this.paddleSpeed = settings.paddleSpeed;
 		this.paddleWidth = settings.paddleWidth;
 		this.reset();
+
+		if (this.computer) {
+			this.update = (delta: number, ball: Ball) => this.updateComputer(delta, ball);
+		} else {
+			this.update = (delta: number) => this.updatePlayer(delta);
+		}
 	}
 
+	readonly centerAlignment: number;
 	readonly computer: boolean;
 	readonly keyState: PongKeyState;
 	readonly paddleGap: number;
@@ -53,14 +61,29 @@ abstract class Paddle {
 	}
 
 	reset() {
-		const centerAlignment = 50 - this.paddleHeight / 2;
-		this.top = centerAlignment;
+		this.top = this.centerAlignment;
 	}
 
-	update(delta: number, ball?: Ball) {
-		return this.updatePlayer(delta);
-		// return this.computer ? this.updateComputer(delta, ball) : this.updatePlayer(delta);
+	update: (delta: number, ball?: Ball) => void;
+	/* { return this.computer ? this.updateComputer(delta, ball) : this.updatePlayer(delta); } */
+
+	private updateComputer(delta: number, ball: Ball) {
+		if (
+			(this.side === 'left' && ball.dir.x > 0) ||
+			(this.side === 'right' && ball.dir.x < 0) ||
+			ball.right < 0 ||
+			ball.left > 100
+		) {
+			const d = this.centerAlignment - this.top;
+			const speed = Math.abs(d) < this.paddleSpeed * delta ? Math.abs(d) : this.paddleSpeed / 2;
+			return this.move((d < 0 ? -speed : speed) * delta);
+		}
+		const ballCenter = ball.top + ball.diam.y / 2;
+		const d = ballCenter - (this.top + this.paddleHeight / 2);
+		const speed = Math.abs(d) < this.paddleSpeed * delta ? Math.abs(d) : this.paddleSpeed;
+		return this.move((d < 0 ? -speed : speed) * delta);
 	}
+
 	private updatePlayer(delta: number) {
 		const speed = this.keyState.mod ? this.paddleSpeed / 2 : this.paddleSpeed;
 		if (this.keyState.up) this.move(-speed * delta);

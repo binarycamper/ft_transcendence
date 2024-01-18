@@ -18,7 +18,7 @@ export default function Header() {
 					</h1>
 					<Tabs mt={8} onChange={(value) => navigate(`${value}`)} value={pathname}>
 						<Tabs.List>
-							<Tabs.Tab value="/play">Play</Tabs.Tab>
+							{/* <Tabs.Tab value="/play">Play</Tabs.Tab> */}
 							<Tabs.Tab value="/friendrequest">Requests</Tabs.Tab>
 							<Tabs.Tab value="/chatroom">Chatrooms</Tabs.Tab>
 							<Tabs.Tab value="/chatroomlist">Chatroomlist</Tabs.Tab>

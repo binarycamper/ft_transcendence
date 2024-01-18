@@ -11,7 +11,7 @@ export class PongService {
 		// @Inject(forwardRef(() => PongGateway))
 		private readonly pongGateway: PongGateway,
 	) {
-		setInterval(() => this.updateLoop(), this.updateInterval);
+		this.startUpdateLoop();
 	}
 
 	/* ------- PROPERTIES ------- */
@@ -20,9 +20,9 @@ export class PongService {
 	private intervalId: NodeJS.Timeout = null;
 	/*                      <gameURL, pongGame> */
 	private gameMap = new Map<string, PongGame>();
-	private pendingGameMap = new Map<string, PongGame>();
+	private pendingGames = new Array<PongGame>();
 	/*                       <playerID, <gameURL, playerStatus>> */
-	private playerMap = new Map<string, Map<string, string>>();
+	private playerMap = new Map<string, { game: PongGame; status: PlayerStatus }>();
 
 	/* ------- METHODS ------- */
 	startUpdateLoop() {
@@ -37,12 +37,20 @@ export class PongService {
 		this.gameMap.forEach((game, gameURL) => {
 			game.pongEngine.update();
 			this.pongGateway.server.to(gameURL).emit('update-game-state', game.gameState);
+			if (game.gameState.gameOver) {
+				game.status = 'finished';
+				this.storeHistory(game);
+			}
 		});
 	}
 
-	getPongGameById(id: string): PongGame | null {
-		const pongGame = this.gameMap.get(id);
-		return pongGame ?? null;
+	storeHistory(game: PongGame) {
+		this.gameMap.delete(game.gameURL);
+		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
+	}
+
+	getPongGameById(gameURL: string) {
+		return this.gameMap.get(gameURL);
 	}
 
 	validateSettings(gameSettings: PongGameSettings) {
@@ -56,25 +64,22 @@ export class PongService {
 		return true;
 	}
 
-	createNewGame(gameSettings: PongGameSettings, userId: string) {
+	createNewGame(gameSettings: PongGameSettings, userId: string, computer = false) {
 		if (!this.validateSettings(gameSettings)) {
 			gameSettings = this.defaultSettings;
 		}
 		const gameCode = this.generateRandomCode();
-		const newPongGame = new PongGame(gameCode, gameSettings);
+		const newPongGame = new PongGame(gameCode, gameSettings, computer);
 
 		newPongGame.player1.id = userId;
-		// console.log('new player', newPongGame.player1);
-
-		this.gameMap.set(gameCode, newPongGame);
-
-		if (this.playerMap.has(userId)) {
-			const userValue = this.playerMap.get(userId);
-			userValue.set(gameCode, 'player1');
+		this.playerJoinedGame(newPongGame, userId, 'player1');
+		if (computer) {
+			this.gameMap.set(gameCode, newPongGame);
 		} else {
-			this.playerMap.set(userId, new Map([[gameCode, 'player1']]));
+			this.pendingGames.push(newPongGame);
 		}
 
+		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 		return newPongGame;
 	}
 
@@ -104,15 +109,98 @@ export class PongService {
 	}
 
 	getUserStatusForGame(userId: string, gameURL: string) {
-		const user = this.playerMap.get(userId);
-		if (!user) return 'spectator';
+		const player = this.playerMap.get(userId);
+		if (!player) return 'spectator';
 
-		return user.get(gameURL);
+		return player.status;
 	}
 
-	updateKeystate(pongGame: PongGame, payload: any) {
+	getPlayer(userId: string) {
+		return this.playerMap.get(userId);
+	}
+
+	updateKeystate(pongGame: PongGame, player: string, payload: any) {
 		// TODO check for player
-		pongGame.player1.keyState[payload.key] = payload.pressed;
-		// console.log(pongGame.player1.keyState);
+		pongGame[player].keyState[payload.key] = payload.pressed;
+		// console.log(pongGame[player].keyState);
+	}
+
+	handleConnection(playerId: string) {
+		if (!this.playerMap.has(playerId)) {
+			this.playerMap.set(playerId, null);
+		}
+
+		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
+	}
+
+	handleDisconnect(playerId: string) {
+		this.cancelPendingGame(playerId);
+
+		// this.playerMap.delete(playerId);
+
+		// this.pongGateway.server.of('lobby').emit('lobby-stats', this.playerMap.size);
+		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
+	}
+
+	getOnlineStats() {
+		return {
+			games: this.gameMap.size,
+			players: this.playerMap.size,
+			waiting: this.pendingGames.length,
+		};
+	}
+
+	findPendingGame() {
+		// const [pongGame] = Array.from(this.pendingGameMap);
+		/* const pongGame = this.pendingGames[0];
+		console.log(pongGame);
+
+		return pongGame ?? null; */
+		return this.pendingGames[0];
+	}
+
+	joinPendingGame(userId: string) {
+		const pongGame = this.findPendingGame();
+		if (!pongGame) return null;
+
+		pongGame.player2.id = userId;
+		this.playerJoinedGame(pongGame, userId, 'player2');
+
+		this.gameMap.set(pongGame.gameURL, pongGame);
+		this.pendingGames.shift();
+		pongGame.status = 'running';
+		return pongGame.gameURL;
+	}
+
+	playerJoinedGame(game: PongGame, userId: string, status: PlayerStatus) {
+		this.playerMap.set(userId, { game, status });
+		/* if (this.playerMap.has(userId)) {
+			const player = this.playerMap.get(userId);
+			player.game = game;
+			player.status = status;
+		} else {
+			this.playerMap.set(userId, { game, status });
+		} */
+	}
+
+	getPlayerGameStatus(playerId: string) {
+		const player = this.getPlayer(playerId);
+		if (player?.game.status === 'running') {
+			return { gameURL: player.game.gameURL, queuing: false };
+		}
+		const queuing = player?.game.status === 'pending' || false;
+		return { gameURL: null, queuing };
+	}
+
+	cancelPendingGame(playerId: string) {
+		if (this.playerMap.has(playerId)) {
+			const player = this.playerMap.get(playerId);
+			if (player?.game.status === 'pending') {
+				const gameIndex = this.pendingGames.findIndex((game) => game === player.game);
+				this.pendingGames.splice(gameIndex, 1);
+			}
+		}
 	}
 }
+
+type PlayerStatus = 'player1' | 'player2';
