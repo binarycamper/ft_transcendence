@@ -135,8 +135,16 @@ export class PongService {
    }
  }*/
 
-	storeHistory(game: PongGame) {
+	async storeHistory(game: PongGame) {
 		console.log('Game: ', game);
+
+		//Update the USer status.
+		const player1 = await this.userService.findProfileById(game.player1.id);
+		const player2 = await this.userService.findProfileById(game.player2.id);
+		player1.status = 'online';
+		player2.status = 'online';
+		this.userService.updateUser(player1);
+		this.userService.updateUser(player2);
 		this.gameMap.delete(game.gameURL);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
