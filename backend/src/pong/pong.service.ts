@@ -185,7 +185,7 @@ export class PongService {
 	}
 
 	findAllHistory(): Promise<History[]> {
-		return this.historyRepository.find({ relations: ['playerOne', 'playerTwo'] });
+		return this.historyRepository.find();
 	}
 
 	getPongGameById(gameURL: string) {

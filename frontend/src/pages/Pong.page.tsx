@@ -48,7 +48,8 @@ export default function PongPage() {
 				const data = await getUserIdFromServer();
 				setUserId(data.id);
 			} catch (error) {
-				console.error('Error retrieving user ID:', error);
+				window.location.href = 'http://localhost:5173/login';
+				// console.error('Error retrieving user ID:', error);
 			}
 		};
 

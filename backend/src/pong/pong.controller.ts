@@ -2,11 +2,12 @@ import { Controller, Get, Param, Res } from '@nestjs/common';
 import { PongService } from './pong.service';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { History } from './history.entity';
 
 @Controller('pong')
 export class PongController {
-	constructor(private readonly pongService: PongService) {}
+	constructor(private readonly pongService: PongService) {
+		console.log('PongController instantiated');
+	}
 
 	@Get('create-cookie')
 	createSessionCookie(@Res() res: Response) {
@@ -30,7 +31,15 @@ export class PongController {
 
 	//DEBUG
 	@Get('all-history')
-	async getAll(): Promise<History[]> {
-		return this.pongService.findAllHistory();
+	async getAll(@Res() response: Response): Promise<void> {
+		console.log('started!');
+		try {
+			const histories = await this.pongService.findAllHistory();
+			console.log('Histories found:', histories); // For debugging
+			response.json(histories);
+		} catch (error) {
+			console.error('Error fetching histories:', error);
+			response.status(500).send('Error fetching histories');
+		}
 	}
 }

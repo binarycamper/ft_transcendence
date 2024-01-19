@@ -8,8 +8,7 @@ import { History } from './history.entity';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-	controllers: [PongController],
-	exports: [PongService],
+	exports: [TypeOrmModule, PongService],
 	imports: [
 		TypeOrmModule.forFeature([History]),
 		UserModule,
@@ -19,5 +18,6 @@ import { JwtModule } from '@nestjs/jwt';
 		}),
 	],
 	providers: [PongService, PongGateway],
+	controllers: [PongController],
 })
 export class PongModule {}
