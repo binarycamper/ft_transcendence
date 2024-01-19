@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
 
 export default function useAuthentication() {
@@ -12,6 +13,7 @@ export default function useAuthentication() {
 					credentials: 'include', // Ensures cookies are sent with the request
 				});
 				if (response.ok) {
+					socket.connect();
 					const data = await response.json();
 					setIsAuthenticated(data.isAuthenticated);
 				} else {
@@ -33,6 +35,7 @@ export default function useAuthentication() {
 				credentials: 'include', // Include credentials for cookies if used
 			});
 			if (response.ok) {
+				socket.disconnect();
 				setIsAuthenticated(false);
 				navigate('/');
 				window.location.reload(); //refresh page, then socket set user status, if anybody is requesting anything socket will track anything and sleeps so we refresh

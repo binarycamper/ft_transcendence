@@ -57,15 +57,26 @@ export default function PongPage() {
 	}, []);
 
 	useEffect(() => {
-		// Event listener for lobby stats
-		const updateStats = (stats: OnlineStats) => {
+		function updateStats(stats: OnlineStats) {
 			setStats(stats);
-		};
+		}
+
+		/* socket.emit('query-game-status', (data) => {
+			setIsLoading(data.queuing);
+			if (data.gameURL !== null) {
+				const response = window.confirm('Do you want to go to the game?');
+				if (response) {
+					navigate(`/game/${data.gameURL}`);
+				}
+			}
+		}); */
+
+		socket.emit('join-lobby', updateStats);
 		socket.on('lobby-stats', updateStats);
 
-		// Cleanup function for lobby stats
 		return () => {
-			socket.off('lobby-stats', updateStats);
+			socket.emit('leave-lobby');
+			socket.off('lobby-stats');
 		};
 	}, []);
 
@@ -81,7 +92,6 @@ export default function PongPage() {
 
 		socket.on('pong-game-ready', handleGameReady);
 
-		// Cleanup function for game ready
 		return () => {
 			socket.off('pong-game-ready', handleGameReady);
 		};
@@ -93,37 +103,33 @@ export default function PongPage() {
 		setIsLoading(true);
 	}, []);
 
-	const joinGame = () => handleRequest('join-game');
-	const playWithFriend = () => handleRequest('play-with-friend');
-	const playWithComputer = () => handleRequest('play-with-computer');
-
-	const cancelRequest = () => {
+	const cancelRequest = useCallback(() => {
 		socket.emit('cancel-game-request', () => {
 			setIsLoading(false);
 		});
-	};
+	}, []);
 
 	return (
 		<>
-			<Button onClick={joinGame} disabled={isLoading}>
+			<Button onClick={() => handleRequest('join-game')} disabled={isLoading}>
 				JOIN GAME
 			</Button>
 			<div></div>
-			<Button onClick={playWithFriend} disabled={isLoading}>
+			<Button onClick={() => handleRequest('play-with-friend')} disabled={isLoading}>
 				PLAY WITH A FRIEND
 			</Button>
 			<div></div>
-			<Button onClick={playWithComputer} disabled={isLoading}>
+			<Button onClick={() => handleRequest('play-with-computer')} disabled={isLoading}>
 				PLAY WITH THE COMPUTER
 			</Button>
 			{stats && (
 				<>
 					<div>
-						{stats.players} player{stats.players === 1 ? '' : 's'}
+						{stats.players} player{stats.players !== 1 && 's'}
 						{stats.waiting !== 0 && ` (${stats.waiting} waiting)`}
 					</div>
 					<div>
-						{stats.games} game{stats.games === 1 ? '' : 's'} in play
+						{stats.games} game{stats.games !== 1 && 's'} in play
 					</div>
 				</>
 			)}
