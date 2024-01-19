@@ -96,7 +96,7 @@ export function MatchHistory() {
 						return;
 					}
 					const mappedData = data.map((history) => ({
-						date: new Date(history.startTime).toLocaleDateString(),
+						date: new Date(history.startTime).toISOString().replace('T', ' ').slice(0, -5),
 						opponent: history.playerTwo.name,
 						result: history.winnerId === userId ? 'Won' : 'Lost',
 						score: `${history.scorePlayerOne} - ${history.scorePlayerTwo}`,
@@ -124,28 +124,35 @@ export function MatchHistory() {
 		return <div>Loading match history...</div>;
 	}
 
+	const rows = matches.map((match, index) => (
+		<Table.Tr key={index}>
+			<Table.Td>{match.date}</Table.Td>
+			<Table.Td>{match.result}</Table.Td>
+			<Table.Td>{match.opponent}</Table.Td>
+			<Table.Td>{match.score}</Table.Td>
+		</Table.Tr>
+	));
+
 	return (
-		<Container my={'10vh'} size={'lg'}>
+		<Container my={'2vh'} size={'md'}>
 			<Title>Match History</Title>
-			<Table striped highlightOnHover>
-				<thead>
-					<tr>
-						<th>Date</th>
-						<th>Opponent</th>
-						<th>Result</th>
-						<th>Score</th>
-					</tr>
-				</thead>
-				<tbody>
-					{matches.map((match, index) => (
-						<tr key={index}>
-							<td>{match.date}</td>
-							<td>{match.opponent}</td>
-							<td>{match.result}</td>
-							<td>{match.score}</td>
-						</tr>
-					))}
-				</tbody>
+			<Table
+				striped
+				highlightOnHover
+				withTableBorder
+				withColumnBorders
+				stickyHeader
+				stickyHeaderOffset={60}
+			>
+				<Table.Thead>
+					<Table.Tr>
+						<Table.Th>Date</Table.Th>
+						<Table.Th>Result</Table.Th>
+						<Table.Th>Opponent</Table.Th>
+						<Table.Th>Score</Table.Th>
+					</Table.Tr>
+				</Table.Thead>
+				<Table.Tbody>{rows}</Table.Tbody>
 			</Table>
 		</Container>
 	);
