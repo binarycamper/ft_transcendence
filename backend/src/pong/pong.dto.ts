@@ -1,6 +1,16 @@
 import { IsBoolean, IsIn, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
+class AspectRatio {
+	@IsNumber()
+	@IsIn([4])
+	x: number;
+
+	@IsNumber()
+	@IsIn([3])
+	y: number;
+}
+
 export class PongGameSettingsDto {
 	@ValidateNested()
 	@Type(() => AspectRatio)
@@ -52,14 +62,4 @@ export class PongGameSettingsDto {
 	@Min(2)
 	@Max(2)
 	wallHeight: number;
-}
-
-class AspectRatio {
-	@IsNumber()
-	@IsIn([4])
-	x: number;
-
-	@IsNumber()
-	@IsIn([3])
-	y: number;
 }
