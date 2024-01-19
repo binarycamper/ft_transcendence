@@ -72,8 +72,10 @@ export default function PongPage() {
 	useEffect(() => {
 		// Event listener for game ready
 		const handleGameReady = (data) => {
+			console.log('DATA: ');
+			console.log('DATA: ', data);
 			if (userId) {
-				socket.emit('game-ready-acknowledgement', { data, userId });
+				socket.emit('game-ready-acknowledgement', { gameURL: data, userId });
 			} else console.log('game vs Computer');
 			navigate(`/game/${data}`);
 		};
@@ -84,7 +86,7 @@ export default function PongPage() {
 		return () => {
 			socket.off('pong-game-ready', handleGameReady);
 		};
-	}, [navigate]);
+	}, [navigate, userId]);
 
 	const handleRequest = useCallback((event: string) => {
 		const gameSettings = getGameSettings();

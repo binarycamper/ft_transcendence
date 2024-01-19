@@ -92,6 +92,7 @@ export class UserService {
 		}
 		return user;
 	}
+
 	async findProfileByName(friendName: string): Promise<User> {
 		const user: User = await this.userRepository.findOne({
 			where: { name: friendName },

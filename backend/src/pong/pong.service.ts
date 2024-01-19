@@ -181,14 +181,14 @@ export class PongService {
 		history.timePlayed = timePlayed;
 		history.winnerId = winnerId;
 		const tmp = await this.historyRepository.create(history);
-		await this.historyRepository.save(history);
+		await this.historyRepository.save(tmp);
 
 		this.gameMap.delete(game.gameURL);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
-	findAllHistory(): Promise<History[]> {
-		return this.historyRepository.find();
+	async findAllHistory(): Promise<History[]> {
+		return await this.historyRepository.find();
 	}
 
 	getPongGameById(gameURL: string) {
@@ -210,7 +210,6 @@ export class PongService {
 		const game = this.gameMap.get(gameURL);
 		if (game) {
 			// Set player two's ID
-			game.player2.id = userId;
 			game.playerTwoId = userId;
 
 			// Update the gameMap with the modified game
