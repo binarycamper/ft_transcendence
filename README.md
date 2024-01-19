@@ -111,5 +111,10 @@ customization options
 - The user who has created a new channel is automatically set as the channel owner until they leave it.
   ◦ The channel owner can set a password required to access the channel, change it, and also remove it.
   ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
-
+##### issues:
+- My ChatRooms: friends name not showing (until selected).
+- Friend online status broken.
+- Enter key not sending the message.
+- Latest message now showed (we need to manually scroll to the bottom of the chat each time).
+- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone).
 #### 5. Game
