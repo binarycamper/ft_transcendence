@@ -5,7 +5,7 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 } from '@nestjs/websockets';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { parse } from 'cookie';
 import { PongGameSettings } from './classes/PongGame';
@@ -13,6 +13,7 @@ import { PongService } from './pong.service';
 import { DecodedToken, SocketWithUserData } from 'src/events/dto/dto';
 import * as jjCookie from 'cookie';
 import { JwtService } from '@nestjs/jwt';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
 @Injectable()
@@ -179,7 +180,14 @@ export class PongGateway {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() data: { gameURL: string; userId: string },
 	) {
-		this.pongService.setPlayerTwoId(data.userId, data.gameURL);
+		const isAuthenticated = this.verifyAuthentication(client);
+		if (!isAuthenticated.isAuthenticated) {
+			console.log('Invalid credentials');
+			return;
+		}
+		if (data.userId !== isAuthenticated.userId) {
+			this.pongService.setPlayerTwoId(data.userId, data.gameURL);
+		}
 		console.log(`User ID ${data.userId} acknowledged game ready for game URL ${data.gameURL}`);
 	}
 

@@ -154,6 +154,8 @@ export class PongService {
 
 		const player1 = await this.userService.findProfileById(game.playerOneId);
 		const player2 = await this.userService.findProfileById(game.playerTwoId);
+		console.log('game.playerOneId: ', game.playerOneId);
+		console.log('game.playerTwoId: ', game.playerTwoId);
 		player1.status = 'online';
 		player2.status = 'online';
 		this.userService.updateUser(player1);
@@ -216,7 +218,7 @@ export class PongService {
 			this.gameMap.set(gameURL, game);
 
 			// Update the playerMap with the new status
-			this.playerMap.set(userId, { game, status: 'player2' });
+			//this.playerMap.set(userId, { game, status: 'player2' });
 
 			// Other logic if needed, e.g., notify players that the game is ready to start
 		} else {

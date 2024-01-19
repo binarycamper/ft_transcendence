@@ -72,9 +72,8 @@ export default function PongPage() {
 	useEffect(() => {
 		// Event listener for game ready
 		const handleGameReady = (data) => {
-			console.log('DATA: ');
-			console.log('DATA: ', data);
 			if (userId) {
+				console.log('USERID: ', userId);
 				socket.emit('game-ready-acknowledgement', { gameURL: data, userId });
 			} else console.log('game vs Computer');
 			navigate(`/game/${data}`);
