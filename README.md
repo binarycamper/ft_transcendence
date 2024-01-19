@@ -115,6 +115,6 @@ customization options
 - My ChatRooms: friends name not showing (until selected).
 - Friend online status broken.
 - Enter key not sending the message.
-- Latest message now showed (we need to manually scroll to the bottom of the chat each time)
-- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone)
+- Latest message now showed (we need to manually scroll to the bottom of the chat each time).
+- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone).
 #### 5. Game
