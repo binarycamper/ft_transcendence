@@ -1,14 +1,17 @@
 import PongGame, { PongGameSettings } from './classes/PongGame';
+import { History } from './history.entity';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { parse } from 'cookie';
+import { plainToClass } from 'class-transformer';
+import { PongGameSettingsDto } from './pong.dto';
 import { PongGateway } from './pong.gateway';
 import { randomBytes } from 'crypto';
-import { Socket } from 'socket.io';
-import { UserService } from 'src/user/user.service';
-import { History } from './history.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
+import { Socket } from 'socket.io';
+import { User } from 'src/user/user.entity';
+import { UserService } from 'src/user/user.service';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class PongService {
@@ -377,6 +380,18 @@ export class PongService {
 				this.pendingGames.splice(gameIndex, 1);
 			}
 		}
+	}
+
+	async validateCustomSettings(gameSettings: PongGameSettings) {
+		const classInstance = plainToClass(PongGameSettingsDto, gameSettings);
+		const validationErrors = await validate(classInstance);
+		if (validationErrors.length > 0) {
+			/* console.log(validationErrors); */
+			return false;
+		}
+		if (classInstance.ballSpeed !== classInstance.paddleSpeed) return false;
+
+		return true;
 	}
 }
 
