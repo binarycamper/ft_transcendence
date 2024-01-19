@@ -1,5 +1,5 @@
 import { Button, Loader } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getGameSettings } from '../components/Pong/GameDefaults';
 import { gameSocket as socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
@@ -16,56 +16,46 @@ export default function PongPage() {
 	const [stats, setStats] = useState<OnlineStats>();
 
 	useEffect(() => {
-		socket.emit('join-lobby', (stats: OnlineStats) => {
+		// Event listener for lobby stats
+		const updateStats = (stats: OnlineStats) => {
 			setStats(stats);
-		});
+		};
+		socket.on('lobby-stats', updateStats);
 
-		socket.emit('query-game-status', (data) => {
-			setIsLoading(data.queuing);
-			if (data.gameURL !== null) {
-				const response = window.confirm('Do you want to go to the game?');
-				if (response) {
-					navigate(`/game/${data.gameURL}`);
-				}
-			}
-		});
-
-		socket.on('lobby-stats', (stats: OnlineStats) => {
-			setStats(stats);
-		});
-
+		// Cleanup function for lobby stats
 		return () => {
-			socket.emit('leave-lobby');
-			socket.off('lobby-stats');
+			socket.off('lobby-stats', updateStats);
 		};
 	}, []);
 
-	function handleRequest(event: string) {
+	useEffect(() => {
+		// Event listener for game ready
+		const handleGameReady = (data) => {
+			navigate(`/game/${data}`);
+		};
+		socket.on('pong-game-ready', handleGameReady);
+
+		// Cleanup function for game ready
+		return () => {
+			socket.off('pong-game-ready', handleGameReady);
+		};
+	}, [navigate]);
+
+	const handleRequest = useCallback((event: string) => {
 		const gameSettings = getGameSettings();
 		socket.emit(event, gameSettings);
 		setIsLoading(true);
-		socket.on('pong-game-ready', (data) => {
-			navigate(`/game/${data}`);
-		});
-	}
+	}, []);
 
-	function joinGame() {
-		return handleRequest('join-game');
-	}
+	const joinGame = () => handleRequest('join-game');
+	const playWithFriend = () => handleRequest('play-with-friend');
+	const playWithComputer = () => handleRequest('play-with-computer');
 
-	function playWithFriend() {
-		return handleRequest('play-with-friend');
-	}
-
-	function playWithComputer() {
-		return handleRequest('play-with-computer');
-	}
-
-	function cancelRequest() {
+	const cancelRequest = () => {
 		socket.emit('cancel-game-request', () => {
 			setIsLoading(false);
 		});
-	}
+	};
 
 	return (
 		<>
@@ -83,11 +73,11 @@ export default function PongPage() {
 			{stats && (
 				<>
 					<div>
-						{stats.players} player{stats.players === 1 || 's'}
+						{stats.players} player{stats.players === 1 ? '' : 's'}
 						{stats.waiting !== 0 && ` (${stats.waiting} waiting)`}
 					</div>
 					<div>
-						{stats.games} game{stats.games === 1 || 's'} in play
+						{stats.games} game{stats.games === 1 ? '' : 's'} in play
 					</div>
 				</>
 			)}
