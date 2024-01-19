@@ -25,7 +25,6 @@ export class PongController {
 		return res.send({ key: 'playerID', value: cookie });
 	}
 
-	//TODO: DTO!!
 	@Get(':id')
 	getPongGameData(@Param('id') id: string) {
 		const pongGameData = this.pongService.getPongGameById(id);

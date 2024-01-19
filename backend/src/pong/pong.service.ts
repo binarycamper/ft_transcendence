@@ -155,15 +155,17 @@ export class PongService {
  }*/
 
 	async storeHistory(game: PongGame) {
-		console.log('Game: ', game);
+		//console.log('Game: ', game);
 		const endTime = new Date();
 		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
 		//Update the USer status.
-
+		const fullString = game.player2.id;
+		const plTwoId = fullString.split('-sid=')[0];
+		console.log('game.playerTwoId: ', plTwoId);
 		const player1 = await this.userService.findProfileById(game.playerOneId);
-		const player2 = await this.userService.findProfileById(game.playerTwoId);
-		//console.log('game.playerOneId: ', game.playerOneId);
-		//console.log('game.playerTwoId: ', game.playerTwoId);
+		const player2 = await this.userService.findProfileById(plTwoId);
+		console.log('game.playerOneId: ', game.playerOneId);
+
 		player1.status = 'online';
 		player2.status = 'online';
 		this.userService.updateUser(player1);
@@ -198,7 +200,7 @@ export class PongService {
 	}
 
 	async findAllHistory(): Promise<History[]> {
-		const tmpHis = await this.historyRepository.find();
+		const tmpHis = await this.historyRepository.find({ relations: ['playerTwo', 'playerOne'] });
 		if (!tmpHis) return [];
 		return tmpHis;
 	}
