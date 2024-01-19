@@ -121,15 +121,24 @@ export class PongGateway {
 		@MessageBody() gameSettings: PongGameSettings,
 	) {
 		const userId = this.pongService.validateCookie(client);
-
+		console.log('UserId = ', userId);
 		const gameURL = this.pongService.joinPendingGame(userId);
 		if (gameURL) {
 			await client.join(gameURL);
 			this.server.to(gameURL).emit('pong-game-ready', gameURL);
 		} else {
 			const pongGame = this.pongService.createNewGame(gameSettings, userId);
+			console.log('pongame: ', pongGame);
 			await client.join(pongGame.gameURL);
 		}
+	}
+
+	@SubscribeMessage('game-ready-acknowledgement')
+	async handleGameReadyAcknowledgement(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() data: { gameURL: string; userId: string },
+	) {
+		console.log(`User ID ${data.userId} acknowledged game ready for game URL ${data.gameURL}`);
 	}
 
 	@SubscribeMessage('play-with-computer')

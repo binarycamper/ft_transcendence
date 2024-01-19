@@ -14,6 +14,46 @@ export default function PongPage() {
 	const navigate = useNavigate();
 	const [isLoading, setIsLoading] = useState(false);
 	const [stats, setStats] = useState<OnlineStats>();
+	const [userId, setUserId] = useState<string | null>(null);
+
+	async function getUserIdFromServer() {
+		try {
+			const response = await fetch('http://localhost:8080/user/id', {
+				method: 'GET',
+				credentials: 'include',
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			const text = await response.text();
+			if (!text) {
+				throw new Error('Response body is empty');
+			}
+			try {
+				const data = JSON.parse(text);
+				return data;
+			} catch (error) {
+				throw new Error('Failed to parse JSON response');
+			}
+		} catch (error) {
+			console.error('Error fetching user ID:', error);
+			throw error;
+		}
+	}
+
+	useEffect(() => {
+		const fetchUserId = async () => {
+			try {
+				const data = await getUserIdFromServer();
+				setUserId(data.id);
+			} catch (error) {
+				console.error('Error retrieving user ID:', error);
+			}
+		};
+
+		fetchUserId();
+	}, []);
 
 	useEffect(() => {
 		// Event listener for lobby stats
@@ -31,8 +71,12 @@ export default function PongPage() {
 	useEffect(() => {
 		// Event listener for game ready
 		const handleGameReady = (data) => {
+			if (userId) {
+				socket.emit('game-ready-acknowledgement', { data, userId });
+			} else console.log('game vs Computer');
 			navigate(`/game/${data}`);
 		};
+
 		socket.on('pong-game-ready', handleGameReady);
 
 		// Cleanup function for game ready

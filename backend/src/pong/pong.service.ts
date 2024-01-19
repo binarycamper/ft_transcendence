@@ -37,10 +37,12 @@ export class PongService {
 		if (!this.intervalId)
 			this.intervalId = setInterval(() => this.updateLoop(), this.updateInterval);
 	}
+
 	stopUpdateLoop() {
 		clearInterval(this.intervalId);
 		this.intervalId = null;
 	}
+
 	updateLoop() {
 		this.gameMap.forEach((game, gameURL) => {
 			game.pongEngine.update();
