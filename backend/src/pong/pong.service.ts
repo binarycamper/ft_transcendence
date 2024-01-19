@@ -157,11 +157,16 @@ export class PongService {
 	async storeHistory(game: PongGame) {
 		//console.log('Game: ', game);
 		const endTime = new Date();
+		let plTwoId;
 		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
 		//Update the USer status.
 		const fullString = game.player2.id;
-		const plTwoId = fullString.split('-sid=')[0];
+		if (!fullString) {
+			plTwoId = game.playerTwoId;
+			console.log('game.playerTwoId: ', plTwoId);
+		} else plTwoId = fullString.split('-sid=')[0];
 		console.log('game.playerTwoId: ', plTwoId);
+
 		const player1 = await this.userService.findProfileById(game.playerOneId);
 		const player2 = await this.userService.findProfileById(plTwoId);
 		console.log('game.playerOneId: ', game.playerOneId);

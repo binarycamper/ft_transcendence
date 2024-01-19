@@ -1,7 +1,6 @@
 import { Controller, Get, Param, Req, Res, UseGuards } from '@nestjs/common';
 import { PongService } from './pong.service';
 import { Response, Request } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('pong')
@@ -19,6 +18,7 @@ export class PongController {
 	@Get('create-cookie')
 	createSessionCookie(@Res() res: Response, @Req() req: Request) {
 		// TODO improve this using library ? ? TODO: Subject
+		console.log('create cookie');
 		const playerId = req.user.id;
 		const code = this.pongService.generateRandomCode(22);
 		const cookie = `${playerId}-sid=${code}`;
