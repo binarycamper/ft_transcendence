@@ -13,12 +13,15 @@ import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { validate } from 'class-validator';
 import { finished } from 'stream';
+import { JwtService } from '@nestjs/jwt';
+import { DecodedToken } from 'src/events/dto/dto';
 
 @Injectable()
 export class PongService {
 	constructor(
 		// @Inject(forwardRef(() => PongGateway))
 		private readonly pongGateway: PongGateway,
+		private jwtService: JwtService,
 		private userService: UserService,
 		@InjectRepository(History)
 		private historyRepository: Repository<History>,
@@ -33,7 +36,7 @@ export class PongService {
 	/*                      <gameURL, pongGame> */
 	private gameMap = new Map<string, PongGame>();
 	private pendingGames = new Array<PongGame>();
-	private finsishedGames = new Array<PongGame>();
+	private finishedGames = new Array<PongGame>();
 
 	/*                       <playerID, <gameURL, playerStatus>> */
 	private playerMap = new Map<string, { game: PongGame; status: PlayerStatus }>();
@@ -55,13 +58,14 @@ export class PongService {
 			this.pongGateway.server.to(gameURL).emit('update-game-state', game.gameState);
 			if (game.gameState.gameOver) {
 				game.status = 'finished';
-				this.finsishedGames.push(game);
+				this.finishedGames.push(game);
 				this.gameMap.delete(gameURL);
 			}
 		});
-		while (this.finsishedGames.length > 0) {
+
+		while (this.finishedGames.length > 0) {
 			console.log('start save history!');
-			await this.storeHistory(this.finsishedGames.pop());
+			await this.storeHistory(this.finishedGames.shift());
 		}
 	}
 
@@ -258,11 +262,7 @@ export class PongService {
 		}
 	}
 
-	createNewGame(
-		gameSettings: PongGameSettings,
-		userId: string,
-		computer = false /*, dataBaseUserId: string*/,
-	) {
+	createNewGame(gameSettings: PongGameSettings, userId: string, computer = false) {
 		if (!this.validateSettings(gameSettings)) {
 			gameSettings = this.defaultSettings;
 		}
@@ -410,6 +410,31 @@ export class PongService {
 		if (classInstance.ballSpeed !== classInstance.paddleSpeed) return false;
 
 		return true;
+	}
+
+	verifyAuthentication(client: Socket) {
+		const req = client.request;
+		const cookies = req.headers.cookie;
+		if (!cookies) return null;
+
+		const parsedCookies = parse(cookies);
+		if (!parsedCookies.token) return null;
+
+		const { token } = parsedCookies;
+		let decoded: DecodedToken;
+		try {
+			decoded = this.jwtService.verify<DecodedToken>(token, {
+				secret: process.env.JWT_SECRET,
+			});
+
+			console.log(decoded);
+		} catch (error) {
+			return null;
+		}
+
+		client.data.user = decoded;
+
+		return decoded.id;
 	}
 }
 

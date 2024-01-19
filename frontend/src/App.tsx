@@ -29,7 +29,7 @@ export default function App() {
 		};
 	}, []);
 
-	useEffect(() => {
+	/* useEffect(() => {
 		async function fetchSessionCookie(): Promise<{ key: string; value: string }> {
 			const response = await fetch(`http://localhost:8080/pong/create-cookie`);
 			const data = await response.json();
@@ -46,7 +46,7 @@ export default function App() {
 					console.error('Error creating session cookie:', error);
 				});
 		}
-	}, []);
+	}, []); */
 
 	return (
 		<MantineProvider defaultColorScheme="auto" theme={theme}>

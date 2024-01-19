@@ -42,7 +42,7 @@ export default function PongPage() {
 		}
 	}
 
-	useEffect(() => {
+	/* useEffect(() => {
 		const fetchUserId = async () => {
 			try {
 				const data = await getUserIdFromServer();
@@ -54,7 +54,7 @@ export default function PongPage() {
 		};
 
 		fetchUserId();
-	}, []);
+	}, []); */
 
 	useEffect(() => {
 		function updateStats(stats: OnlineStats) {
@@ -80,7 +80,7 @@ export default function PongPage() {
 		};
 	}, []);
 
-	useEffect(() => {
+	/* useEffect(() => {
 		// Event listener for game ready
 		const handleGameReady = (data) => {
 			if (userId) {
@@ -95,12 +95,16 @@ export default function PongPage() {
 		return () => {
 			socket.off('pong-game-ready', handleGameReady);
 		};
-	}, [navigate, userId]);
+	}, [navigate, userId]); */
 
 	const handleRequest = useCallback((event: string) => {
 		const gameSettings = getGameSettings();
 		socket.emit(event, gameSettings);
 		setIsLoading(true);
+		socket.on('pong-game-ready', (data) => {
+			socket.off('pong-game-ready');
+			navigate(`/game/${data}`);
+		});
 	}, []);
 
 	const cancelRequest = useCallback(() => {

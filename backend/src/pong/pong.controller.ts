@@ -14,16 +14,14 @@ export class PongController {
 		return history;
 	}
 
-	@UseGuards(JwtAuthGuard)
+	/* @UseGuards(JwtAuthGuard)
 	@Get('create-cookie')
 	createSessionCookie(@Res() res: Response, @Req() req: Request) {
-		// TODO improve this using library ? ? TODO: Subject
-		console.log('create cookie');
 		const playerId = req.user.id;
 		const code = this.pongService.generateRandomCode(22);
 		const cookie = `${playerId}-sid=${code}`;
 		return res.send({ key: 'playerID', value: cookie });
-	}
+	} */
 
 	@Get(':id')
 	getPongGameData(@Param('id') id: string) {

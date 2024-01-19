@@ -10,10 +10,6 @@ import { Server, Socket } from 'socket.io';
 import { parse } from 'cookie';
 import { PongGameSettings } from './classes/PongGame';
 import { PongService } from './pong.service';
-import { DecodedToken, SocketWithUserData } from 'src/events/dto/dto';
-import * as jjCookie from 'cookie';
-import { JwtService } from '@nestjs/jwt';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
 @Injectable()
@@ -29,7 +25,6 @@ export class PongGateway {
 	constructor(
 		@Inject(forwardRef(() => PongService))
 		private readonly pongService: PongService,
-		private jwtService: JwtService,
 	) {}
 
 	@WebSocketServer()
@@ -52,7 +47,7 @@ export class PongGateway {
 		});
 	}
 
-	verifyAuthentication(client: SocketWithUserData): {
+	/* verifyAuthentication(client: SocketWithUserData): {
 		isAuthenticated: boolean;
 		userId: string | null;
 	} {
@@ -81,7 +76,7 @@ export class PongGateway {
 		}
 
 		return { isAuthenticated: false, userId: null };
-	}
+	} */
 
 	handleConnection(client: Socket) {
 		console.log('PongGateway: handleConnection', client.id);
@@ -103,9 +98,12 @@ export class PongGateway {
 
 	@SubscribeMessage('page-reload')
 	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		const userId = this.pongService.verifyAuthentication(client);
+		if (!userId) return;
+
 		// console.log(gameURL);
 		// await client.join(gameURL);
-		const userId = this.pongService.validateCookie(client);
+		// const userId = this.pongService.validateCookie(client);
 		const status = this.pongService.getUserStatusForGame(userId, gameURL);
 		//console.log('STATUS', status);
 		if (status !== 'player1' && status !== 'player2') return;
@@ -155,27 +153,23 @@ export class PongGateway {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() gameSettings: PongGameSettings,
 	) {
-		const isAuthenticated = this.verifyAuthentication(client);
-		if (!isAuthenticated.isAuthenticated) {
-			console.log('Invalid credentials');
-			return;
-		}
-		const userId = this.pongService.validateCookie(client);
-		//console.log('UserId = ', userId);
+		const userId = this.pongService.verifyAuthentication(client);
+		if (!userId) return;
+
 		const gameURL = this.pongService.joinPendingGame(userId);
-		this.pongService.setPlayerOneId(isAuthenticated.userId, gameURL);
 		if (gameURL) {
 			await client.join(gameURL);
 			this.server.to(gameURL).emit('pong-game-ready', gameURL);
 		} else {
 			const pongGame = this.pongService.createNewGame(gameSettings, userId);
+			// this.pongService.setPlayerOneId(isAuthenticated.userId, gameURL);
 			//pongGame.playerTwoId = isAuthenticated.userId;
 			//console.log('pongame: ', pongGame);
 			await client.join(pongGame.gameURL);
 		}
 	}
 
-	@SubscribeMessage('game-ready-acknowledgement')
+	/* @SubscribeMessage('game-ready-acknowledgement')
 	async handleGameReadyAcknowledgement(
 		@ConnectedSocket() client: Socket,
 		@MessageBody() data: { gameURL: string; userId: string },
@@ -189,7 +183,7 @@ export class PongGateway {
 			this.pongService.setPlayerTwoId(data.userId, data.gameURL);
 		}
 		console.log(`User ID ${data.userId} acknowledged game ready for game URL ${data.gameURL}`);
-	}
+	} */
 
 	@SubscribeMessage('play-with-computer')
 	async handlePlayWithComputer(
@@ -226,12 +220,8 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('leave-room')
-	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
-		const { id, state } = data;
-
-		//console.log('state: ');
-		//await this.pongService.storeHistory(state);
-		await client.leave(id);
+	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		await client.leave(gameURL);
 	}
 
 	parseCookie(client: Socket) {
