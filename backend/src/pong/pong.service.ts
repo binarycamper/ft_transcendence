@@ -146,10 +146,11 @@ export class PongService {
 	async storeHistory(game: PongGame) {
 		console.log('Game: ', game);
 		const endTime = new Date();
-		const timePlayed = (endTime.getTime() - game.startTime.getTime()) / 1000;
+		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
 		//Update the USer status.
-		const player1 = await this.userService.findProfileById(game.player1.id);
-		const player2 = await this.userService.findProfileById(game.player2.id);
+
+		const player1 = await this.userService.findProfileById(game.playerOneId);
+		const player2 = await this.userService.findProfileById(game.playerTwoId);
 		player1.status = 'online';
 		player2.status = 'online';
 		this.userService.updateUser(player1);
@@ -159,14 +160,13 @@ export class PongService {
 		// Determine the winner
 		let winnerId = null;
 		if (game.gameState.scoreL > game.gameState.scoreR) {
-			winnerId = player1.id;
+			winnerId = game.playerOneId;
 		} else if (game.gameState.scoreL < game.gameState.scoreR) {
-			winnerId = player2.id;
+			winnerId = game.playerTwoId;
 		} else {
 			this.gameMap.delete(game.gameURL);
 			return;
 		}
-
 		// Save the game history
 		const history = new History();
 		history.playerOne = player1;
@@ -177,6 +177,7 @@ export class PongService {
 		history.endTime = new Date();
 		history.timePlayed = timePlayed;
 		history.winnerId = winnerId;
+		const tmp = await this.historyRepository.create(history);
 		await this.historyRepository.save(history);
 
 		this.gameMap.delete(game.gameURL);
@@ -202,7 +203,45 @@ export class PongService {
 		return true;
 	}
 
-	createNewGame(gameSettings: PongGameSettings, userId: string, computer = false) {
+	setPlayerTwoId(userId: string, gameURL: string) {
+		const game = this.gameMap.get(gameURL);
+		if (game) {
+			// Set player two's ID
+			game.player2.id = userId;
+			game.playerTwoId = userId;
+
+			// Update the gameMap with the modified game
+			this.gameMap.set(gameURL, game);
+
+			// Update the playerMap with the new status
+			this.playerMap.set(userId, { game, status: 'player2' });
+
+			// Other logic if needed, e.g., notify players that the game is ready to start
+		} else {
+			// Handle the case where the game is not found
+			console.error(`Game with URL ${gameURL} not found.`);
+		}
+	}
+
+	setPlayerOneId(userId: string, gameURL: string) {
+		const game = this.gameMap.get(gameURL);
+		if (game) {
+			// Set player two's ID
+			game.playerOneId = userId;
+			// Update the gameMap with the modified game
+			this.gameMap.set(gameURL, game);
+			// Update the playerMap with the new status
+		} else {
+			// Handle the case where the game is not found
+			console.error(`Game with URL ${gameURL} not found.`);
+		}
+	}
+
+	createNewGame(
+		gameSettings: PongGameSettings,
+		userId: string,
+		computer = false /*, dataBaseUserId: string*/,
+	) {
 		if (!this.validateSettings(gameSettings)) {
 			gameSettings = this.defaultSettings;
 		}
