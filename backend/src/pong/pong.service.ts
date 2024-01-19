@@ -12,6 +12,7 @@ import { Socket } from 'socket.io';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { validate } from 'class-validator';
+import { finished } from 'stream';
 
 @Injectable()
 export class PongService {
@@ -32,6 +33,8 @@ export class PongService {
 	/*                      <gameURL, pongGame> */
 	private gameMap = new Map<string, PongGame>();
 	private pendingGames = new Array<PongGame>();
+	private finsishedGames = new Array<PongGame>();
+
 	/*                       <playerID, <gameURL, playerStatus>> */
 	private playerMap = new Map<string, { game: PongGame; status: PlayerStatus }>();
 
@@ -46,15 +49,20 @@ export class PongService {
 		this.intervalId = null;
 	}
 
-	updateLoop() {
+	async updateLoop() {
 		this.gameMap.forEach((game, gameURL) => {
 			game.pongEngine.update();
 			this.pongGateway.server.to(gameURL).emit('update-game-state', game.gameState);
 			if (game.gameState.gameOver) {
 				game.status = 'finished';
-				this.storeHistory(game);
+				this.finsishedGames.push(game);
+				this.gameMap.delete(gameURL);
 			}
 		});
+		while (this.finsishedGames.length > 0) {
+			console.log('start save history!');
+			await this.storeHistory(this.finsishedGames.pop());
+		}
 	}
 
 	/*
@@ -154,6 +162,8 @@ export class PongService {
 
 		const player1 = await this.userService.findProfileById(game.playerOneId);
 		const player2 = await this.userService.findProfileById(game.playerTwoId);
+		//console.log('game.playerOneId: ', game.playerOneId);
+		//console.log('game.playerTwoId: ', game.playerTwoId);
 		player1.status = 'online';
 		player2.status = 'online';
 		this.userService.updateUser(player1);
@@ -188,7 +198,9 @@ export class PongService {
 	}
 
 	async findAllHistory(): Promise<History[]> {
-		return await this.historyRepository.find();
+		const tmpHis = await this.historyRepository.find();
+		if (!tmpHis) return [];
+		return tmpHis;
 	}
 
 	getPongGameById(gameURL: string) {
@@ -216,7 +228,7 @@ export class PongService {
 			this.gameMap.set(gameURL, game);
 
 			// Update the playerMap with the new status
-			this.playerMap.set(userId, { game, status: 'player2' });
+			//this.playerMap.set(userId, { game, status: 'player2' });
 
 			// Other logic if needed, e.g., notify players that the game is ready to start
 		} else {
