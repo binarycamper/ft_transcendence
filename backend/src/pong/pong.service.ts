@@ -71,7 +71,10 @@ export class PongService {
 
 	async storeHistory(game: PongGame) {
 		//console.log('Game: ', game);
-		if (game.player2.computer) return;
+		if (game.player2.computer) {
+			this.gameMap.delete(game.gameURL);
+			return;
+		}
 
 		const endTime = new Date();
 		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
