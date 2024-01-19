@@ -1,4 +1,4 @@
-import '../Game/Game.css';
+import './PongGame.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useParams } from 'react-router-dom';
 import { ErrorPage } from '../../pages/Error.page';
