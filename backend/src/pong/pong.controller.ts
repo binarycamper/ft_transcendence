@@ -6,8 +6,13 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('pong')
 export class PongController {
-	constructor(private readonly pongService: PongService) {
-		console.log('PongController instantiated');
+	constructor(private readonly pongService: PongService) {}
+
+	@Get('all-history')
+	async getAll() {
+		//console.log('started!');
+		const history = await this.pongService.findAllHistory();
+		return history;
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -29,19 +34,5 @@ export class PongController {
 		const { gameSettings, gameState } = pongGameData;
 		return { gameSettings, gameState };
 		// return pongGameData; /* only for debugging */
-	}
-
-	//DEBUG
-	@Get('all-history')
-	async getAll(@Res() response: Response): Promise<void> {
-		console.log('started!');
-		try {
-			const histories = await this.pongService.findAllHistory();
-			console.log('Histories found:', histories); // For debugging
-			response.json(histories);
-		} catch (error) {
-			console.error('Error fetching histories:', error);
-			response.status(500).send('Error fetching histories');
-		}
 	}
 }

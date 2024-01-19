@@ -226,8 +226,12 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('leave-room')
-	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
-		await client.leave(gameURL);
+	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+		const { id, state } = data;
+
+		//console.log('state: ');
+		//await this.pongService.storeHistory(state);
+		await client.leave(id);
 	}
 
 	parseCookie(client: Socket) {

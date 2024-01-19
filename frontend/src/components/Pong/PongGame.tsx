@@ -30,7 +30,7 @@ export function PongGame({ gameSettings, gameState }: Props) {
 		socket.emit('join-room', id);
 
 		return () => {
-			socket.emit('leave-room', id);
+			socket.emit('leave-room', { id, state });
 		};
 	}, [id]);
 
