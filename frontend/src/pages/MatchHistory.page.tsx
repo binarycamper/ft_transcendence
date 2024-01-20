@@ -45,7 +45,7 @@ export function MatchHistory() {
 
 	async function getUserIdFromServer() {
 		try {
-			const response = await fetch(fetchUrl('8080','/user/id'), {
+			const response = await fetch(fetchUrl('8080', '/user/id'), {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -94,7 +94,7 @@ export function MatchHistory() {
 			if (!userId) return;
 
 			try {
-				const response = await fetch(fetchUrl('8080','/pong/all-history'), {
+				const response = await fetch(fetchUrl('8080', '/pong/all-history'), {
 					method: 'GET',
 					credentials: 'include',
 				});
@@ -150,9 +150,8 @@ export function MatchHistory() {
 	}
 
 	if (matches.length === 0) {
-		return <div>Loading match history...</div>;
+		return <div>No matches found</div>;
 	}
-
 	const rows = matches.map((match, index) => (
 		<Table.Tr key={index}>
 			<Table.Td>{match.date}</Table.Td>
@@ -165,28 +164,25 @@ export function MatchHistory() {
 	return (
 		<Container my={'2vh'} size={'md'}>
 			<Title>Match History</Title>
-			{noty ? (
-				<div className="notification">{noty}</div>
-			) : (
-				<Table
-					striped
-					highlightOnHover
-					withTableBorder
-					withColumnBorders
-					stickyHeader
-					stickyHeaderOffset={60}
-				>
-					<Table.Thead>
-						<Table.Tr>
-							<Table.Th>Date</Table.Th>
-							<Table.Th>Result</Table.Th>
-							<Table.Th>Opponent</Table.Th>
-							<Table.Th>Score</Table.Th>
-						</Table.Tr>
-					</Table.Thead>
-					<Table.Tbody>{rows}</Table.Tbody>
-				</Table>
-			)}
+			{noty && <div className="notification">{noty}</div>}
+			<Table
+				striped
+				highlightOnHover
+				withTableBorder
+				withColumnBorders
+				stickyHeader
+				stickyHeaderOffset={60}
+			>
+				<Table.Thead>
+					<Table.Tr>
+						<Table.Th>Date</Table.Th>
+						<Table.Th>Result</Table.Th>
+						<Table.Th>Opponent</Table.Th>
+						<Table.Th>Score</Table.Th>
+					</Table.Tr>
+				</Table.Thead>
+				<Table.Tbody>{rows}</Table.Tbody>
+			</Table>
 		</Container>
 	);
 }
