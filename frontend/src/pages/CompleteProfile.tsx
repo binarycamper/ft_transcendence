@@ -14,34 +14,6 @@ export function CompleteProfile() {
 
 	const navigate = useNavigate();
 
-	/*
-  function validatePassword(password: string) {
-		const minLength = 8;
-		const hasUpperCase = /[A-Z]/.test(password);
-		const hasLowerCase = /[a-z]/.test(password);
-		const hasNumbers = /\d/.test(password);
-		const hasSpecialChar = /[@#$%^&*()_+\-=[\]{};':"\\|,.<>/?!°]+/.test(password);
-
-		let errorMessage = '';
-		if (password.length < minLength) {
-			errorMessage += `Password must be at least ${minLength} characters long. `;
-		}
-		if (!hasUpperCase) {
-			errorMessage += 'Password must include at least one uppercase letter. ';
-		}
-		if (!hasLowerCase) {
-			errorMessage += 'Password must include at least one lowercase letter. ';
-		}
-		if (!hasNumbers) {
-			errorMessage += 'Password must include at least one number. ';
-		}
-		if (!hasSpecialChar) {
-			errorMessage += 'Password must include at least one special character. ';
-		}
-		console.log('ERRORORR: ', errorMessage);
-		return errorMessage;
-	};
-  */
 	function validatePassword(password: string) {
 		let error = false;
 		const options = {

@@ -56,7 +56,7 @@ export class ChatController {
 			await this.chatService.muteUser(muteUserData);
 		} catch (error) {
 			console.log('Error muting user:', error);
-			throw new HttpException('Failed to mute user.', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new HttpException('Failed to mute user.', HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -67,7 +67,7 @@ export class ChatController {
 			await this.chatService.unmuteUser(unMuteUserData);
 		} catch (error) {
 			console.log('Error muting user:', error);
-			throw new HttpException('Failed to mute user.', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new HttpException('Failed to mute user.', HttpStatus.BAD_REQUEST);
 		}
 	}
 
