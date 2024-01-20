@@ -1,3 +1,4 @@
+import { IsDate, IsOptional, IsUUID, Min } from 'class-validator';
 import { User } from 'src/user/user.entity';
 import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
 
@@ -21,14 +22,20 @@ export class History {
 	scorePlayerTwo: number;
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@IsDate()
 	startTime: Date;
 
 	@Column({ type: 'timestamp', nullable: true })
+	@IsDate()
 	endTime: Date;
 
-	@Column({ type: 'int', nullable: true }) // Storing time played as an integer of seconds
+	@Column({ type: 'int', nullable: true })
+	@Min(0)
+	@IsOptional()
 	timePlayed: number;
 
 	@Column({ nullable: true })
+	@IsUUID()
+	@IsOptional()
 	winnerId: string;
 }

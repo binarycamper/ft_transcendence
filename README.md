@@ -22,8 +22,10 @@ Das Cookie "token" verfügt über keinen gültigen Wert für das "SameSite"-Attr
 ---------------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------------
-[5. Error]:
+[3. Error]: when two players start a game, kommt 8x: "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:8080/socket.io/?EIO=4&transport=polling&t=OqaMmbJ. (Reason: CORS request did not succeed). Status code: (null)."
 
+THe Request which caused the error was: 0{"sid":"CKM9lbkPGa2S1zb3AAAI","upgrades":["websocket"],"pingInterval":25000,"pingTimeout":20000,"maxPayload":1000000}
+I think thats the gameloop?
 ---------------------------------------------------------------------------------------------------------
 
 ```
@@ -111,14 +113,17 @@ customization options
 - The user who has created a new channel is automatically set as the channel owner until they leave it.
   ◦ The channel owner can set a password required to access the channel, change it, and also remove it.
   ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
+
 ##### issues:
+
 - Friends name not showing (until selected).
 - Friend online status broken.
 - Enter key not sending the message.
 - Latest message now showed (we need to manually scroll to the bottom of the chat each time).
 - Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone).
 - ChatRooms:
--	User gets added on invitation not on acceptance (private mode)
--	User can still send messages after getting kicked (page not refreshed)
--	Deleting the room without permissions results in deleting the last msg of the chat for everyone!
+- User gets added on invitation not on acceptance (private mode)
+- User can still send messages after getting kicked (page not refreshed)
+- Deleting the room without permissions results in deleting the last msg of the chat for everyone!
+
 #### 5. Game
