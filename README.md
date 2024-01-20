@@ -114,7 +114,6 @@ customization options
 - Friend online status broken.
 - ChatRooms:
 - User gets added on invitation not on acceptance (private mode)
-- User can still send messages after getting kicked (page not refreshed)
 
 optinal:
 
@@ -125,4 +124,5 @@ optinal:
 
 ##### Fixed
 
+- User can still send messages after getting kicked (page not refreshed)
 - Deleting the room without permissions results in deleting the last msg of the chat for everyone! Lol kk its fixed :D

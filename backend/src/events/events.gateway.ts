@@ -196,7 +196,6 @@ export class EventsGateway {
 		}
 	}
 
-	//TODO: DTO here pls
 	@SubscribeMessage('send-message-to-chatroom')
 	async handleMessageToChatRoom(
 		@MessageBody() data: { chatRoomId: string; content: string },
@@ -210,7 +209,17 @@ export class EventsGateway {
 			}
 
 			const chatRoom: ChatRoom = await this.chatService.getChatRoomById(data.chatRoomId);
+			const isUserMember = chatRoom.users.some((user) => user.id === isAuthenticated.userId);
+			if (!isUserMember) {
+				// User is not a member of the chat room, handle accordingly
+				console.log('User is not a member of the chat room');
+				return;
+			}
+
 			const mutes: Mute[] = chatRoom.mutes;
+
+			//TODO: if isAuthenticated.userId is member of chatroom (chatRoom.users)
+
 			const activeMute = mutes.find(
 				(mute) => mute.userId === isAuthenticated.userId && new Date(mute.endTime) > new Date(),
 			);
@@ -282,9 +291,9 @@ export class EventsGateway {
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error('Error in handleMessage:', error.message);
+				console.log('Error in handleMessage:', error.message);
 			} else {
-				console.error('An unknown error occurred in handleMessage');
+				console.log('An unknown error occurred in handleMessage');
 			}
 		}
 	}

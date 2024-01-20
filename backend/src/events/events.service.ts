@@ -11,7 +11,7 @@ export class EventsService {
 	async userConnected(email: string) {
 		try {
 			let user: User = await this.userService.findUserIdByMail(email);
-			if (user.id) {
+			if (user && user.id) {
 				user = await this.userService.findProfileById(user.id);
 				if (user && user.status !== 'online' && user.status !== 'ingame') {
 					console.log('User tracked online ', user.id);
@@ -59,7 +59,8 @@ export class EventsService {
 		try {
 			const user: User = await this.userService.findUserIdByMail(email);
 
-			if (user.id) {
+			if (user && user.id) {
+				// Check if user is not null before accessing 'id'
 				const timeout = setTimeout(() => {
 					this.userService
 						.setUserOffline(user.id)
@@ -73,7 +74,7 @@ export class EventsService {
 
 				this.userConnectionMap.set(user.id, timeout);
 			} else {
-				console.log('User not found: ', email);
+				console.log('User not found or has no ID: ', email);
 			}
 		} catch (error) {
 			console.error('Error occurred: ', error);

@@ -458,8 +458,6 @@ export class ChatController {
 		if (chatRoom.ownerId !== userId) {
 			throw new ForbiddenException('Only the owner can change the password of the chat room.');
 		}
-		//console.log('old: ', chatRoom.password);
-		// Check if the old password matches
 		if (chatRoom.password.length > 1) {
 			const isMatch = chatRoom.password
 				? await bcrypt.compare(oldPassword, chatRoom.password)

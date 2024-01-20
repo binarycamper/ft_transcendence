@@ -8,7 +8,6 @@ import {
 	Res,
 	UseGuards,
 	Query,
-	Logger,
 	HttpException,
 	HttpStatus,
 	UploadedFile,
@@ -45,6 +44,7 @@ import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendRequest } from 'src/chat/friendRequest.entity';
 import { Repository } from 'typeorm';
+import { History } from 'src/pong/history.entity';
 
 const UPLOAD_PATH = '/usr/src/app/uploads/';
 let number = 0;
@@ -55,6 +55,8 @@ export class UserController {
 		@InjectRepository(FriendRequest)
 		private readonly friendrequestRepository: Repository<FriendRequest>,
 		private readonly userService: UserService,
+		@InjectRepository(History)
+		private historyRepository: Repository<History>,
 	) {}
 
 	@Get('id')
@@ -130,6 +132,30 @@ export class UserController {
 	async deleteUser(@Req() req: Request): Promise<{ message: string }> {
 		try {
 			const user = await this.userService.findProfileById(req.user.id);
+			const openFriendRequest = await this.friendrequestRepository.find({
+				where: [
+					{ recipientId: req.user.id, status: 'pending' },
+					{ senderId: req.user.id, status: 'pending' },
+				],
+			});
+			if (openFriendRequest.length > 0) {
+				// Remove all open pending friend requests
+				for (let i = 0; i < openFriendRequest.length; i++) {
+					await this.friendrequestRepository.remove(openFriendRequest[i]);
+				}
+			}
+
+			const userHistoryEntries = await this.historyRepository.find({
+				where: [{ playerOne: user }, { playerTwo: user }],
+			});
+
+			if (userHistoryEntries.length > 0) {
+				// Remove all user's history entries
+				for (let i = 0; i < userHistoryEntries.length; i++) {
+					await this.historyRepository.remove(userHistoryEntries[i]);
+				}
+			}
+
 			await this.userService.deleteUserById(req.user.id, user.customImage);
 			req.res.clearCookie('token', { sameSite: 'none', secure: true });
 			return { message: 'User deleted successfully' };
