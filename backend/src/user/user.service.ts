@@ -19,11 +19,8 @@ export class UserService {
 		private userRepository: Repository<User>,
 		private jwtService: JwtService,
 		@InjectRepository(FriendRequest)
-		private friendRequestRepository: Repository<FriendRequest>,
 		@InjectRepository(ChatRoom)
 		private chatRoomRepository: Repository<ChatRoom>,
-		@InjectRepository(ChatMessage)
-		private chatMessageRepository: Repository<ChatMessage>,
 	) {}
 
 	findAll(): Promise<User[]> {
@@ -249,16 +246,11 @@ export class UserService {
 			if (!user) {
 				throw new Error('User not found');
 			}
-			//TODO: Wrong logic, block fails here even if they re friends!
 			if (user.friends.some((friend) => friend.id === friendId)) {
 				// Remove the friend from the user's list of friends
 				user.friends = user.friends.filter((friend) => friend.id !== friendId);
 				await transactionalEntityManager.save(user);
 			}
-			// else {
-			// 	console.log('User does not have this friend on their list, user friends: ', user);
-			// 	return { removed, message };
-			// }
 
 			const friend: User = await transactionalEntityManager.findOne(User, {
 				where: { id: friendId },

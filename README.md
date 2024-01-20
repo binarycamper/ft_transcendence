@@ -4,9 +4,13 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
+- Spectatormode: add active game links to a activeGames page, with user references. that anyone can spectate that
+
 • The user should be able to invite other users to play a Pong game through the chat interface. (ChatRoom.page /chat/invite Backend Response)
 
-- Every User Input should use dto!! Form Validation.
+- Invite players in chatinterface to a game
+
+- https protocol
 
 ```
 ERROR Notes, need to be debuged:

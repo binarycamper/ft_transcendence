@@ -117,7 +117,6 @@ const AllUsersPage: React.FC = () => {
 					<h2>Public Profile</h2>
 					<p>Name: {selectedUser.name}</p>
 					<p>Nickname: {selectedUser.nickname}</p>
-					<p>Email: {selectedUser.email}</p>
 					<p>Status: {selectedUser.status}</p>
 					{/* Display customImage or intraImage based on availability */}
 					<img
