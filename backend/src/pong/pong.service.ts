@@ -14,6 +14,63 @@ import { validateSync } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
 import { DecodedToken } from 'src/events/dto/dto';
 
+/*
+backend   | Map(1) {
+backend   |   '0nKyqmMAs2pR' => PongGame {
+backend   |     gameURL: '0nKyqmMAs2pR',
+backend   |     status: 'running',
+backend   |     startTime: 2024-01-20T12:04:16.587Z,
+backend   |     gameState: PongGameState {
+backend   |       ballPos: [Object],
+backend   |       gameOver: false,
+backend   |       paddleL: 40,
+backend   |       paddleR: 40,
+backend   |       ready: false,
+backend   |       scoreL: 1,
+backend   |       scoreR: 0
+backend   |     },
+backend   |     gameSettings: PongGameSettings {
+backend   |       aspectRatio: [Object],
+backend   |       ballAccel: 2,
+backend   |       ballSpeed: 60,
+backend   |       ballWidth: 2.5,
+backend   |       computer: false,
+backend   |       paddleGap: 2.5,
+backend   |       paddleHeight: 20,
+backend   |       paddleSpeed: 60,
+backend   |       paddleWidth: 2,
+backend   |       side: 'left',
+backend   |       wallHeight: 2,
+backend   |       keyMapP1: [Object],
+backend   |       keyMapP2: [Object]
+backend   |     },
+backend   |     player1: PongPlayer {
+backend   |       side: 'left',
+backend   |       computer: false,
+backend   |       anonymous: false,
+backend   |       id: 'b24f4e0e-759a-4e65-975e-b31aaad02bd9',
+backend   |       ready: false,
+backend   |       keyState: [PongKeyState]
+backend   |     },
+backend   |     player2: PongPlayer {
+backend   |       side: 'right',
+backend   |       computer: false,
+backend   |       anonymous: false,
+backend   |       id: '1e949e62-b932-4df7-9d49-cf5f9ab984e4',
+backend   |       ready: false,
+backend   |       keyState: [PongKeyState]
+backend   |     },
+backend   |     pongEngine: PongGameEngine {
+backend   |       walls: [Wall],
+backend   |       ball: [Ball],
+backend   |       score: [Score],
+backend   |       paddleL: [PaddleL],
+backend   |       paddleR: [PaddleR],
+backend   |       previousTimestamp: 19617.864564
+backend   |     }
+backend   |   }
+*/
+
 @Injectable()
 export class PongService {
 	constructor(
@@ -123,6 +180,26 @@ export class PongService {
 
 	getPongGameById(gameURL: string) {
 		return this.gameMap.get(gameURL);
+	}
+
+	async findAllGames() {
+		const gamePromises = Array.from(this.gameMap.values()).map(async (game) => {
+			// Using async here to allow await inside the map
+			const userOne = await this.userService.findProfileById(game.player1.id);
+			const userTwo = await this.userService.findProfileById(game.player2.id);
+
+			return {
+				gameURL: game.gameURL,
+				status: game.status,
+				startTime: game.startTime,
+				playerOneName: userOne.name,
+				playerTwoName: userTwo.name,
+				// ... include other properties as needed
+			};
+		});
+		const gamesArray = await Promise.all(gamePromises);
+		//console.log(gamesArray);
+		return gamesArray;
 	}
 
 	createNewGame(userId: string, gameSettings: PongGameSettings, computer = false) {

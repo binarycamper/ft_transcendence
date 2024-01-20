@@ -21,6 +21,7 @@ import { PongGameWrapper } from './components/Pong/PongGame';
 import { MatchHistory } from './pages/MatchHistory.page';
 import fetchUrl from './services/fetchUrl';
 import AllUsersPage from './pages/AllUsers.page';
+import ActiveGamesPage from './pages/ActiveGames.page';
 
 const router = createBrowserRouter([
 	{
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
 			{
 				path: 'friends',
 				element: <FriendList />,
+			},
+			{
+				path: 'activegames',
+				element: <ActiveGamesPage />,
 			},
 			{
 				path: '/login',

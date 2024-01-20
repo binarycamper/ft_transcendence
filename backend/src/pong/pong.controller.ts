@@ -14,6 +14,13 @@ export class PongController {
 		return history;
 	}
 
+	@Get('active-games')
+	async getAllGames() {
+		//console.log('started!');
+		const games = await this.pongService.findAllGames();
+		return games;
+	}
+
 	/* @UseGuards(JwtAuthGuard)
 	@Get('create-cookie')
 	createSessionCookie(@Res() res: Response, @Req() req: Request) {
