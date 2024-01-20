@@ -114,14 +114,14 @@ customization options
 - Friend online status broken.
 - ChatRooms:
 - User gets added on invitation not on acceptance (private mode)
+- User can still send messages after getting kicked (page not refreshed)
 
 optinal:
 
 - Friends name not showing (until selected). = (Only in White Mode, we will evaluate in darkmode.)
-- Enter key not sending the message. optinal
+- Enter key not sending the message. optional
 - Latest message now showed (we need to manually scroll to the bottom of the chat each time).
-- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone). = Solution would be to disable clear chat, to save time.
-- User can still send messages after getting kicked (page not refreshed) // thats just rendered on its own clientpage which is not serverstate.
+- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone). = Solution would be to disable clear chat. But optional
 
 ##### Fixed
 
