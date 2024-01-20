@@ -87,20 +87,21 @@ export class PongService {
 		player1.status = 'online';
 		player2.status = 'online';
 
-		// Save the updated user entity
-		await this.userService.updateUser(player1);
-		await this.userService.updateUser(player2);
-
 		let winnerId: string;
 		if (game.gameState.scoreL > game.gameState.scoreR) {
 			winnerId = game.player1.id;
+			player1.ladderLevel += 1;
 		} else if (game.gameState.scoreL < game.gameState.scoreR) {
 			winnerId = game.player2.id;
+			player2.ladderLevel += 1;
 		} else {
 			console.log('Invalid game');
 			return;
 		}
 
+		// Save the updated user entity
+		await this.userService.updateUser(player1);
+		await this.userService.updateUser(player2);
 		const history = new History();
 		history.playerOne = player1;
 		history.playerTwo = player2;
