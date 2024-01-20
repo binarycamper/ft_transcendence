@@ -18,7 +18,6 @@ export class UserService {
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
 		private jwtService: JwtService,
-		@InjectRepository(FriendRequest)
 		@InjectRepository(ChatRoom)
 		private chatRoomRepository: Repository<ChatRoom>,
 	) {}
