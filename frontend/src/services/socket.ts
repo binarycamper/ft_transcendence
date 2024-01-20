@@ -1,9 +1,10 @@
 import io from 'socket.io-client';
+import { fetchWsUrl } from './fetchUrl';
 
-export const socket = io('ws://localhost:8080', {
+export const socket = io(fetchWsUrl('8080'), {
 	withCredentials: true,
 });
 
-export const gameSocket = io('ws://localhost:8090', {
+export const gameSocket = io(fetchWsUrl('8090'), {
 	withCredentials: true,
 });

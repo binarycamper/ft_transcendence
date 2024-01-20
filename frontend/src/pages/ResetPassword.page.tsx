@@ -4,6 +4,7 @@ import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 import styles from '../css/ResetPassword.module.css'; // Korrigierter Pfad
+import fetchUrl from '../services/fetchUrl';
 
 export default function ResetPassword() {
 	const [password, setPassword] = useState('');
@@ -73,7 +74,7 @@ export default function ResetPassword() {
 		}
 
 		try {
-			const response = await fetch(`http://localhost:8080/auth/update-password`, {
+			const response = await fetch(fetchUrl('8080',`/auth/update-password`), {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ newPassword: password, confirmPassword: password, token }),

@@ -1,6 +1,7 @@
 import { HttpStatusCode } from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 type UserProfile = {
 	achievements: string[];
@@ -40,7 +41,7 @@ export default function useProfile() {
 			const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 			await delay(500); // Wait for 0.5 seconds
 			try {
-				const response = await fetch('http://localhost:8080/user/profile', {
+				const response = await fetch(fetchUrl('8080','/user/profile'), {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -109,7 +110,7 @@ export default function useProfile() {
 		const formData = new FormData();
 		formData.append('customImage', selectedFile);
 		try {
-			const response = await fetch('http://localhost:8080/user/upload-image', {
+			const response = await fetch(fetchUrl('8080','/user/upload-image'), {
 				method: 'POST',
 				credentials: 'include',
 				body: formData,
@@ -149,7 +150,7 @@ export default function useProfile() {
 		setErrorProfile(''); // Reset error message
 
 		try {
-			const response = await fetch('http://localhost:8080/user/edit-name', {
+			const response = await fetch(fetchUrl('8080','/user/edit-name'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ export default function useProfile() {
 
 	async function handleToggle2FA() {
 		try {
-			const response = await fetch(`http://localhost:8080/auth/toggle-2fa`, {
+			const response = await fetch(fetchUrl('8080','/auth/toggle-2fa'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

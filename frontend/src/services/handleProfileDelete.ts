@@ -1,9 +1,11 @@
+import fetchUrl from "./fetchUrl";
+
 export default async function handleProfileDelete() {
 	if (
 		window.confirm('Are you sure you want to delete your account? This action cannot be undone!')
 	) {
 		try {
-			const response = await fetch('http://localhost:8080/user/delete?confirm=true', {
+			const response = await fetch(fetchUrl('8080', '/user/delete?confirm=true'), {
 				method: 'DELETE',
 				credentials: 'include',
 			});

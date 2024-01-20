@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getGameSettings } from '../components/Pong/GameDefaults';
 import { gameSocket as socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 interface OnlineStats {
 	games: number;
@@ -18,7 +19,7 @@ export default function PongPage() {
 
 	async function getUserIdFromServer() {
 		try {
-			const response = await fetch('http://localhost:8080/user/id', {
+			const response = await fetch(fetchUrl('8080','/user/id'), {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -48,7 +49,7 @@ export default function PongPage() {
 				const data = await getUserIdFromServer();
 				setUserId(data.id);
 			} catch (error) {
-				window.location.href = 'http://localhost:5173/login';
+				window.location.href = fetchUrl('5173','/login');
 				// console.error('Error retrieving user ID:', error);
 			}
 		};

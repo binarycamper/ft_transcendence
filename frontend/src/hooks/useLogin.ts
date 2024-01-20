@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import fetchUrl from '../services/fetchUrl';
 
 export default function useLogin() {
 	const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function useLogin() {
 		if (!email || !password) return void setError(true);
 
 		try {
-			const response = await fetch('http://localhost:8080/auth/login', {
+			const response = await fetch(fetchUrl('8080','/auth/login'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import { Tooltip } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 type Friend = {
 	email: string;
@@ -31,7 +32,7 @@ export function PublicProfile() {
 			setIsLoading(true);
 			try {
 				const response = await fetch(
-					`http://localhost:8080/user/public-profile?friendname=${friendName}`,
+					fetchUrl('8080',`/user/public-profile?friendname=${friendName}`),
 					{
 						method: 'GET',
 						credentials: 'include',

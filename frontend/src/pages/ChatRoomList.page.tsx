@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../css/chatroomlist.css';
 import { HttpStatusCode } from 'axios';
+import fetchUrl from '../services/fetchUrl';
 
 type User = {
 	id: string;
@@ -36,7 +37,7 @@ export function ChatRoomList() {
 	useEffect(() => {
 		async function getCurrentUser() {
 			try {
-				const response = await fetch('http://localhost:8080/user/id', {
+				const response = await fetch(fetchUrl('8080','/user/id'), {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -56,7 +57,7 @@ export function ChatRoomList() {
 		if (currentUser) {
 			async function fetchChatRooms() {
 				try {
-					const response = await fetch('http://localhost:8080/chat/all-chatrooms', {
+					const response = await fetch(fetchUrl('8080','/chat/all-chatrooms'), {
 						credentials: 'include',
 					});
 
@@ -111,7 +112,7 @@ export function ChatRoomList() {
 				password = prompt('Enter the password for this room:') || '';
 			}
 			const placeholder = 'OOO'; //usernameToInvite = jwt infos , dont need to request
-			const response = await fetch(`http://localhost:8080/chat/join-room`, {
+			const response = await fetch(fetchUrl('8080','/chat/join-room'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -122,7 +123,7 @@ export function ChatRoomList() {
 
 			if (response.ok) {
 				//console.log(`Joined room with ID: ${roomId}`);
-				window.location.href = 'http://localhost:5173/chatroom';
+				window.location.href = fetchUrl('5173','/chatroom');
 			} else {
 				const errorData = await response.json();
 				setJoinError(`Failed to join room: ${errorData.message}`);
@@ -139,7 +140,7 @@ export function ChatRoomList() {
 				if (!isConfirmed) return;
 
 				const deleteResponse = await fetch(
-					`http://localhost:8080/chat/delete-chatroom?chatroomId=${roomId}`,
+					fetchUrl('8080',`/chat/delete-chatroom?chatroomId=${roomId}`),
 					{
 						method: 'DELETE',
 						credentials: 'include',
@@ -157,7 +158,7 @@ export function ChatRoomList() {
 				}
 				return;
 			}
-			const response = await fetch(`http://localhost:8080/chat/kick-user`, {
+			const response = await fetch(fetchUrl('8080','/chat/kick-user'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -188,7 +189,7 @@ export function ChatRoomList() {
 
 	async function handleMakeAdmin(roomId: string, userId: string) {
 		try {
-			const response = await fetch(`http://localhost:8080/chat/upgrade-to-admin`, {
+			const response = await fetch(fetchUrl('8080','/chat/upgrade-to-admin'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -198,7 +199,7 @@ export function ChatRoomList() {
 			});
 
 			if (response.ok) {
-				window.location.href = 'http://localhost:5173/chatroomlist';
+				window.location.href = fetchUrl('5173','/chatroomlist');
 			} else {
 				const errorData = await response.json();
 				setJoinError(`Failed to make user admin: ${errorData.message}`);
@@ -214,7 +215,7 @@ export function ChatRoomList() {
 		}
 
 		try {
-			const response = await fetch(`http://localhost:8080/chat/revoke-admin`, {
+			const response = await fetch(fetchUrl('8080','/chat/revoke-admin'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -258,7 +259,7 @@ export function ChatRoomList() {
 		// Note: If the user enters nothing and confirms, newPassword will be an empty string
 
 		try {
-			const response = await fetch(`http://localhost:8080/chat/change-password`, {
+			const response = await fetch(fetchUrl('8080','/chat/change-password'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -310,7 +311,7 @@ export function ChatRoomList() {
 		}
 		console.log('muteDuration: ', muteDuration);
 		try {
-			const response = await fetch(`http://localhost:8080/chat/mute`, {
+			const response = await fetch(fetchUrl('8080','/chat/mute'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -322,7 +323,7 @@ export function ChatRoomList() {
 			if (response.ok) {
 				// Handle the response. For example, update the UI or notify the user.
 				alert('User has been muted successfully');
-				window.location.href = 'http://localhost:5173/chatroomlist';
+				window.location.href = fetchUrl('5173','/chatroomlist');
 			} else {
 				const errorData = await response.json();
 				alert(`Failed to mute user: ${errorData.message}`);
@@ -337,7 +338,7 @@ export function ChatRoomList() {
 			console.log('USERID: ', userIdToUnMute);
 			console.log('roomId: ', roomId);
 
-			const response = await fetch(`http://localhost:8080/chat/unmute`, {
+			const response = await fetch(fetchUrl('8080','/chat/unmute'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {

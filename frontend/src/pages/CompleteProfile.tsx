@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
+import fetchUrl from '../services/fetchUrl';
 
 export function CompleteProfile() {
 	const [password, setPassword] = useState('');
@@ -46,7 +47,7 @@ export function CompleteProfile() {
 	useEffect(() => {
 		async function checkProfileStatus() {
 			try {
-				const response = await fetch('http://localhost:8080/user/is-profile-complete', {
+				const response = await fetch(fetchUrl('8080','/user/is-profile-complete'), {
 					credentials: 'include',
 				});
 				const data = await response.json();
@@ -72,7 +73,7 @@ export function CompleteProfile() {
 		// Clear the previous password error
 		setPasswordError('');
 
-		const API_URL = 'http://localhost:8080/user/complete';
+		const API_URL = fetchUrl('8080','/user/complete');
 		try {
 			const response = await fetch(API_URL, {
 				method: 'POST',

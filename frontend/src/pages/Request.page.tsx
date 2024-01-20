@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../services/socket';
+import fetchUrl from '../services/fetchUrl';
 
 const listStyles: React.CSSProperties = {
 	listStyle: 'none',
@@ -112,7 +113,7 @@ export function FriendRequest() {
 	async function fetchPendingRequests() {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/chat/pending-requests', {
+			const response = await fetch(fetchUrl('8080','/chat/pending-requests'), {
 				credentials: 'include',
 			});
 			if (!response.ok) {
@@ -134,7 +135,7 @@ export function FriendRequest() {
 	async function fetchMyRequests() {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/chat/my-requests', {
+			const response = await fetch(fetchUrl('8080','/chat/my-requests'), {
 				credentials: 'include',
 			});
 			if (!response.ok) {
@@ -154,7 +155,7 @@ export function FriendRequest() {
 		setIsLoading(true);
 		try {
 			// Update the URL with the correct endpoint for fetching friends
-			const response = await fetch('http://localhost:8080/user/friends', {
+			const response = await fetch(fetchUrl('8080','/user/friends'), {
 				method: 'GET',
 				credentials: 'include', // For session cookies, if required
 				headers: {
@@ -179,7 +180,7 @@ export function FriendRequest() {
 
 	async function handleAction(messageId: string, action: string) {
 		try {
-			const response = await fetch(`http://localhost:8080/chat/${action}/?messageid=${messageId}`, {
+			const response = await fetch(fetchUrl('8080',`/chat/${action}/?messageid=${messageId}`), {
 				method: 'POST',
 				credentials: 'include',
 			});

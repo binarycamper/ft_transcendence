@@ -19,6 +19,7 @@ import VerifyResetToken from './pages/VerifyResetToken.page';
 import PongPage from './pages/Pong.page';
 import { PongGameWrapper } from './components/Pong/PongGame';
 import { MatchHistory } from './pages/MatchHistory.page';
+import fetchUrl from './services/fetchUrl';
 
 const router = createBrowserRouter([
 	{
@@ -78,7 +79,7 @@ const router = createBrowserRouter([
 						path: ':id',
 						element: <PongGameWrapper />,
 						loader: async ({ params }) => {
-							return fetch(`http://localhost:8080/pong/${params.id}`);
+							return fetch(fetchUrl('8080',`/pong/${params.id}`));
 						},
 					},
 				],

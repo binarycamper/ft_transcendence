@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 type ChatRequest = {
 	content: string;
@@ -39,7 +40,7 @@ export default function useFetchFriendList() {
 		async function fetchPendingRequestsCount() {
 			setIsLoading(true);
 			try {
-				const response = await fetch('http://localhost:8080/chat/pending-requests', {
+				const response = await fetch(fetchUrl('8080','/chat/pending-requests'), {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -65,7 +66,7 @@ export default function useFetchFriendList() {
 	async function fetchFriends() {
 		try {
 			setIsLoading(true);
-			const response = await fetch('http://localhost:8080/user/friends', {
+			const response = await fetch(fetchUrl('8080','/user/friends'), {
 				method: 'GET',
 				credentials: 'include',
 				headers: {
@@ -104,7 +105,7 @@ export default function useFetchFriendList() {
 			messageType: 'friend_request',
 		};
 		try {
-			const response = await fetch('http://localhost:8080/chat/friend-request', {
+			const response = await fetch(fetchUrl('8080','/chat/friend-request'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -132,7 +133,7 @@ export default function useFetchFriendList() {
 	async function handleFriendClick(friendName: string) {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/user/public-profile?friendname=${friendName}`,
+				fetchUrl('8080',`/user/public-profile?friendname=${friendName}`),
 				{
 					method: 'GET',
 					credentials: 'include',
@@ -156,7 +157,7 @@ export default function useFetchFriendList() {
 	async function removeFriend(event: React.MouseEvent, friendId: string) {
 		event.stopPropagation();
 		try {
-			const response = await fetch(`http://localhost:8080/user/friends/?friendid=${friendId}`, {
+			const response = await fetch(fetchUrl('8080',`/user/friends/?friendid=${friendId}`), {
 				method: 'DELETE',
 				credentials: 'include',
 				headers: {

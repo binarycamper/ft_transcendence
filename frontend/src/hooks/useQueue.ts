@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 interface MatchDetails {
 	id: string;
@@ -80,7 +81,7 @@ export default function useQue() {
 	useEffect(() => {
 		async function handleMatchProposalExpired() {
 			try {
-				const response = await fetch(`http://localhost:8080/matchmaking/user-status`, {
+				const response = await fetch(fetchUrl('8080','/matchmaking/user-status'), {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -113,7 +114,7 @@ export default function useQue() {
 	useEffect(() => {
 		async function checkInitialQueueStatus() {
 			try {
-				const response = await fetch(`http://localhost:8080/matchmaking/user-status`, {
+				const response = await fetch(fetchUrl('8080','/matchmaking/user-status'), {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -164,7 +165,7 @@ export default function useQue() {
 		const intervalId = setInterval(async () => {
 			if (inQueue) {
 				try {
-					const responseMatch = await fetch(`http://localhost:8080/matchmaking/match`, {
+					const responseMatch = await fetch(fetchUrl('8080','/matchmaking/match'), {
 						method: 'GET',
 						headers: { 'Content-Type': 'application/json' },
 						credentials: 'include',

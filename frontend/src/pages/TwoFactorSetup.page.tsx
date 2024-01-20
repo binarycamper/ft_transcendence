@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Form, useNavigate } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 export function TwoFactorSetup() {
 	const [twoFACode, setTwoFACode] = useState('');
@@ -11,7 +12,7 @@ export function TwoFactorSetup() {
 
 	useEffect(() => {
 		async function fetchProfile() {
-			const response = await fetch(`http://localhost:8080/user/id`, {
+			const response = await fetch(fetchUrl('8080','/user/id'), {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -35,7 +36,7 @@ export function TwoFactorSetup() {
 
 	async function handle2FASetup() {
 		try {
-			const response = await fetch(`http://localhost:8080/auth/2fa/setup`, {
+			const response = await fetch(fetchUrl('8080','/auth/2fa/setup'), {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -51,7 +52,7 @@ export function TwoFactorSetup() {
 	}
 
 	async function verify2FACode() {
-		const url = 'http://localhost:8080/auth/2fa/verify-2fa';
+		const url = fetchUrl('8080','/auth/2fa/verify-2fa');
 		try {
 			const response = await fetch(url, {
 				method: 'POST',

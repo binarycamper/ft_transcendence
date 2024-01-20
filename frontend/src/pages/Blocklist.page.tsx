@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import fetchUrl from '../services/fetchUrl';
 
 interface BlockedUser {
 	id: string;
@@ -14,7 +15,7 @@ export default function Blocklist() {
 	async function fetchBlockedUsers() {
 		setIsLoading(true);
 		try {
-			const response = await fetch('http://localhost:8080/user/blocked-users', {
+			const response = await fetch(fetchUrl('8080','/user/blocked-users'), {
 				credentials: 'include',
 			});
 			if (!response.ok) {
@@ -36,7 +37,7 @@ export default function Blocklist() {
 
 	async function unblockUser(userId: string) {
 		try {
-			const response = await fetch(`http://localhost:8080/user/unblock-user?userid=${userId}`, {
+			const response = await fetch(fetchUrl('8080',`/user/unblock-user?userid=${userId}`), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -58,7 +59,7 @@ export default function Blocklist() {
 	async function blockUser() {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/user/block-user/?userName=${userNameToBlock}`,
+				fetchUrl('8080',`/user/block-user/?userName=${userNameToBlock}`),
 				{
 					method: 'POST',
 					credentials: 'include',

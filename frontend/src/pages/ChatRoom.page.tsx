@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { HttpStatusCode } from 'axios';
 import { socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
+import fetchUrl from '../services/fetchUrl';
 
 type Friend = {
 	id: string;
@@ -60,7 +61,7 @@ export function ChatRoom() {
 	useEffect(() => {
 		async function getCurrentUserId() {
 			try {
-				const response = await fetch('http://localhost:8080/user/id', {
+				const response = await fetch(fetchUrl('8080','/user/id'), {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -81,7 +82,7 @@ export function ChatRoom() {
 		// Fetch friends list when component mounts
 		async function fetchFriends() {
 			try {
-				const response = await fetch('http://localhost:8080/user/friends', {
+				const response = await fetch(fetchUrl('8080','/user/friends'), {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -117,7 +118,7 @@ export function ChatRoom() {
 	async function fetchChatHistory(selectedFriendId: string) {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/chat/history/?friendId=${selectedFriendId}`,
+        fetchUrl('8080',`/chat/history/?friendId=${selectedFriendId}`),
 				{
 					method: 'GET',
 					credentials: 'include',
@@ -187,8 +188,8 @@ export function ChatRoom() {
 
 	async function handleClearChat(id: string, isRoom: boolean) {
 		const url = isRoom
-			? `http://localhost:8080/chat/clear-chatroom?chatroomId=${id}`
-			: `http://localhost:8080/chat/delete-chat?friendId=${id}`;
+			? fetchUrl('8080',`/chat/clear-chatroom?chatroomId=${id}`)
+			: fetchUrl('8080',`/chat/delete-chat?friendId=${id}`);
 		//console.log('url: ', url);
 		const confirmation = window.confirm(
 			'Clearing this chat will delete all messages. Do you want to proceed?',
@@ -223,7 +224,7 @@ export function ChatRoom() {
 
 	async function inviteToPongGame(friendId: string) {
 		try {
-			const response = await fetch(`http://localhost:8080/chat/invite?friendId=${friendId}`, {
+			const response = await fetch(fetchUrl('8080',`/chat/invite?friendId=${friendId}`), {
 				method: 'POST',
 				credentials: 'include',
 			});
@@ -271,7 +272,7 @@ export function ChatRoom() {
 		};
 
 		try {
-			const response = await fetch('http://localhost:8080/chat/chatroom', {
+			const response = await fetch(fetchUrl('8080','/chat/chatroom'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -306,7 +307,7 @@ export function ChatRoom() {
 	useEffect(() => {
 		async function fetchChatRooms() {
 			try {
-				const response = await fetch('http://localhost:8080/chat/my-chatrooms', {
+				const response = await fetch(fetchUrl('8080','/chat/my-chatrooms'), {
 					credentials: 'include',
 				});
 				if (!response.ok) {
@@ -326,7 +327,7 @@ export function ChatRoom() {
 	async function fetchChatRoomHistory(chatRoomId: string) {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/chat/chatroom-history/?chatroomId=${chatRoomId}`,
+        fetchUrl('8080',`/chat/chatroom-history/?chatroomId=${chatRoomId}`),
 				{
 					method: 'GET',
 					credentials: 'include',
@@ -354,7 +355,7 @@ export function ChatRoom() {
 	}
 
 	async function handleRoomSettings() {
-		window.location.href = 'http://localhost:5173/chatroomlist';
+		window.location.href = fetchUrl('5173','/chatroomlist');
 	}
 
 	async function handleDeleteChatRoom(chatRoomId: string) {
@@ -365,7 +366,7 @@ export function ChatRoom() {
 
 		try {
 			const response = await fetch(
-				`http://localhost:8080/chat/delete-chatroom?chatroomId=${chatRoomId}`,
+				fetchUrl('8080',`/chat/delete-chatroom?chatroomId=${chatRoomId}`),
 				{
 					method: 'DELETE',
 					credentials: 'include',
@@ -374,7 +375,7 @@ export function ChatRoom() {
 			if (response.status === 204) {
 				// Remove the deleted chat room from state
 				setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== chatRoomId));
-				window.location.href = 'http://localhost:5173/chatroom';
+				window.location.href = fetchUrl('5173','/chatroom');
 				showNotification('ChatRoom deleted');
 			} else setChatRoomError('You cannot delete that chatroom');
 		} catch (error) {
@@ -389,7 +390,7 @@ export function ChatRoom() {
 			return;
 		}
 		try {
-			const response = await fetch(`http://localhost:8080/chat/invite-to-room`, {
+			const response = await fetch(fetchUrl('8080','/chat/invite-to-room'), {
 				method: 'POST',
 				credentials: 'include',
 				headers: {

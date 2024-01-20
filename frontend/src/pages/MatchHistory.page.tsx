@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import useTitle from '../hooks/useTitle';
 import { Container, Title, Table } from '@mantine/core';
+import fetchUrl from '../services/fetchUrl';
 
 type MatchHistoryItem = {
 	date: string;
@@ -44,7 +45,7 @@ export function MatchHistory() {
 
 	async function getUserIdFromServer() {
 		try {
-			const response = await fetch('http://localhost:8080/user/id', {
+			const response = await fetch(fetchUrl('8080','/user/id'), {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -93,7 +94,7 @@ export function MatchHistory() {
 			if (!userId) return;
 
 			try {
-				const response = await fetch('http://localhost:8080/pong/all-history', {
+				const response = await fetch(fetchUrl('8080','/pong/all-history'), {
 					method: 'GET',
 					credentials: 'include',
 				});
