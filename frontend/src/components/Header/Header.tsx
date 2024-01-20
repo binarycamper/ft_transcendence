@@ -23,6 +23,7 @@ export default function Header() {
 							<Tabs.Tab value="/chatroom">Chatrooms</Tabs.Tab>
 							<Tabs.Tab value="/chatroomlist">Chatroomlist</Tabs.Tab>
 							<Tabs.Tab value="/profile">Profile</Tabs.Tab>
+							<Tabs.Tab value="/alluser">AllUsers</Tabs.Tab>
 							<Tabs.Tab value="/friends">FriendList</Tabs.Tab>
 							<Tabs.Tab value="/settings">Settings</Tabs.Tab>
 							<Tabs.Tab value="/matchhistory">history</Tabs.Tab>

@@ -20,6 +20,7 @@ import PongPage from './pages/Pong.page';
 import { PongGameWrapper } from './components/Pong/PongGame';
 import { MatchHistory } from './pages/MatchHistory.page';
 import fetchUrl from './services/fetchUrl';
+import AllUsersPage from './pages/AllUsers.page';
 
 const router = createBrowserRouter([
 	{
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
 				element: <Settings />,
 			},
 			{
+				path: 'alluser',
+				element: <AllUsersPage />,
+			},
+			{
 				path: 'friends',
 				element: <FriendList />,
 			},
@@ -79,7 +84,7 @@ const router = createBrowserRouter([
 						path: ':id',
 						element: <PongGameWrapper />,
 						loader: async ({ params }) => {
-							return fetch(fetchUrl('8080',`/pong/${params.id}`));
+							return fetch(fetchUrl('8080', `/pong/${params.id}`));
 						},
 					},
 				],

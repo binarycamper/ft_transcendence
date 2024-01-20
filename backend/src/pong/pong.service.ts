@@ -11,8 +11,7 @@ import { Repository } from 'typeorm';
 import { Socket } from 'socket.io';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
-import { validate, validateSync } from 'class-validator';
-import { finished } from 'stream';
+import { validateSync } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
 import { DecodedToken } from 'src/events/dto/dto';
 
