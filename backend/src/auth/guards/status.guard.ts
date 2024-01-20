@@ -13,9 +13,6 @@ export class StatusGuard implements CanActivate {
 		const request: Express.Request = context.switchToHttp().getRequest();
 		const { user } = request;
 
-		//console.log('user:: ', user);
-
-		//if used without jwt-guard, because jwt-guard also handle that but without redirect:
 		if (!user) {
 			throw new HttpException(
 				{
@@ -27,7 +24,6 @@ export class StatusGuard implements CanActivate {
 		}
 
 		if (user.status === 'fresh') {
-			//console.log('StatusGuard detect fresh user');
 			throw new HttpException(
 				{
 					error: 'Please complete your profile',

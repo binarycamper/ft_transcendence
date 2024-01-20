@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Form, useNavigate } from 'react-router-dom';
 
 export function TwoFactorSetup() {
 	const [twoFACode, setTwoFACode] = useState('');
@@ -40,6 +40,9 @@ export function TwoFactorSetup() {
 				credentials: 'include',
 			});
 			const data = await response.json();
+			if (data.qrCodeUrl === null) {
+				return;
+			}
 			setQrCodeUrl(data.qrCodeUrl);
 			// handle2FASetup();
 		} catch (error) {
@@ -74,19 +77,17 @@ export function TwoFactorSetup() {
 
 	return (
 		<div>
-			{qrCodeUrl && (
-				<div>
-					<img src={qrCodeUrl} alt="QR Code" />
-					<input
-						type="text"
-						value={twoFACode}
-						onChange={(e) => setTwoFACode(e.target.value)}
-						placeholder="Enter 2FA Code"
-					/>
-					<p style={{ color: 'red' }}>{errorMessage}</p>
-					<button onClick={verify2FACode}>Verify 2FA Code</button>
-				</div>
-			)}
+			{qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" />}
+			<Form onSubmit={verify2FACode}>
+				<input
+					type="text"
+					value={twoFACode}
+					onChange={(e) => setTwoFACode(e.target.value)}
+					placeholder="Enter 2FA Code"
+				/>
+				<p style={{ color: 'red' }}>{errorMessage}</p>
+				<button onClick={verify2FACode}>Verify 2FA Code</button>
+			</Form>
 		</div>
 	);
 }

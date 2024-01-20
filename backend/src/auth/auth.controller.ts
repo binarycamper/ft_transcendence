@@ -157,6 +157,10 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	async setup2FA(@Req() req: Request): Promise<{ qrCodeUrl: string }> {
 		const user: User = await this.userService.findProfileById(req.user.id);
+		if (user.TFASecret) {
+			return { qrCodeUrl: null };
+		}
+
 		if (!user) throw new Error('User not found');
 
 		const { qrCodeUrl } = await this.authService.setup2FA(user);
