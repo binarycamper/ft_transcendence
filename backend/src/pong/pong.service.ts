@@ -69,7 +69,7 @@ export class PongService {
 
 	async storeHistory(game: PongGame) {
 		if (game.player2.computer) return;
-
+		const levelsToAdd: number = 1;
 		const endTime = new Date();
 		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
 
@@ -88,10 +88,10 @@ export class PongService {
 		let winnerId: string;
 		if (game.gameState.scoreL > game.gameState.scoreR) {
 			winnerId = game.player1.id;
-			player1.ladderLevel += 1;
+			player1.ladderLevel = player1.ladderLevel + 1;
 		} else if (game.gameState.scoreL < game.gameState.scoreR) {
 			winnerId = game.player2.id;
-			player2.ladderLevel += 1;
+			player2.ladderLevel = player2.ladderLevel + 1;
 		} else {
 			console.log('Invalid game');
 			return;

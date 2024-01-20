@@ -15,10 +15,10 @@ export class History {
 	@JoinColumn()
 	playerTwo: User;
 
-	@Column({ default: 0 })
+	@Column({ default: 0, type: 'int' }) // Explicitly set the type as 'int'
 	scorePlayerOne: number;
 
-	@Column({ default: 0 })
+	@Column({ default: 0, type: 'int' }) // Explicitly set the type as 'int'
 	scorePlayerTwo: number;
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

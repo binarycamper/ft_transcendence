@@ -66,7 +66,7 @@ export class User {
 	@Column({ default: 0 })
 	gamesLost: number;
 
-	@Column({ default: 1 }) // Assuming ladder level starts at 1
+	@Column({ default: 1, type: 'int' })
 	ladderLevel: number;
 
 	@Column('simple-array', { default: '' })

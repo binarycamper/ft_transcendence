@@ -70,6 +70,7 @@ export class UserService {
 				'blocklist',
 				'chatRooms',
 				'achievements',
+				'ladderLevel',
 			],
 			relations: ['friends', 'blocklist', 'chatRooms'],
 		});
