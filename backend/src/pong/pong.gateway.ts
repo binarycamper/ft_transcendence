@@ -86,14 +86,14 @@ export class PongGateway {
 
 		if (this.pongService.findActiveGame(userId)) return;
 
-		let game = this.pongService.joinPendingGame(userId);
+		const game = this.pongService.joinPendingGame(userId);
 		if (game) {
+			await client.join(game.gameURL);
 			this.server.to(game.gameURL).emit('pong-game-ready', game.gameURL);
 		} else {
-			game = this.pongService.createNewGame(userId, gameSettings);
+			const game = this.pongService.createNewGame(userId, gameSettings);
+			await client.join(game.gameURL);
 		}
-
-		await client.join(game.gameURL);
 	}
 
 	/* @SubscribeMessage('game-ready-acknowledgement')
