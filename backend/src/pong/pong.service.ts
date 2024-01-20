@@ -78,8 +78,16 @@ export class PongService {
 		const player1 = await this.userService.findProfileById(game.player1.id);
 		const player2 = await this.userService.findProfileById(game.player2.id);
 
+		if (!player1.achievements.includes('Gamer 🎮')) {
+			player1.achievements.push('Gamer 🎮');
+		}
+		if (!player2.achievements.includes('Gamer 🎮')) {
+			player2.achievements.push('Gamer 🎮');
+		}
 		player1.status = 'online';
 		player2.status = 'online';
+
+		// Save the updated user entity
 		await this.userService.updateUser(player1);
 		await this.userService.updateUser(player2);
 

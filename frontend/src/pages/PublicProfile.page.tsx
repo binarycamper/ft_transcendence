@@ -32,7 +32,7 @@ export function PublicProfile() {
 			setIsLoading(true);
 			try {
 				const response = await fetch(
-					fetchUrl('8080',`/user/public-profile?friendname=${friendName}`),
+					fetchUrl('8080', `/user/public-profile?friendname=${friendName}`),
 					{
 						method: 'GET',
 						credentials: 'include',
@@ -65,9 +65,9 @@ export function PublicProfile() {
 			'Social Butterfly 🦋': 'Earned by being actively social and inviting friends to chat rooms.',
 			'ChatRoom Lurker 👀': 'Given for spending a significant amount of time in chat rooms.',
 			'Peacekeeper 🛡️': 'Achieved by maintaining order and decorum in chat rooms.',
+			'Gamer 🎮': 'Recognized as a dedicated gamer.',
 			// Add more mappings as needed
 		};
-
 		return descriptions[achievement] || 'No description available.';
 	}
 

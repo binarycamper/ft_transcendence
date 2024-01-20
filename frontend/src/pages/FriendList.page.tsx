@@ -83,6 +83,7 @@ export function FriendList() {
 			'Social Butterfly 🦋': 'Earned by being actively social and inviting friends to chat rooms.',
 			'ChatRoom Lurker 👀': 'Given for spending a significant amount of time in chat rooms.',
 			'Peacekeeper 🛡️': 'Achieved by maintaining order and decorum in chat rooms.',
+			'Gamer 🎮': 'Recognized as a dedicated gamer.',
 			// Add more mappings as needed
 		};
 
