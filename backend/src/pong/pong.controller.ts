@@ -35,7 +35,7 @@ export class PongController {
 	} */
 
 	@Get(':id')
-	getPongGameData(@Param() id: string) {
+	getPongGameData(@Param('id') id: string) {
 		const pongGameData = this.pongService.getPongGameById(id);
 		if (!pongGameData) return null;
 

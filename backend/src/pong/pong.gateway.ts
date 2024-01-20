@@ -14,7 +14,7 @@ import { JoinRoomDto, LeaveRoomDto } from './pong.dto';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
 @Injectable()
-@WebSocketGateway({
+@WebSocketGateway(8090, {
 	/* cors: {
 		credentials: true,
 		origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:8090'],
@@ -39,117 +39,18 @@ export class PongGateway {
 		});
 	} */
 
-	onModuleInit() {
-		this.server.on('connection', (socket) => {
-			console.log('Pong: client connected', socket.id);
-
-			socket.on('disconnect', (reason) => {
-				console.log(`Pong: disconnect ${socket.id} due to ${reason}`);
-			});
-		});
-	}
-
-	handleConnection(client: Socket) {
-		console.log('PongGateway: handleConnection', client.id);
+	/* handleConnection(client: Socket) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
 		this.pongService.handleConnection(userId);
-	}
+	} */
 
-	async handleDisconnect(client: Socket) {
-		console.log('PongGateway: handleDisconnet', client.id);
+	handleDisconnect(client: Socket) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
-		await this.pongService.handleDisconnect(userId);
-	}
-
-	@SubscribeMessage('page-reload')
-	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
-		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return;
-
-		const player = this.pongService.getPlayerStatusForGame(userId);
-		if (player !== 'player1' && player !== 'player2') return;
-
-		const game = this.pongService.getPongGameById(gameURL);
-		const updateKeystate = (payload: any) => this.pongService.updateKeystate(game, player, payload);
-		client.on('update-keystate', updateKeystate);
-		client.once('leave-room', (id: string) => {
-			console.log(`${id}: ${player} has left`);
-			client.off('update-keystate', updateKeystate);
-		});
-		client.once('disconnect', () => {
-			game[player].isConnected = false;
-			game[player].timeStamp = performance.now();
-			game.gameState.status = 'paused';
-
-			console.log(player, 'has disconnected');
-		});
-	}
-
-	@SubscribeMessage('join-game')
-	async handleJoinGame(@ConnectedSocket() client: Socket) {
-		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return;
-
-		if (this.pongService.findActiveGame(userId)) return;
-
-		const game = await this.pongService.joinPendingGame(userId);
-		if (game) {
-			await client.join(game.gameURL);
-			this.server.to(game.gameURL).emit('pong-game-ready', game.gameURL);
-		} else {
-			const game = this.pongService.createNewGame(userId);
-			await client.join(game.gameURL);
-		}
-	}
-
-	@SubscribeMessage('play-with-computer')
-	async handlePlayWithComputer(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() gameSettings: PongGameSettings,
-	) {
-		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return;
-
-		if (this.pongService.findActiveGame(userId)) return;
-
-		const pongGame = this.pongService.createNewGame(userId, gameSettings, true);
-		await client.join(pongGame.gameURL);
-		const user = await this.userService.findProfileById(userId);
-		// user.status = 'ingame';
-		await this.userService.updateUser(user);
-		client.emit('pong-game-ready', pongGame.gameURL);
-	}
-
-	@SubscribeMessage('play-with-friend')
-	async handlePlayWithFriend(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() gameSettings: PongGameSettings,
-	) {
-		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return;
-
-		if (this.pongService.findActiveGame(userId)) return;
-
-		const game = this.pongService.createNewGame(userId, gameSettings);
-		const user = await this.userService.findProfileById(userId);
-		// user.status = 'ingame';
-		await this.userService.updateUser(user);
-		await client.join(game.gameURL);
-		// client.emit('pong-game-ready', game.gameURL);
-	}
-
-	@SubscribeMessage('cancel-running-game')
-	cancelRunningGame(@ConnectedSocket() client: Socket) {
-		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return;
-
-		const game = this.pongService.findActiveGame(userId);
-		game.gameState.status = 'finished';
-		game.gameState.winnerId = userId === game.player1.id ? game.player2.id : game.player1.id;
+		this.pongService.cancelPendingGame(userId);
 	}
 
 	@SubscribeMessage('cancel-game-request')
@@ -157,26 +58,51 @@ export class PongGateway {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return null;
 
-		const game = this.pongService.findActiveGame(userId);
-		if (game?.gameState.status === 'pending') {
-			this.pongService.cancelPendingGame(userId);
-		}
+		this.pongService.cancelPendingGame(userId);
 
 		return 'success';
 	}
 
-	@SubscribeMessage('query-game-status')
-	queryGameStatus(@ConnectedSocket() client: Socket) {
+	@SubscribeMessage('resign-game')
+	handleResignGame(@ConnectedSocket() client: Socket) {
 		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return null;
+		if (!userId) return;
 
-		return this.pongService.getPlayerGameStatus(userId);
+		const player = this.pongService.getPlayer(userId);
+		if (!player?.game) return;
+
+		this.pongService.resignGame(player.game, player.status);
+	}
+
+	@SubscribeMessage('player-ready')
+	handlePlayerReady(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		const userId = this.pongService.verifyAuthentication(client);
+		if (!userId) return false;
+
+		return this.pongService.markPlayerReady(userId, gameURL);
+	}
+
+	@SubscribeMessage('join-queue')
+	async handleJoinQueue(@ConnectedSocket() client: Socket) {
+		const userId = this.pongService.verifyAuthentication(client);
+		if (!userId) return;
+
+		this.pongService.joinQueue(userId);
+
+		await client.join(userId);
+		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
+	}
+
+	@SubscribeMessage('leave-queue')
+	async handleLeaveQueue(@ConnectedSocket() client: Socket) {
+		await client.leave(client.id);
+		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
 	}
 
 	@SubscribeMessage('join-lobby')
 	async joinLobby(@ConnectedSocket() client: Socket) {
 		await client.join('lobby');
-		return this.pongService.getOnlineStats();
+		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
 	}
 
 	@SubscribeMessage('leave-lobby')
@@ -187,6 +113,16 @@ export class PongGateway {
 	@SubscribeMessage('join-room')
 	async joinRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
 		await client.join(gameURL);
+		const userId = this.pongService.verifyAuthentication(client);
+		if (!userId) return;
+
+		const player = this.pongService.getPlayerStatusForGame(userId);
+		if (player !== 'player1' && player !== 'player2') return;
+
+		const game = this.pongService.getPongGameById(gameURL);
+		const updateKeystate = (payload: any) => this.pongService.updateKeystate(game, player, payload);
+		client.on('update-keystate', updateKeystate);
+		client.once('leave-room', () => client.off('update-keystate', updateKeystate));
 	}
 
 	@SubscribeMessage('leave-room')

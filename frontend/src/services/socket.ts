@@ -6,6 +6,6 @@ export const socket = io(fetchWsUrl('8080'), {
 	withCredentials: true,
 });
 
-export const gameSocket = io(fetchWsUrl('8080'), {
+export const gameSocket = io(fetchWsUrl('8090'), {
 	withCredentials: true,
 });

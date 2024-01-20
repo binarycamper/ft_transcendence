@@ -1,5 +1,5 @@
 import './PongGame.css';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { redirect, useLoaderData, useNavigate, useParams } from 'react-router-dom';
 import { ErrorPage } from '../../pages/Error.page';
 import { gameSocket as socket } from '../../services/socket';
@@ -19,6 +19,7 @@ interface Props {
 export function PongGame({ gameSettings, gameState }: Props) {
 	const { aspectRatio, ballWidth, paddleGap, paddleHeight, paddleWidth, wallHeight } = gameSettings;
 	const canvasAspectRatio = useMemo(() => aspectRatio.x / aspectRatio.y, [aspectRatio]);
+	const [isReady, setIsReady] = useState(false);
 
 	useTitle('Server Side Pong');
 
@@ -29,12 +30,12 @@ export function PongGame({ gameSettings, gameState }: Props) {
 
 	const { id } = useParams();
 	useEffect(() => {
-		socket.emit('page-reload', id);
+		// socket.emit('page-reload', id);
 		socket.emit('join-room', id);
 
 		return () => {
 			socket.emit('leave-room', id);
-			socket.off();
+			// socket.off();
 		};
 	}, [id]);
 
@@ -53,11 +54,17 @@ export function PongGame({ gameSettings, gameState }: Props) {
 		};
 	}, []);
 
-	function cancelGame() {
-		socket.emit('cancel-running-game');
-		navigate('/');
-		window.location.reload();
-	}
+	const playerIsReady = useCallback(() => {
+		socket.emit('player-ready', id, (res: boolean) => {
+			setIsReady(res);
+		});
+	}, [id]);
+
+	const resignGame = useCallback(() => {
+		socket.emit('resign-game');
+		// navigate('/');
+		// window.location.reload();
+	}, []);
 
 	return (
 		<>
@@ -90,11 +97,20 @@ export function PongGame({ gameSettings, gameState }: Props) {
 					<div className="paddle" id="paddle-left" style={{ top: `${state.paddleL}%` }}></div>
 					<div className="paddle" id="paddle-right" style={{ top: `${state.paddleR}%` }}></div>
 				</div>
+			</div>
+			<div>
+				{!isReady && state.status !== 'running' && (
+					<div>
+						<Button color="green" onClick={playerIsReady}>
+							Ready
+						</Button>
+					</div>
+				)}
 				{state.status === 'finished' && <div>GAME OVER</div>}
 				{state.status === 'paused' && <div>GAME PAUSED</div>}
 				{state.status === 'running' && (
 					<div>
-						<Button onClick={() => cancelGame()}>RESIGN</Button>
+						<Button onClick={() => resignGame()}>RESIGN</Button>
 					</div>
 				)}
 			</div>
