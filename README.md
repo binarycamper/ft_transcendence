@@ -19,11 +19,6 @@ ERROR Notes, need to be debuged:
 Einige Cookies verwenden das empfohlene "SameSite"-Attribut inkorrekt. 2
 Das Cookie "token" verfügt über keinen gültigen Wert für das "SameSite"-Attribut. Bald werden Cookies ohne das "SameSite"-Attribut oder mit einem ungültigen Wert dafür als "Lax" behandelt. Dadurch wird das Cookie nicht länger an Kontexte gesendet, die zu einem Drittanbieter gehören. Falls Ihre Anwendung das Cookie in diesen Kontexten benötigt, fügen Sie bitte das Attribut "SameSite=None" zu ihm hinzu. Weitere Informationen zum "SameSite"-Attribut finden Sie unter https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite.
 ---------------------------------------------------------------------------------------------------------
-[2. Error]: when two players start a game, kommt 8x: "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:8080/socket.io/?EIO=4&transport=polling&t=OqaMmbJ. (Reason: CORS request did not succeed). Status code: (null)."
-
-THe Request which caused the error was: 0{"sid":"CKM9lbkPGa2S1zb3AAAI","upgrades":["websocket"],"pingInterval":25000,"pingTimeout":20000,"maxPayload":1000000}
-I think thats the gameloop?
----------------------------------------------------------------------------------------------------------
 
 ```
 
