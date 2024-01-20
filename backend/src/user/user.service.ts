@@ -27,7 +27,23 @@ export class UserService {
 	) {}
 
 	findAll(): Promise<User[]> {
-		return this.userRepository.find({ relations: ['friends', 'blocklist', 'chatRooms'] });
+		return this.userRepository.find({
+			select: [
+				'id',
+				'email',
+				'name',
+				'nickname',
+				'status',
+				'intraId',
+				'intraImage',
+				'customImage',
+				'friends',
+				'blocklist',
+				'chatRooms',
+				'achievements',
+			],
+			relations: ['friends', 'blocklist', 'chatRooms'],
+		});
 	}
 
 	async findAllFriends(user: User): Promise<User[]> {
