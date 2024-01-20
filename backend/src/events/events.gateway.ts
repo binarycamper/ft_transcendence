@@ -14,7 +14,13 @@ import { ChatService } from 'src/chat/chat.service';
 import { UserService } from 'src/user/user.service';
 import { ChatRoom } from 'src/chat/chatRoom.entity';
 import { randomUUID } from 'crypto';
-import { AuthenticatedSocket, DecodedToken, SocketWithUserData } from './dto/dto';
+import {
+	AuthenticatedSocket,
+	DecodedToken,
+	SendMessageDto,
+	SendMessageToChatRoomDto,
+	SocketWithUserData,
+} from './dto/dto';
 import { ChatMessage } from 'src/chat/chat.entity';
 import { Mute } from 'src/chat/mute.entity';
 import { User } from 'src/user/user.entity';
@@ -34,7 +40,7 @@ export class EventsGateway {
 	constructor(
 		private chatService: ChatService,
 		private jwtService: JwtService,
-		private eventsService: EventsService, //private chatService: ChatService, // Inject your ChatService here
+		private eventsService: EventsService,
 		private userService: UserService,
 	) {}
 
@@ -69,7 +75,6 @@ export class EventsGateway {
 	// 	return { isAuthenticated: false, userId: null };
 	// }
 
-	//Neu testen
 	verifyAuthentication(client: SocketWithUserData): {
 		isAuthenticated: boolean;
 		userId: string | null;
@@ -136,9 +141,9 @@ export class EventsGateway {
 			await client.join(`user_${isAuthenticated.userId}`);
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error('In handleConnection:', error.message);
+				console.log('In handleConnection:', error.message);
 			} else {
-				console.error('An unknown error occurred in handleConnection');
+				console.log('in handleConnection: ');
 			}
 		}
 	}
@@ -156,7 +161,8 @@ export class EventsGateway {
 	//TODO: DTO here pls
 	@SubscribeMessage('send-message')
 	async handleMessage(
-		@MessageBody() data: { receiverId: string; content: string },
+		@MessageBody() data: SendMessageDto,
+		//@MessageBody() data: { receiverId: string; content: string },
 		@ConnectedSocket() client: AuthenticatedSocket,
 	) {
 		try {
@@ -198,7 +204,8 @@ export class EventsGateway {
 
 	@SubscribeMessage('send-message-to-chatroom')
 	async handleMessageToChatRoom(
-		@MessageBody() data: { chatRoomId: string; content: string },
+		@MessageBody() data: SendMessageToChatRoomDto,
+		//@MessageBody() data: { chatRoomId: string; content: string },
 		@ConnectedSocket() client: AuthenticatedSocket,
 	) {
 		try {
