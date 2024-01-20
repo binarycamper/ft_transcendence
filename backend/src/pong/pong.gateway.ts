@@ -9,6 +9,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { PongGameSettings } from './classes/PongGame';
 import { PongService } from './pong.service';
+import { UserService } from 'src/user/user.service';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
 @Injectable()
@@ -24,6 +25,7 @@ export class PongGateway {
 	constructor(
 		@Inject(forwardRef(() => PongService))
 		private readonly pongService: PongService,
+		private userService: UserService,
 	) {}
 
 	@WebSocketServer()
@@ -86,7 +88,7 @@ export class PongGateway {
 
 		if (this.pongService.findActiveGame(userId)) return;
 
-		const game = this.pongService.joinPendingGame(userId);
+		const game = await this.pongService.joinPendingGame(userId);
 		if (game) {
 			await client.join(game.gameURL);
 			this.server.to(game.gameURL).emit('pong-game-ready', game.gameURL);
@@ -119,10 +121,11 @@ export class PongGateway {
 	) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
-
 		const pongGame = this.pongService.createNewGame(userId, gameSettings, true);
-
 		await client.join(pongGame.gameURL);
+		const user = await this.userService.findProfileById(userId);
+		user.status = 'ingame';
+		await this.userService.updateUser(user);
 		client.emit('pong-game-ready', pongGame.gameURL);
 	}
 
@@ -135,7 +138,9 @@ export class PongGateway {
 		if (!userId) return;
 
 		const game = this.pongService.createNewGame(userId, gameSettings);
-
+		const user = await this.userService.findProfileById(userId);
+		user.status = 'ingame';
+		await this.userService.updateUser(user);
 		await client.join(game.gameURL);
 		// client.emit('pong-game-ready', game.gameURL);
 	}

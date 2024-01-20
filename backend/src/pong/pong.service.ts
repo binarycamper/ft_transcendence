@@ -119,7 +119,7 @@ export class PongService {
 		});
 
 		while (this.finishedGames.length > 0) {
-			console.log('start save history!');
+			//console.log('start save history!');
 			await this.storeHistory(this.finishedGames.shift());
 		}
 	}
@@ -266,16 +266,18 @@ export class PongService {
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
-	handleDisconnect(userId: string) {
+	async handleDisconnect(userId: string) {
 		const game = this.findActiveGame(userId);
 		if (game) {
 			if (game.status === 'pending') {
 				this.cancelPendingGame(userId);
 			} else if (game.status !== 'paused' && game.status !== 'running') {
 				this.playerMap.delete(userId);
+				const user = await this.userService.findProfileById(userId);
+				user.status = 'offline';
+				await this.userService.updateUser(user);
 			}
 		}
-
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
@@ -287,13 +289,14 @@ export class PongService {
 		};
 	}
 
-	joinPendingGame(userId: string) {
+	async joinPendingGame(userId: string) {
 		const [game] = this.pendingGames;
 		if (!game) return null;
-
+		const user = await this.userService.findProfileById(userId);
+		user.status = 'ingame';
+		await this.userService.updateUser(user);
 		game.player2.id = userId;
 		this.playerMap.set(userId, { game, status: 'player2' });
-
 		this.gameMap.set(game.gameURL, game);
 		this.pendingGames.shift();
 		game.status = 'running';

@@ -4,8 +4,6 @@ Please keep this file up-to-date with your respective current task(s) sorted by 
 
 # Unassigned:
 
-- Spectatormode: add active game links to a activeGames page, with user references. that anyone can spectate that
-
 • The user should be able to invite other users to play a Pong game through the chat interface. (ChatRoom.page /chat/invite Backend Response)
 
 - Invite players in chatinterface to a game
@@ -106,6 +104,8 @@ customization options
   ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 
 #### 5. Game
+
+- Spectatormode: add active game links to a activeGames page, with user references. that anyone can spectate that
 
 ##### issues:
 
