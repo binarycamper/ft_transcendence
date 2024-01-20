@@ -62,7 +62,7 @@ export default function PongPage() {
 			setStats(stats);
 		}
 
-		/* socket.emit('query-game-status', (data) => {
+		socket.emit('query-game-status', (data) => {
 			setIsLoading(data.queuing);
 			if (data.gameURL !== null) {
 				const response = window.confirm('Do you want to go to the game?');
@@ -70,7 +70,7 @@ export default function PongPage() {
 					navigate(`/game/${data.gameURL}`);
 				}
 			}
-		}); */
+		});
 
 		socket.emit('join-lobby', updateStats);
 		socket.on('lobby-stats', updateStats);

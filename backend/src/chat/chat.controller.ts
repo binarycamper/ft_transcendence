@@ -131,8 +131,8 @@ export class ChatController {
 			// For other types of errors
 			//console.error('Failed to create chat room:', error);
 			throw new HttpException(
-				'Internal Server Error: Failed to create chat room due to an unexpected error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
+				'Failed to create chat room due to an bad request',
+				HttpStatus.BAD_REQUEST,
 			);
 		}
 	}
@@ -146,9 +146,7 @@ export class ChatController {
 			res.status(HttpStatus.OK).json(user.chatRooms);
 		} catch (error) {
 			// Handle any errors that occur
-			res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'An error occurred while fetching chat rooms.' });
+			res.status(HttpStatus.BAD_REQUEST).json({ message: 'Bad request!' });
 		}
 	}
 
@@ -181,7 +179,7 @@ export class ChatController {
 
 			return censoredHistory;
 		} catch (error) {
-			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new HttpException('Invalid request', HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -267,9 +265,7 @@ export class ChatController {
 			}
 
 			// For other types of errors, throw an InternalServerErrorException
-			throw new InternalServerErrorException(
-				'An unexpected error occurred while inviting the user to the room.',
-			);
+			throw new BadRequestException('Invalid request, for inviting the user to the room.');
 		}
 	}
 
@@ -337,7 +333,7 @@ export class ChatController {
 		} catch (error) {
 			// Log the error and throw an appropriate exception
 			console.error('Error while adding user to chat room:', error);
-			throw new InternalServerErrorException('An error occurred while joining the room.');
+			throw new BadRequestException('Bad request.');
 		}
 	}
 
@@ -361,10 +357,7 @@ export class ChatController {
 			} else {
 				// Log the error for debugging
 				//console.log('Failed to kick user:', error);
-				throw new HttpException(
-					'Failed to kick user due to an unexpected error',
-					HttpStatus.INTERNAL_SERVER_ERROR,
-				);
+				throw new HttpException('Failed to kick user, INVALID REQUEST', HttpStatus.BAD_REQUEST);
 			}
 		}
 	}
@@ -389,11 +382,7 @@ export class ChatController {
 			}
 			// Log the error for internal monitoring
 			//console.error('Internal Server Error:', error);
-
-			throw new HttpException(
-				'Internal Server Error: Failed to upgrade user due to an unexpected error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			throw new HttpException('Failed to upgrade user due INVALID request', HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -434,9 +423,7 @@ export class ChatController {
 			} else {
 				// Log the error for internal monitoring
 				//console.error('Error in revoking admin:', error);
-				throw new InternalServerErrorException(
-					'Internal Server Error: Failed to revoke admin rights.',
-				);
+				throw new BadRequestException('Failed to revoke admin rights, invalid request.');
 			}
 		}
 	}
@@ -557,8 +544,8 @@ export class ChatController {
 				return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
 			}
 			return res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ error: 'An unknown error occurred' });
+				.status(HttpStatus.BAD_REQUEST)
+				.json({ error: 'Invalid request, when accepting friendship' });
 		}
 	}
 
@@ -574,8 +561,8 @@ export class ChatController {
 				return res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
 			}
 			return res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ error: 'An unknown error occurred' });
+				.status(HttpStatus.BAD_REQUEST)
+				.json({ error: 'Invalid request, when declining friendship' });
 		}
 	}
 
