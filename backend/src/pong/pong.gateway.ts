@@ -67,7 +67,6 @@ export class PongGateway {
 
 	@SubscribeMessage('page-reload')
 	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
-	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
