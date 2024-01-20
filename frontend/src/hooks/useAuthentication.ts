@@ -10,7 +10,7 @@ export default function useAuthentication() {
 	useEffect(() => {
 		async function checkAuthStatus() {
 			try {
-				const response = await fetch(fetchUrl('8080','/auth/status'), {
+				const response = await fetch(fetchUrl('8080', '/auth/status'), {
 					credentials: 'include', // Ensures cookies are sent with the request
 				});
 				if (response.ok) {
@@ -31,7 +31,7 @@ export default function useAuthentication() {
 
 	async function handleLogout() {
 		try {
-			const response = await fetch(fetchUrl('8080','/auth/logout'), {
+			const response = await fetch(fetchUrl('8080', '/auth/logout'), {
 				method: 'POST',
 				credentials: 'include', // Include credentials for cookies if used
 			});

@@ -114,6 +114,8 @@ export class PongService {
 			if (game.gameState.status === 'finished') {
 				this.finishedGames.push(game);
 				this.gameMap.delete(gameURL);
+				console.log('finished', this.finishedGames);
+				console.log('gamemap', this.gameMap);
 			}
 		});
 
@@ -124,6 +126,7 @@ export class PongService {
 
 	async storeHistory(game: PongGame) {
 		if (game.player2.computer) return;
+
 		const levelsToAdd: number = 1;
 		const endTime = new Date();
 		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
@@ -252,8 +255,8 @@ export class PongService {
 		player: 'player1' | 'player2',
 		payload: { key: string; player: number; pressed: boolean },
 	) {
+		console.log(game[player].keyState);
 		game[player].keyState[payload.key] = payload.pressed;
-		// console.log(game[player].keyState);
 		/* if (player === 'player1' && payload.player === 1)
 			game[player].keyState[payload.key] = payload.pressed;
 		if (player === 'player2' && payload.player === 2)

@@ -128,7 +128,6 @@ export class PongPlayer {
 		readonly computer = false,
 	) {
 		if (this.computer) {
-			this.isConnected = true;
 			this.isReady = true;
 		} else {
 			this.keyState = new PongKeyState();
@@ -136,7 +135,7 @@ export class PongPlayer {
 	}
 
 	id = '';
-	isConnected = false;
+	isConnected = true;
 	isReady = false;
 	keyState: PongKeyState;
 	// status = '';

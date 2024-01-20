@@ -79,11 +79,6 @@ export class IdParamDto {
 	id: string;
 }
 
-export class PageReloadDto {
-	@IsString()
-	gameURL: string;
-}
-
 export class JoinRoomDto {
 	@IsString()
 	gameURL: string;

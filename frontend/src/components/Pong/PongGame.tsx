@@ -1,10 +1,11 @@
 import './PongGame.css';
 import { useEffect, useMemo, useState } from 'react';
-import { useLoaderData, useParams } from 'react-router-dom';
+import { redirect, useLoaderData, useNavigate, useParams } from 'react-router-dom';
 import { ErrorPage } from '../../pages/Error.page';
 import { gameSocket as socket } from '../../services/socket';
 import useKeyHook from '../../hooks/useKeyHook';
 import useTitle from '../../hooks/useTitle';
+import { Button } from '@mantine/core';
 
 // TODO take interface from backend
 type IPongGameSettings = any;
@@ -23,6 +24,8 @@ export function PongGame({ gameSettings, gameState }: Props) {
 
 	const [state, setState] = useState(gameState);
 	useKeyHook();
+
+	const navigate = useNavigate();
 
 	const { id } = useParams();
 	useEffect(() => {
@@ -50,10 +53,14 @@ export function PongGame({ gameSettings, gameState }: Props) {
 		};
 	}, []);
 
+	function cancelGame() {
+		socket.emit('cancel-running-game');
+		navigate('/');
+		window.location.reload();
+	}
+
 	return (
 		<>
-			{state.status === 'finished' && <div>GAME OVER</div>}
-			{state.status === 'paused' && <div>GAME PAUSED</div>}
 			<div
 				className="game-container"
 				style={
@@ -83,6 +90,13 @@ export function PongGame({ gameSettings, gameState }: Props) {
 					<div className="paddle" id="paddle-left" style={{ top: `${state.paddleL}%` }}></div>
 					<div className="paddle" id="paddle-right" style={{ top: `${state.paddleR}%` }}></div>
 				</div>
+				{state.status === 'finished' && <div>GAME OVER</div>}
+				{state.status === 'paused' && <div>GAME PAUSED</div>}
+				{state.status === 'running' && (
+					<div>
+						<Button onClick={() => cancelGame()}>RESIGN</Button>
+					</div>
+				)}
 			</div>
 		</>
 	);
