@@ -73,7 +73,7 @@ export class AuthController {
 				httpOnly: true,
 				maxAge: COOKIE_MAX_AGE,
 				sameSite: 'lax',
-				secure: this.configService.get('NODE_ENV') !== 'development',
+				secure: false,
 			});
 			return res.status(HttpStatus.OK).json({
 				accessToken: jwtToken,
@@ -91,7 +91,7 @@ export class AuthController {
 			httpOnly: true,
 			maxAge: COOKIE_MAX_AGE,
 			sameSite: 'lax',
-			secure: this.configService.get('NODE_ENV') !== 'development',
+			secure: false,
 		});
 		return res.status(200).json({
 			accessToken: jwtToken,
@@ -108,11 +108,11 @@ export class AuthController {
 		res.cookie('token', result.accessToken, {
 			httpOnly: true,
 			maxAge: COOKIE_MAX_AGE,
-			sameSite: 'none', // TODO: overhaul cookie same-site errors --> client-side
-			secure: true,
+			sameSite: 'lax', // TODO: overhaul cookie same-site errors --> client-side
+			secure: false,
 		});
 
-		const redirectUrl: URL = new URL('http://localhost:5173/completeprofile');
+		const redirectUrl: URL = new URL(`http://${process.env.HOST_IP}:5173/completeprofile`);
 		redirectUrl.searchParams.append('require2FA', String(result.require2FA));
 		redirectUrl.searchParams.append('token', result.accessToken);
 		redirectUrl.searchParams.append('userId', result.userId);
@@ -124,7 +124,7 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	logout(@Res() res: Response) {
 		// TODO: overhaul cookie same-site errors --> client-side
-		res.clearCookie('token', { sameSite: 'none', secure: true });
+		res.clearCookie('token', { sameSite: 'lax', secure: false });
 		return res.status(200).send({ message: 'Logged out successfully' });
 	}
 
@@ -146,7 +146,7 @@ export class AuthController {
 			httpOnly: true,
 			maxAge: COOKIE_MAX_AGE,
 			sameSite: 'lax',
-			secure: process.env.NODE_ENV !== 'development',
+			secure: false,
 		});
 		user.status = 'online';
 		await this.userService.updateUser(user);

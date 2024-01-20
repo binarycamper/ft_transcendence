@@ -88,7 +88,6 @@ export class AuthService {
 			const accessToken = await this.getOAuthToken(code);
 			const intraUserData = await this.getOAuthUserData(accessToken);
 			const user = await this.createUserOrUpdate(intraUserData);
-
 			const jwtToken = await this.createAccessToken(user.id);
 			return { accessToken: jwtToken, userId: user.id };
 		} catch (error) {
@@ -189,7 +188,7 @@ export class AuthService {
 
 		console.log('user= ', user);
 		const resetToken = Math.random().toString(36).slice(2) + Date.now().toString(36);
-		const redirectUrl = `http://localhost:5173/reset-password/${resetToken}`;
+		const redirectUrl = `http://${process.env.HOST_IP}:5173/reset-password/${resetToken}`;
 		user.resetPasswordToken = resetToken;
 		user.resetPasswordExpires = new Date(Date.now() + 1_200_000); /* 20 minutes */
 		user.resetPasswordUrl = redirectUrl;

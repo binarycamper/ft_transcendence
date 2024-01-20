@@ -176,7 +176,6 @@ export class UserService {
 	//returns true when profile is created completely
 	async isProfilecreated(userId: string): Promise<boolean> {
 		const user: User = await this.userRepository.findOne({ where: { id: userId } });
-
 		if (!user) {
 			throw new Error('User not found');
 		}
@@ -228,6 +227,7 @@ export class UserService {
 				console.log('Failed to delete user image:', error);
 			}
 		}
+    await this.userRepository.remove(user);
 	}
 
 	async removeFriend(
@@ -310,7 +310,7 @@ export class UserService {
 		writeStream.write(file.buffer);
 
 		// Update user with new customImage URL which is also the request for itself
-		user.customImage = `http://localhost:8080/user/uploads?filename=${newFilename}`;
+		user.customImage = `http://${process.env.HOST_IP}:8080/user/uploads?filename=${newFilename}`;
 		await this.userRepository.save(user);
 	}
 

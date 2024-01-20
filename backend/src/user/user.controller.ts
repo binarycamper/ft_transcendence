@@ -157,7 +157,7 @@ export class UserController {
 			}
 
 			await this.userService.deleteUserById(req.user.id, user.customImage);
-			req.res.clearCookie('token', { sameSite: 'none', secure: true });
+			req.res.clearCookie('token', { sameSite: 'lax', secure:false });
 			return { message: 'User deleted successfully' };
 		} catch (error) {
 			//	this.logger.error(`Error deleting user: ${error.message}`, error.stack);
@@ -452,7 +452,7 @@ export class UserController {
 			intraId: debugUserId,
 			id: debugUserId,
 			intraImage: 'someDebugIntraImage',
-			customImage: 'http://localhost:8080/user/uploads?filename=0_0.png',
+			customImage: `http://${process.env.HOST_IP}:8080/user/uploads?filename=0_0.png`,
 			status: 'offline',
 		});
 
