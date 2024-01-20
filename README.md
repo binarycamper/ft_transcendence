@@ -109,14 +109,17 @@ customization options
 
 ##### issues:
 
-- Friends name not showing (until selected).
 - Friend online status broken.
-- Enter key not sending the message.
-- Latest message now showed (we need to manually scroll to the bottom of the chat each time).
-- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone).
 - ChatRooms:
 - User gets added on invitation not on acceptance (private mode)
-- User can still send messages after getting kicked (page not refreshed)
-- Deleting the room without permissions results in deleting the last msg of the chat for everyone!
+- Deleting the room without permissions results in deleting the last msg of the chat for everyone! Lol kk
+
+optinal:
+
+- Friends name not showing (until selected). = (Only in White Mode, we will evaluate in darkmode.)
+- Enter key not sending the message. optinal
+- Latest message now showed (we need to manually scroll to the bottom of the chat each time).
+- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone). = Solution would be to disable clear chat, to save time.
+- User can still send messages after getting kicked (page not refreshed) // thats just rendered on its own clientpage which is not serverstate.
 
 #### 5. Game
