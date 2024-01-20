@@ -22,33 +22,6 @@ Das Cookie "token" verfügt über keinen gültigen Wert für das "SameSite"-Attr
 
 ## jjesberg
 
-```
-[3. Error]: http://localhost:5173/settings !!!
-Warning: Received NaN for the `value` attribute. If this is expected, cast the value to a string.
-input
-label
-div
-div
-GameSettings@http://localhost:5173/src/components/Pong/GameSettings.tsx:51:44
-Settings
-RenderedRoute@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3546:7
-Outlet@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3914:20
-div
-_Box<@http://localhost:5173/node_modules/.vite/deps/@mantine_core.js?v=6d897e74:4098:3
-Container<@http://localhost:5173/node_modules/.vite/deps/@mantine_core.js?v=6d897e74:15541:25
-Header@http://localhost:5173/src/components/Header/Header.tsx:16:22
-RenderedRoute@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3546:7
-RenderErrorBoundary@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3503:5
-DataRoutes@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:4649:7
-Router@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:3928:7
-RouterProvider@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=e27de898:4466:7
-Router
-MantineThemeProvider@http://localhost:5173/node_modules/.vite/deps/@mantine_core.js?v=6d897e74:2824:30
-MantineProvider@http://localhost:5173/node_modules/.vite/deps/@mantine_core.js?v=6d897e74:3165:25
-App@http://localhost:5173/src/App.tsx?t=1705420966335:20:14
-- Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it.
-```
-
 ## kfergani
 
 ```
@@ -110,14 +83,6 @@ customization options
 ##### issues:
 
 - Friend online status broken. (should work with intra users) will tested when game is rdy...
-
-optinal:
-
-- User gets added on invitation not on acceptance (private mode) Thats fine
-- Friends name not showing (until selected). = (Only in White Mode, we will evaluate in darkmode.)
-- Enter key not sending the message. optional
-- Latest message now showed (we need to manually scroll to the bottom of the chat each time).
-- Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone). = Solution would be to disable clear chat. But optional
 
 ##### Fixed
 

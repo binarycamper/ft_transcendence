@@ -14,7 +14,6 @@ import {
 	ForbiddenException,
 	BadRequestException,
 	NotFoundException,
-	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -247,7 +246,6 @@ export class ChatController {
 					'The user you are trying to invite is already in the chat room.',
 				);
 			}
-			// TODO: Add request system here like the friendrequest does, or similiar...
 			await this.chatService.addUserToChatRoom(roomId, userToInvite);
 			const user: User = await this.userService.findProfileById(req.user.id);
 			if (!user.achievements.includes('Social Butterfly 🦋')) {
@@ -258,13 +256,9 @@ export class ChatController {
 			return { message: 'Invitation sent successfully.' };
 		} catch (error) {
 			//console.error('Error inviting to room:', error);
-
-			// Rethrow the error if it's a known HTTP exception
 			if (error instanceof HttpException) {
 				throw error;
 			}
-
-			// For other types of errors, throw an InternalServerErrorException
 			throw new BadRequestException('Invalid request, for inviting the user to the room.');
 		}
 	}
@@ -380,8 +374,6 @@ export class ChatController {
 			} else if (error instanceof BadRequestException) {
 				throw new HttpException(`Bad request: ${error.message}`, HttpStatus.BAD_REQUEST);
 			}
-			// Log the error for internal monitoring
-			//console.error('Internal Server Error:', error);
 			throw new HttpException('Failed to upgrade user due INVALID request', HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -421,8 +413,6 @@ export class ChatController {
 			} else if (error instanceof BadRequestException) {
 				throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
 			} else {
-				// Log the error for internal monitoring
-				//console.error('Error in revoking admin:', error);
 				throw new BadRequestException('Failed to revoke admin rights, invalid request.');
 			}
 		}
@@ -474,7 +464,10 @@ export class ChatController {
 		try {
 			return await this.chatService.findFriendChat(req.user.id, getFriendChatDto.friendId);
 		} catch (error) {
-			throw new HttpException('Failed to retrieve chat history', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new HttpException(
+				'Failed to retrieve chat history, invalid request',
+				HttpStatus.BAD_REQUEST,
+			);
 		}
 	}
 

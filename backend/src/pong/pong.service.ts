@@ -225,7 +225,6 @@ export class PongService {
 		} else {
 			this.pendingGames.push(game);
 		}
-
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 		return game;
 	}
