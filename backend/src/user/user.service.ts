@@ -124,7 +124,7 @@ export class UserService {
 	async setUserOnline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'online' in the database
 		const user: User = await this.userRepository.findOne({ where: { id: userId } });
-		if (user && user.status !== 'fresh') {
+		if (user && user.status !== 'fresh' && user.status !== 'ingame') {
 			user.status = 'online';
 			await this.userRepository.save(user);
 		}
