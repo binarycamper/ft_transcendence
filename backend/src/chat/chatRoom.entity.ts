@@ -4,10 +4,10 @@ import { ChatMessage } from './chat.entity';
 import { Mute } from './mute.entity';
 
 export enum ChatRoomType {
-	Private = "private",
-	Public = "public",
+	Private = 'private',
+	Public = 'public',
 	// Add other types as needed
-  }
+}
 
 @Entity()
 export class ChatRoom {

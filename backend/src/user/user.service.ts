@@ -7,6 +7,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import { unlink } from 'fs/promises';
 import { FriendRequest } from 'src/chat/friendRequest.entity';
+import { ChatRoom } from 'src/chat/chatRoom.entity';
+import { ChatMessage } from 'src/chat/chat.entity';
 
 const UPLOAD_PATH = '/usr/src/app/uploads/';
 
@@ -18,6 +20,10 @@ export class UserService {
 		private jwtService: JwtService,
 		@InjectRepository(FriendRequest)
 		private friendRequestRepository: Repository<FriendRequest>,
+		@InjectRepository(ChatRoom)
+		private chatRoomRepository: Repository<ChatRoom>,
+		@InjectRepository(ChatMessage)
+		private chatMessageRepository: Repository<ChatMessage>,
 	) {}
 
 	findAll(): Promise<User[]> {
@@ -170,21 +176,42 @@ export class UserService {
 			where: { id: userId },
 			relations: ['friends'],
 		});
+
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
 
-		// Get all friend requests where the user is either the sender or the recipient
-		const friendRequests: FriendRequest[] = await this.friendRequestRepository.find({
+		const friendRequests = await this.friendRequestRepository.find({
 			where: [{ senderId: userId }, { recipientId: userId }],
 		});
 
-		// Remove all related friend requests
 		if (friendRequests.length > 0) {
 			await this.friendRequestRepository.remove(friendRequests);
 		}
 
-		//Deletes uploaded customImage
+		const chatRoomsToDelete = await this.chatRoomRepository.find({
+			where: { ownerId: userId },
+		});
+
+		if (chatRoomsToDelete.length > 0) {
+			await this.userRepository.manager.transaction(async (entityManager) => {
+				for (const chatRoom of chatRoomsToDelete) {
+					// Delete chat messages by receiverId (which is the chatRoom id)
+					await entityManager
+						.createQueryBuilder()
+						.delete()
+						.from(ChatMessage)
+						.where('receiverId = :id', { id: chatRoom.id })
+						.execute();
+
+					// Now delete the chat room
+					await entityManager.remove(ChatRoom, chatRoom);
+				}
+
+				// Delete user
+				await entityManager.remove(User, user);
+			});
+		}
 		if (userImage) {
 			const imagePath: string = UPLOAD_PATH + userImage.split('?filename=').pop();
 			try {
@@ -194,13 +221,6 @@ export class UserService {
 			} catch (error) {
 				console.log('Failed to delete user image:', error);
 			}
-		}
-		try {
-			await this.userRepository.manager.transaction(async (entityManager) => {
-				await entityManager.remove(user);
-			});
-		} catch (error) {
-			throw new BadRequestException('Error deleting user and auth token');
 		}
 	}
 

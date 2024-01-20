@@ -111,8 +111,8 @@ customization options
 
 ##### issues:
 
-- Friend online status broken.
-- ChatRooms:
+- Friend online status broken. (should work with intra users)
+  ChatRooms:
 - User gets added on invitation not on acceptance (private mode)
 
 optinal:
