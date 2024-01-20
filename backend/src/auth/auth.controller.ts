@@ -20,7 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './DTO/Login.Dto';
 import { UserService } from '../user/user.service';
-import { Verify2FADto } from './DTO/verify2FA.Dto';
+import { Verify2FADto, VerifyResetTokenDto } from './DTO/verify2FA.Dto';
 import { NewPasswordDto, SendResetPasswordEmailDto } from './DTO/NewPassword.Dto';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
@@ -233,8 +233,8 @@ export class AuthController {
 
 	//dto rk
 	@Get('verify-reset-token/:token')
-	async verifyResetToken(@Param('token') token: string, @Res() res: Response) {
-		const isValid = await this.authService.verifyResetToken(token);
+	async verifyResetToken(@Param() verifyResetTokenDto: VerifyResetTokenDto, @Res() res: Response) {
+		const isValid = await this.authService.verifyResetToken(verifyResetTokenDto.token);
 		if (!isValid)
 			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
 		return res.status(HttpStatus.OK).json({ message: 'Valid token' });

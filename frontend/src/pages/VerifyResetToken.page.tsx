@@ -7,18 +7,20 @@ export default function VerifyResetToken() {
 	const { token } = useParams();
 	const navigate = useNavigate();
 	const [isValidToken, setIsValidToken] = useState(false);
+	const [info, setinfo] = useState('');
 
 	useEffect(() => {
 		async function verifyToken() {
 			try {
-				const response = await fetch(fetchUrl('8080',`/auth/verify-reset-token/${token}`));
+				const response = await fetch(fetchUrl('8080', `/auth/verify-reset-token/${token}`));
 				if (response.ok) {
 					setIsValidToken(true);
 				} else {
 					navigate('/login'); // Redirect to login if token is invalid
 				}
 			} catch (error) {
-				console.error('Error verifying token:', error);
+				//console.error('Error verifying token:', error);
+				setinfo('Invalid Token');
 			}
 		}
 
@@ -26,7 +28,12 @@ export default function VerifyResetToken() {
 	}, [token, navigate]);
 
 	if (!isValidToken) {
-		return <div>Loading...</div>;
+		return (
+			<div>
+				<div>Loading...</div>
+				{info && <div>{info}</div>} {/* Render info if it is not empty */}
+			</div>
+		);
 	}
 
 	return <ResetPassword token={token} />;

@@ -12,3 +12,9 @@ export class Toggle2FADto {
 	@IsBoolean({ message: 'enable2FA must be a boolean value.' })
 	readonly enable2FA: boolean;
 }
+
+export class VerifyResetTokenDto {
+	@IsNotEmpty()
+	@IsString()
+	token: string;
+}
