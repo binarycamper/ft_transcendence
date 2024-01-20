@@ -5,6 +5,7 @@ export class Score {
 	constructor(private gameState: PongGameState) {}
 
 	private readonly OFFSET = 20;
+	private readonly POINTS = 11;
 
 	get scoreL() {
 		return this.gameState.scoreL;
@@ -25,7 +26,7 @@ export class Score {
 		} else if (ball.left > 100 + this.OFFSET) {
 			this.scoreL += 1;
 		} else return;
-		if (this.scoreL >= 2 || this.scoreR >= 2) {
+		if (this.scoreL >= this.POINTS || this.scoreR >= this.POINTS) {
 			this.gameState.gameOver = true;
 		} else ball.reset();
 	}

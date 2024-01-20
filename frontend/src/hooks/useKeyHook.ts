@@ -64,12 +64,13 @@ export default function useKeyHook() {
 
 		window.addEventListener('keydown', handleKeyDown);
 		window.addEventListener('keyup', handleKeyUp);
-		console.log('KeyHook added');
+		/* console.log('KeyHook added'); */
 
 		return () => {
 			window.removeEventListener('keyup', handleKeyUp);
 			window.removeEventListener('keydown', handleKeyDown);
-			console.log('KeyHook removed');
+			socket.off('update-keystate');
+			/* console.log('KeyHook removed'); */
 		};
 	}, []);
 }

@@ -11,7 +11,7 @@ import { Repository } from 'typeorm';
 import { Socket } from 'socket.io';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
-import { validate } from 'class-validator';
+import { validate, validateSync } from 'class-validator';
 import { finished } from 'stream';
 import { JwtService } from '@nestjs/jwt';
 import { DecodedToken } from 'src/events/dto/dto';
@@ -70,39 +70,29 @@ export class PongService {
 	}
 
 	async storeHistory(game: PongGame) {
-		//console.log('Game: ', game);
-		if (game.player2.computer) {
-			this.gameMap.delete(game.gameURL);
-			return;
-		}
+		if (game.player2.computer) return;
 
 		const endTime = new Date();
 		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
 
 		const player1 = await this.userService.findProfileById(game.player1.id);
 		const player2 = await this.userService.findProfileById(game.player2.id);
-		console.log('game.playerOneId: ', game.player1.id);
-		console.log('game.playerTwoId: ', game.player2.id);
 
-		//Update the USer status.
 		player1.status = 'online';
 		player2.status = 'online';
-		this.userService.updateUser(player1);
-		this.userService.updateUser(player2);
+		await this.userService.updateUser(player1);
+		await this.userService.updateUser(player2);
 
-		//save the game.
-		// Determine the winner
-		let winnerId = null;
+		let winnerId: string;
 		if (game.gameState.scoreL > game.gameState.scoreR) {
 			winnerId = game.player1.id;
 		} else if (game.gameState.scoreL < game.gameState.scoreR) {
 			winnerId = game.player2.id;
 		} else {
 			console.log('Invalid game');
-			this.gameMap.delete(game.gameURL);
 			return;
 		}
-		// Save the game history
+
 		const history = new History();
 		history.playerOne = player1;
 		history.playerTwo = player2;
@@ -112,10 +102,9 @@ export class PongService {
 		history.endTime = new Date();
 		history.timePlayed = timePlayed;
 		history.winnerId = winnerId;
-		const tmp = await this.historyRepository.create(history);
-		await this.historyRepository.save(tmp);
+		const entity = this.historyRepository.create(history);
+		await this.historyRepository.save(entity);
 
-		this.gameMap.delete(game.gameURL);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
@@ -129,67 +118,25 @@ export class PongService {
 		return this.gameMap.get(gameURL);
 	}
 
-	validateSettings(gameSettings: PongGameSettings) {
-		if (!gameSettings) return false;
-
-		// if (!compareStuctureOfJSONs(gameSettings, this.defaultSettings)) return false;
-		// fix keyMap bug
-
-		// TODO: dto
-
-		return true;
-	}
-
-	setPlayerTwoId(userId: string, gameURL: string) {
-		const game = this.gameMap.get(gameURL);
-		if (game) {
-			// Set player two's ID
-			game.playerTwoId = userId;
-
-			// Update the gameMap with the modified game
-			this.gameMap.set(gameURL, game);
-
-			// Update the playerMap with the new status
-			//this.playerMap.set(userId, { game, status: 'player2' });
-
-			// Other logic if needed, e.g., notify players that the game is ready to start
-		} else {
-			// Handle the case where the game is not found
-			console.error(`Game with URL ${gameURL} not found.`);
-		}
-	}
-
-	setPlayerOneId(userId: string, gameURL: string) {
-		const game = this.gameMap.get(gameURL);
-		if (game) {
-			// Set player two's ID
-			game.playerOneId = userId;
-			// Update the gameMap with the modified game
-			this.gameMap.set(gameURL, game);
-			// Update the playerMap with the new status
-		} else {
-			// Handle the case where the game is not found
-			console.error(`Game with URL ${gameURL} not found.`);
-		}
-	}
-
-	createNewGame(gameSettings: PongGameSettings, userId: string, computer = false) {
-		if (!this.validateSettings(gameSettings)) {
+	createNewGame(userId: string, gameSettings: PongGameSettings, computer = false) {
+		if (!this.validateCustomSettings(gameSettings)) {
 			gameSettings = this.defaultSettings;
 		}
-		const gameCode = this.generateRandomCode();
-		const newPongGame = new PongGame(gameCode, gameSettings, computer);
 
-		newPongGame.player1.id = userId;
-		this.playerJoinedGame(newPongGame, userId, 'player1');
+		const gameCode = this.generateRandomCode();
+		const game = new PongGame(gameCode, gameSettings, computer);
+
+		game.player1.id = userId;
+		this.playerMap.set(userId, { game, status: 'player1' });
 		if (computer) {
-			this.gameMap.set(gameCode, newPongGame);
+			this.gameMap.set(gameCode, game);
+			game.status = 'running';
 		} else {
-			this.pendingGames.push(newPongGame);
+			this.pendingGames.push(game);
 		}
 
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
-		return newPongGame;
+		return game;
 	}
 
 	generateRandomCode(length = 12): string {
@@ -205,49 +152,39 @@ export class PongService {
 		return gameCode;
 	}
 
-	validateCookie(client: Socket) {
-		const req = client.request;
-		const cookies = req.headers.cookie;
-		if (!cookies) return null;
-
-		const parsedCookies = parse(cookies);
-		const playerId = parsedCookies.playerID;
-		// console.log(playerId);
-
-		return playerId;
-	}
-
-	getUserStatusForGame(userId: string, gameURL: string) {
+	getUserStatusForGame(userId: string) {
 		const player = this.playerMap.get(userId);
-		if (!player) return 'spectator';
-
-		return player.status;
+		return player?.status || 'spectator';
 	}
 
 	getPlayer(userId: string) {
 		return this.playerMap.get(userId);
 	}
 
-	updateKeystate(pongGame: PongGame, player: string, payload: any) {
+	updateKeystate(game: PongGame, player: string, payload: any) {
 		// TODO check for player
-		pongGame[player].keyState[payload.key] = payload.pressed;
-		// console.log(pongGame[player].keyState);
+		game[player].keyState[payload.key] = payload.pressed;
+		// console.log(game[player].keyState);
 	}
 
-	handleConnection(playerId: string) {
-		if (!this.playerMap.has(playerId)) {
-			this.playerMap.set(playerId, null);
+	handleConnection(userId: string) {
+		if (!this.playerMap.has(userId)) {
+			this.playerMap.set(userId, null);
 		}
 
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
-	handleDisconnect(playerId: string) {
-		this.cancelPendingGame(playerId);
+	handleDisconnect(userId: string) {
+		const game = this.findActiveGame(userId);
+		if (game) {
+			if (game.status === 'pending') {
+				this.cancelPendingGame(userId);
+			} else if (game.status !== 'paused' && game.status !== 'running') {
+				this.playerMap.delete(userId);
+			}
+		}
 
-		// this.playerMap.delete(playerId);
-
-		// this.pongGateway.server.of('lobby').emit('lobby-stats', this.playerMap.size);
 		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
@@ -259,63 +196,45 @@ export class PongService {
 		};
 	}
 
-	findPendingGame() {
-		// const [pongGame] = Array.from(this.pendingGameMap);
-		/* const pongGame = this.pendingGames[0];
-		console.log(pongGame);
-
-		return pongGame ?? null; */
-		return this.pendingGames[0];
-	}
-
 	joinPendingGame(userId: string) {
-		const pongGame = this.findPendingGame();
-		if (!pongGame) return null;
+		const [game] = this.pendingGames;
+		if (!game) return null;
 
-		pongGame.player2.id = userId;
-		this.playerJoinedGame(pongGame, userId, 'player2');
+		game.player2.id = userId;
+		this.playerMap.set(userId, { game, status: 'player2' });
 
-		this.gameMap.set(pongGame.gameURL, pongGame);
+		this.gameMap.set(game.gameURL, game);
 		this.pendingGames.shift();
-		pongGame.status = 'running';
-		return pongGame.gameURL;
+		game.status = 'running';
+		return game;
 	}
 
-	playerJoinedGame(game: PongGame, userId: string, status: PlayerStatus) {
-		this.playerMap.set(userId, { game, status });
-		/* if (this.playerMap.has(userId)) {
-			const player = this.playerMap.get(userId);
-			player.game = game;
-			player.status = status;
-		} else {
-			this.playerMap.set(userId, { game, status });
-		} */
-	}
-
-	getPlayerGameStatus(playerId: string) {
-		const player = this.getPlayer(playerId);
-		if (player?.game.status === 'running') {
-			return { gameURL: player.game.gameURL, queuing: false };
+	getPlayerGameStatus(userId: string) {
+		const game = this.findActiveGame(userId);
+		if (game?.status === 'running') {
+			return { gameURL: game.gameURL, queuing: false };
 		}
-		const queuing = player?.game.status === 'pending' || false;
+		const queuing = game?.status === 'pending' || false;
 		return { gameURL: null, queuing };
 	}
 
-	cancelPendingGame(playerId: string) {
-		if (this.playerMap.has(playerId)) {
-			const player = this.playerMap.get(playerId);
-			if (player?.game.status === 'pending') {
-				const gameIndex = this.pendingGames.findIndex((game) => game === player.game);
-				this.pendingGames.splice(gameIndex, 1);
-			}
-		}
+	cancelPendingGame(userId: string) {
+		const player = this.playerMap.get(userId);
+		const gameIndex = this.pendingGames.findIndex((game) => game === player.game);
+		this.pendingGames.splice(gameIndex, 1);
+		player.game = null;
+
+		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
-	async validateCustomSettings(gameSettings: PongGameSettings) {
+	validateCustomSettings(gameSettings: PongGameSettings) {
 		const classInstance = plainToClass(PongGameSettingsDto, gameSettings);
-		const validationErrors = await validate(classInstance);
-		if (validationErrors.length > 0) {
-			/* console.log(validationErrors); */
+		try {
+			const validationErrors = validateSync(classInstance);
+			if (validationErrors.length > 0) {
+				console.log(validationErrors);
+			}
+		} catch {
 			return false;
 		}
 		if (classInstance.ballSpeed !== classInstance.paddleSpeed) return false;
@@ -338,14 +257,20 @@ export class PongService {
 				secret: process.env.JWT_SECRET,
 			});
 
-			console.log(decoded);
+			// console.log(decoded);
 		} catch (error) {
+			console.error('Error verifying token:', error);
 			return null;
 		}
 
 		client.data.user = decoded;
 
 		return decoded.id;
+	}
+
+	findActiveGame(userId: string) {
+		const player = this.playerMap.get(userId);
+		return player?.game;
 	}
 }
 
