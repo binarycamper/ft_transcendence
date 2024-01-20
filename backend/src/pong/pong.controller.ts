@@ -10,9 +10,12 @@ export class PongController {
 
 	@Get('all-history')
 	async getAll() {
-		//console.log('started!');
-		const history = await this.pongService.findAllHistory();
-		return history;
+		return await this.pongService.findAllHistory();
+	}
+
+	@Get('players')
+	getAllPlayers() {
+		return this.pongService.playerMap;
 	}
 
 	@Get('active-games')
