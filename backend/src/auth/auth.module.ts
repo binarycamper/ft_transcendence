@@ -22,7 +22,7 @@ import { User } from 'src/user/user.entity';
 			imports: [ConfigModule],
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
-				secret: configService.get('JWT_SECRET'), // Fetch from .env or use a default value
+				secret: configService.get('JWT_SECRET'),
 				signOptions: { expiresIn: '1d' },
 			}),
 		}),

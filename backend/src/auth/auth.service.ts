@@ -68,15 +68,12 @@ export class AuthService {
 				intraId: intraUser.id,
 				intraImage: intraUser.image?.versions?.medium,
 				name: intraUser.login,
-				password: 'hashed-pw',
+				password: this.configService.get<string>('DEFAULT_PASSWORD'),
 				status: 'fresh',
 			});
 			await this.userRepository.save(newUser);
 			return newUser;
 		}
-		// Benutzer existiert bereits, update nur sichere Felder
-		// Kein Überschreiben von isTwoFactorAuthenticationEnabled, wenn es bereits aktiviert ist
-		// TODO if user already exists
 		if (!user.has2FA) {
 			user.has2FA = false;
 		}
@@ -88,72 +85,20 @@ export class AuthService {
 		code: string,
 	): Promise<{ accessToken?: string; require2FA?: boolean; userId?: string }> {
 		try {
-			//Retrieve OAuth token and query user data
 			const accessToken = await this.getOAuthToken(code);
 			const intraUserData = await this.getOAuthUserData(accessToken);
-			// Create or update users in the database
 			const user = await this.createUserOrUpdate(intraUserData);
 
-			// Generate and return JWT token
 			const jwtToken = await this.createAccessToken(user.id);
-			return { accessToken: jwtToken, userId: user.id }; //TODO: why userID?? it was id everywhere or?
+			return { accessToken: jwtToken, userId: user.id };
 		} catch (error) {
 			const responseError = error as { response: { status: number } };
 			if (responseError.response?.status === 401)
 				throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-			throw new HttpException('Failed authentication', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new HttpException('Failed authentication', HttpStatus.UNAUTHORIZED);
 		}
 	}
 
-	/////////////////////// NOT USED generateNewAccessToken NOT USED ///////////////////////
-
-	/* This method is used to validate the refresh token and retrieve the user from the database. */
-	private async validateRefreshToken(refreshToken: string): Promise<User> {
-		try {
-			const decoded = this.jwtService.verify<JwtPayload>(refreshToken);
-			const user = await this.userRepository.findOne({ where: { id: decoded.id } });
-			if (!user) throw new Error('User not found for the provided refresh token.');
-
-			return user;
-		} catch (error) {
-			if (error instanceof Error) {
-				console.error('Invalid refresh token:', error.message);
-				throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
-			}
-			console.error('An unexpected error occurred');
-			throw new HttpException('An unexpected error occurred', HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	async generateNewAccessToken(refreshToken: string): Promise<string | null> {
-		try {
-			const user = await this.validateRefreshToken(refreshToken);
-			const payload = {
-				email: user.email,
-				id: user.id,
-				password: user.password,
-				username: user.name,
-			};
-			const newAccessToken = this.jwtService.sign(payload);
-
-			return newAccessToken;
-		} catch (error) {
-			return null;
-		}
-	}
-
-	/////////////////////// NOT USED generateNewAccessToken NOT USED ///////////////////////
-
-	//This function is used to check the validity of the 2FA token.
-	private is2FATokenValid(user: User, token: string): boolean {
-		return speakeasy.totp.verify({
-			encoding: 'base32',
-			secret: user.unconfirmed2FASecret,
-			token: token,
-		});
-	}
-
-	/* Enable 2FA for user and save corresponding changes in the database. */
 	private async enable2FAForUser(user: User): Promise<void> {
 		user.TFASecret = user.unconfirmed2FASecret;
 		user.unconfirmed2FASecret = null;
@@ -256,17 +201,17 @@ export class AuthService {
 	sendResetPasswordEmail(email: string, resetPasswordUrl: string) {
 		const transporter = nodemailer.createTransport({
 			auth: {
-				pass: this.configService.get<string>('APP_PASSWORD'),
-				user: 'transcendence502@gmail.com',
+				pass: this.configService.get('APP_PASSWORD'),
+				user: this.configService.get('APP_EMAIL'),
 			},
-			host: 'smtp.gmail.com',
+			host: this.configService.get('SMTP_HOST'),
 			port: 465,
 			secure: true,
 		});
 
 		const mailOptions = {
-			from: '"Support" <transcendence502@gmail.com>',
-			to: 'robelkedida@yahoo.de',
+			from: `Support ${this.configService.get('APP_EMAIL')}`,
+			to: email,
 			subject: 'Password Reset',
 			text: `Hello,
 
