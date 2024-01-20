@@ -69,7 +69,6 @@ database: PostgreSQL
 ## rmeuth
 
 ```
-render image doesnt work in profile.
 frontend: create basic webpage layout
 frontend: create game (pong)
 customization options
@@ -110,12 +109,11 @@ customization options
 
 ##### issues:
 
-- Friend online status broken. (should work with intra users)
-  ChatRooms:
-- User gets added on invitation not on acceptance (private mode)
+- Friend online status broken. (should work with intra users) will tested when game is rdy...
 
 optinal:
 
+- User gets added on invitation not on acceptance (private mode) Thats fine
 - Friends name not showing (until selected). = (Only in White Mode, we will evaluate in darkmode.)
 - Enter key not sending the message. optional
 - Latest message now showed (we need to manually scroll to the bottom of the chat each time).
