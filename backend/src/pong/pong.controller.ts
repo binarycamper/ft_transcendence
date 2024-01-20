@@ -2,6 +2,7 @@ import { Controller, Get, Param, Req, Res, UseGuards } from '@nestjs/common';
 import { PongService } from './pong.service';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { IdParamDto } from './pong.dto';
 
 @Controller('pong')
 export class PongController {
@@ -31,8 +32,8 @@ export class PongController {
 	} */
 
 	@Get(':id')
-	getPongGameData(@Param('id') id: string) {
-		const pongGameData = this.pongService.getPongGameById(id);
+	getPongGameData(@Param() idParamDto: IdParamDto) {
+		const pongGameData = this.pongService.getPongGameById(idParamDto.id);
 		if (!pongGameData) return null;
 
 		const { gameSettings, gameState } = pongGameData;

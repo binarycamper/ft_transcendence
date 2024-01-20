@@ -10,6 +10,7 @@ import { Server, Socket } from 'socket.io';
 import { PongGameSettings } from './classes/PongGame';
 import { PongService } from './pong.service';
 import { UserService } from 'src/user/user.service';
+import { JoinRoomDto, LeaveRoomDto, PageReloadDto } from './pong.dto';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
 @Injectable()
@@ -65,14 +66,14 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('page-reload')
-	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+	handleReload(@ConnectedSocket() client: Socket, @MessageBody() pageReloadDto: PageReloadDto) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
 		const status = this.pongService.getUserStatusForGame(userId);
 		if (status !== 'player1' && status !== 'player2') return;
 
-		const game = this.pongService.getPongGameById(gameURL);
+		const game = this.pongService.getPongGameById(pageReloadDto.gameURL);
 		client.on('update-keystate', (payload: any) => {
 			this.pongService.updateKeystate(game, status, payload);
 		});
@@ -97,22 +98,6 @@ export class PongGateway {
 			await client.join(game.gameURL);
 		}
 	}
-
-	/* @SubscribeMessage('game-ready-acknowledgement')
-	async handleGameReadyAcknowledgement(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() data: { gameURL: string; userId: string },
-	) {
-		const isAuthenticated = this.verifyAuthentication(client);
-		if (!isAuthenticated.isAuthenticated) {
-			console.log('Invalid credentials');
-			return;
-		}
-		if (data.userId !== isAuthenticated.userId) {
-			this.pongService.setPlayerTwoId(data.userId, data.gameURL);
-		}
-		console.log(`User ID ${data.userId} acknowledged game ready for game URL ${data.gameURL}`);
-	} */
 
 	@SubscribeMessage('play-with-computer')
 	async handlePlayWithComputer(
@@ -178,12 +163,12 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('join-room')
-	async joinRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
-		await client.join(gameURL);
+	async joinRoom(@ConnectedSocket() client: Socket, @MessageBody() joinRoomDto: JoinRoomDto) {
+		await client.join(joinRoomDto.gameURL);
 	}
 
 	@SubscribeMessage('leave-room')
-	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
-		await client.leave(gameURL);
+	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() leaveRoomDto: LeaveRoomDto) {
+		await client.leave(leaveRoomDto.gameURL);
 	}
 }

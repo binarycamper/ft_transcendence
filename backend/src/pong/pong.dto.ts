@@ -1,4 +1,13 @@
-import { IsBoolean, IsIn, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
+import {
+	IsBoolean,
+	IsIn,
+	IsNotEmpty,
+	IsNumber,
+	IsString,
+	Max,
+	Min,
+	ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class AspectRatio {
@@ -62,4 +71,25 @@ export class PongGameSettingsDto {
 	@Min(2)
 	@Max(2)
 	wallHeight: number;
+}
+
+export class IdParamDto {
+	@IsNotEmpty()
+	@IsString()
+	id: string;
+}
+
+export class PageReloadDto {
+	@IsString()
+	gameURL: string;
+}
+
+export class JoinRoomDto {
+	@IsString()
+	gameURL: string;
+}
+
+export class LeaveRoomDto {
+	@IsString()
+	gameURL: string;
 }

@@ -162,7 +162,6 @@ export class EventsGateway {
 	@SubscribeMessage('send-message')
 	async handleMessage(
 		@MessageBody() data: SendMessageDto,
-		//@MessageBody() data: { receiverId: string; content: string },
 		@ConnectedSocket() client: AuthenticatedSocket,
 	) {
 		try {
@@ -205,7 +204,6 @@ export class EventsGateway {
 	@SubscribeMessage('send-message-to-chatroom')
 	async handleMessageToChatRoom(
 		@MessageBody() data: SendMessageToChatRoomDto,
-		//@MessageBody() data: { chatRoomId: string; content: string },
 		@ConnectedSocket() client: AuthenticatedSocket,
 	) {
 		try {

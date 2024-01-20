@@ -20,7 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './DTO/Login.Dto';
 import { UserService } from '../user/user.service';
-import { Verify2FADto, VerifyResetTokenDto } from './DTO/verify2FA.Dto';
+import { FADto, Verify2FADto, VerifyResetTokenDto } from './DTO/verify2FA.Dto';
 import { NewPasswordDto, SendResetPasswordEmailDto } from './DTO/NewPassword.Dto';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
@@ -169,7 +169,7 @@ export class AuthController {
 
 	@Post('toggle-2fa')
 	@UseGuards(JwtAuthGuard)
-	async toggle2FA(@Req() req: Request, @Res() res: Response, @Body() body: { has2FA: boolean }) {
+	async toggle2FA(@Req() req: Request, @Res() res: Response, @Body() body: FADto) {
 		try {
 			const user: User = await this.userService.findProfileById(req.user.id);
 			const response = await this.authService.toggle2FA(body.has2FA, user);

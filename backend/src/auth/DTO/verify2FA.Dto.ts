@@ -18,3 +18,8 @@ export class VerifyResetTokenDto {
 	@IsString()
 	token: string;
 }
+
+export class FADto {
+	@IsBoolean()
+	has2FA: boolean;
+}
