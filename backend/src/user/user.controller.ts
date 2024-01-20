@@ -167,7 +167,6 @@ export class UserController {
 				// If error is an instance of HttpException, rethrow it
 				throw error;
 			} else {
-				// For all other errors, consider them as internal server errors
 				throw new BadRequestException('An unexpected error occurred while deleting the user');
 			}
 		}

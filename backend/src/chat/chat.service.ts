@@ -2,7 +2,6 @@ import {
 	BadRequestException,
 	ForbiddenException,
 	Injectable,
-	InternalServerErrorException,
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
@@ -163,7 +162,7 @@ export class ChatService {
 			} else {
 				console.error('Failed to fetch chat history: Unknown error');
 			}
-			throw new InternalServerErrorException('Failed to fetch chat history');
+			throw new BadRequestException('Failed to fetch chat history, invalid request');
 		}
 	}
 
@@ -343,7 +342,7 @@ export class ChatService {
 			} else {
 				console.error('Failed to fetch chat history: Unknown error');
 			}
-			throw new InternalServerErrorException('Failed to fetch chat history');
+			throw new BadRequestException('Failed to fetch chat history, invalid request');
 		}
 	}
 
