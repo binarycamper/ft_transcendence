@@ -330,8 +330,6 @@ export class UserController {
 			res.status(HttpStatus.BAD_REQUEST).json({ message: 'You cannot block yourself.' });
 			return;
 		}
-		//TODO: Delete open friendrequests! of user and userToBlock
-		// Find and delete open friend requests between userToBlock and user
 		const friendRequest = await this.friendrequestRepository.findOne({
 			where: [
 				{ senderId: userToBlock.id, recipientId: user.id, status: 'pending' },
