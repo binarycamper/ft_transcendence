@@ -497,6 +497,21 @@ export class ChatService {
 		return this.friendrequestRepository.findOneBy({ id });
 	}
 
+	async deleteRequestsByIds(userIdOne: string, userIdTwo: string) {
+		const request = await this.friendrequestRepository.findOne({
+			where: [
+				{ senderId: userIdOne, recipientId: userIdTwo },
+				{ senderId: userIdTwo, recipientId: userIdOne },
+			],
+		});
+
+		if (request) {
+			await this.friendrequestRepository.remove(request);
+		} else {
+			throw new Error('Friend request not found');
+		}
+	}
+
 	//########################Debug#############################
 
 	async getAllMutes(): Promise<Mute[]> {

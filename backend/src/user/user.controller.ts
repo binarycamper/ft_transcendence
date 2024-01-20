@@ -43,13 +43,20 @@ import { NotFoundError } from 'rxjs';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FriendRequest } from 'src/chat/friendRequest.entity';
+import { Repository } from 'typeorm';
 
 const UPLOAD_PATH = '/usr/src/app/uploads/';
 let number = 0;
 
 @Controller('user')
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		@InjectRepository(FriendRequest)
+		private readonly friendrequestRepository: Repository<FriendRequest>,
+		private readonly userService: UserService,
+	) {}
 
 	@Get('id')
 	@UseGuards(JwtAuthGuard)
@@ -324,6 +331,17 @@ export class UserController {
 			return;
 		}
 		//TODO: Delete open friendrequests! of user and userToBlock
+		// Find and delete open friend requests between userToBlock and user
+		const friendRequest = await this.friendrequestRepository.findOne({
+			where: [
+				{ senderId: userToBlock.id, recipientId: user.id, status: 'pending' },
+				{ senderId: user.id, recipientId: userToBlock.id, status: 'pending' },
+			],
+		});
+		if (friendRequest) {
+			await this.friendrequestRepository.remove(friendRequest);
+		}
+
 		try {
 			await this.userService.blockUser(user, userToBlock.name);
 			await this.userService.removeFriend(user.id, userToBlock.id);
