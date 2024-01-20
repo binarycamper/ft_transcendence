@@ -18,7 +18,6 @@ import {
 	ValidationPipe,
 	UnauthorizedException,
 	NotFoundException,
-	InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -143,9 +142,7 @@ export class UserController {
 				throw error;
 			} else {
 				// For all other errors, consider them as internal server errors
-				throw new InternalServerErrorException(
-					'An unexpected error occurred while deleting the user',
-				);
+				throw new BadRequestException('An unexpected error occurred while deleting the user');
 			}
 		}
 	}
@@ -179,7 +176,7 @@ export class UserController {
 			return { message: 'Image uploaded successfully' };
 		} catch (error) {
 			//this.logger.error(`Error uploading user image: ${error.message}`, error.stack);
-			throw new InternalServerErrorException('Could not upload image. Please try again later.');
+			throw new BadRequestException('Could not upload image. Please try again later.');
 		}
 	}
 
@@ -188,7 +185,7 @@ export class UserController {
 			await sharp(fileBuffer).metadata();
 			return true;
 		} catch (error) {
-			//console.error('Invalid image file:', error);
+			//console.log('Invalid image file:', error);
 			return false;
 		}
 	}
@@ -237,7 +234,7 @@ export class UserController {
 			}
 		} catch (error) {
 			//console.error('Error updating Nickname:', error);
-			throw new HttpException('Failed to update Nickname', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new HttpException('Failed to update Nickname', HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -262,9 +259,7 @@ export class UserController {
 			return res.status(HttpStatus.OK).json(friends); // Send the list of friends in the response
 		} catch (error) {
 			//console.error('Error retrieving friends:', error);
-			return res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'Error retrieving friends' });
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Error retrieving friends' });
 		}
 	}
 
@@ -282,7 +277,7 @@ export class UserController {
 		} catch (error) {
 			const { message } = error as Error;
 			let responseMessage = 'An error occurred';
-			let status = HttpStatus.INTERNAL_SERVER_ERROR;
+			let status = HttpStatus.BAD_REQUEST;
 
 			if (error instanceof NotFoundException) {
 				status = HttpStatus.NOT_FOUND;
@@ -312,8 +307,8 @@ export class UserController {
 
 			return res.status(HttpStatus.OK).json({ message: 'Friend added successfully' });
 		} catch (error) {
-			console.error('Error adding friend:', error);
-			return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error adding friend' });
+			//console.log('Error adding friend:', error);
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Error adding friend' });
 		}
 	}
 
@@ -345,14 +340,13 @@ export class UserController {
 			await this.userService.removeFriend(user.id, userToBlock.id);
 			res.status(HttpStatus.OK).json({ message: 'User blocked successfully' });
 		} catch (error) {
-			console.error('Error while blocking user: ', error instanceof Error ? error.message : error);
-
+			console.log('Error while blocking user: ', error instanceof Error ? error.message : error);
 			if (error instanceof NotFoundError) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
 			} else if (error instanceof BadRequestException) {
 				res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
 			} else {
-				res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+				res.status(HttpStatus.UNAUTHORIZED).json({ message: 'invalid User block' });
 			}
 		}
 	}
@@ -367,9 +361,7 @@ export class UserController {
 			if (error instanceof NotFoundException) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
 			} else {
-				res
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.json({ message: 'Could not retrieve blocked users' });
+				res.status(HttpStatus.BAD_REQUEST).json({ message: 'Could not retrieve blocked users' });
 			}
 		}
 	}
@@ -387,17 +379,17 @@ export class UserController {
 			await this.userService.removeUserInBlocklist(user, userToBlock.name);
 			res.status(HttpStatus.OK).json({ message: 'User unblocked successfully' });
 		} catch (error) {
-			console.error(
+			/*console.error(
 				'Error while unblocking user: ',
 				error instanceof Error ? error.message : error,
-			);
+			);*/
 
 			if (error instanceof NotFoundError) {
 				res.status(HttpStatus.NOT_FOUND).json({ message: error.message });
 			} else if (error instanceof BadRequestException) {
 				res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
 			} else {
-				res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+				res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Can not unblock user' });
 			}
 		}
 	}

@@ -1,9 +1,4 @@
-import {
-	BadRequestException,
-	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -197,16 +192,15 @@ export class UserService {
 					await unlink(imagePath);
 				}
 			} catch (error) {
-				console.error('Failed to delete user image:', error);
+				console.log('Failed to delete user image:', error);
 			}
 		}
-
 		try {
 			await this.userRepository.manager.transaction(async (entityManager) => {
 				await entityManager.remove(user);
 			});
 		} catch (error) {
-			throw new InternalServerErrorException('Error deleting user and auth token');
+			throw new BadRequestException('Error deleting user and auth token');
 		}
 	}
 
@@ -407,7 +401,7 @@ export class UserService {
 			// Return the blocked users
 			return user.blocklist;
 		} catch (error) {
-			throw new InternalServerErrorException('Could not retrieve blocked users');
+			throw new BadRequestException('Could not retrieve blocked users');
 		}
 	}
 
