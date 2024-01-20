@@ -55,7 +55,7 @@ export class ChatService {
 			await this.muteRepository.save(mute);
 		} catch (error) {
 			console.error('Failed to mute user:', error);
-			throw new InternalServerErrorException('Unable to mute user: ', error as string);
+			throw new BadRequestException('Unable to mute user: ', error as string);
 		}
 	}
 
@@ -74,7 +74,7 @@ export class ChatService {
 			await this.muteRepository.remove(mute); // To completely remove the mute entry
 		} catch (error) {
 			console.log('Failed to unmute user:', error);
-			throw new InternalServerErrorException('Unable to unmute user: ', error as string);
+			throw new BadRequestException('Unable to unmute user: ', error as string);
 		}
 	}
 
@@ -528,7 +528,7 @@ export class ChatService {
 			await this.muteRepository.remove(mute);
 		} else {
 			// Handle the case where the mute is not found
-			console.error(`Mute with id ${id} not found.`);
+			console.log(`Mute with id ${id} not found.`);
 			// You might want to throw an error or handle this case differently
 		}
 	}
