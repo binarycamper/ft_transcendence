@@ -108,26 +108,6 @@ export class EventsGateway {
 
 	//########################UserStatus#############################
 
-	//old
-
-	// async handleConnection(client: Socket, ...args: any[]) {
-	// 	try {
-	// 		const isAuthenticated = this.verifyAuthentication(client);
-	// 		if (!isAuthenticated.isAuthenticated) {
-	// 			console.log('Invalid credentials');
-	// 			return;
-	// 		}
-	// 		// User is authenticated, proceed with connection
-	// 		//console.log('Email to track online: ', client.data.user.email);
-	// 		await this.eventsService.userConnected(client.data.user.email);
-	// 		client.join(`user_${isAuthenticated.userId}`);
-	// 	} catch (error) {
-	// 		console.error('In handleConnection:', error.message);
-	// 	}
-	// }
-
-	//test new eslint conform
-
 	async handleConnection(client: AuthenticatedSocket) {
 		try {
 			const isAuthenticated = this.verifyAuthentication(client);

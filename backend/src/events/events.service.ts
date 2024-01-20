@@ -41,16 +41,15 @@ export class EventsService {
 
 			if (user && user.id) {
 				// Check if user is not null before accessing 'id'
-				const timeout = setTimeout(() => {
-					this.userService
-						.setUserOffline(user.id)
-						.then(() => {
-							console.log('User tracked offline: ', user.id);
-						})
-						.catch((error) => {
-							console.log('Error setting user offline:', error);
-						});
-				}, 2_000);
+				if (this.userConnectionMap.has(user.id)) {
+					clearTimeout(this.userConnectionMap.get(user.id));
+				}
+
+				const timeout = setTimeout(async () => {
+					await this.userService.setUserOffline(user.id);
+					console.log('User tracked offline: ', user.id);
+					this.userConnectionMap.delete(user.id);
+				}, 10000); // Set a delay of 10 seconds (10000 milliseconds)
 
 				this.userConnectionMap.set(user.id, timeout);
 			} else {
