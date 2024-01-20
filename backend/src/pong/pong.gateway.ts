@@ -14,7 +14,7 @@ import { JoinRoomDto, LeaveRoomDto, PageReloadDto } from './pong.dto';
 
 /* @WebSocketGateway(8090, { cors: '*', credentials: true }) */
 @Injectable()
-@WebSocketGateway(8090, {
+@WebSocketGateway({
 	/* cors: {
 		credentials: true,
 		origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:8090'],
@@ -175,12 +175,12 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('join-room')
-	async joinRoom(@ConnectedSocket() client: Socket, @MessageBody() joinRoomDto: JoinRoomDto) {
-		await client.join(joinRoomDto.gameURL);
+	async joinRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		await client.join(gameURL);
 	}
 
 	@SubscribeMessage('leave-room')
-	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() leaveRoomDto: LeaveRoomDto) {
-		await client.leave(leaveRoomDto.gameURL);
+	async leaveRoom(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
+		await client.leave(gameURL);
 	}
 }

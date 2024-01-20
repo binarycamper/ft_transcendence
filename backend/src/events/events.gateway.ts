@@ -170,7 +170,6 @@ export class EventsGateway {
 				console.log('Invalid credentials');
 				return;
 			}
-			//console.log('handleMessage arrived, Chat entry gets created:', data.content);
 			const message: ChatMessage = await this.chatService.saveMessage(
 				data.receiverId,
 				isAuthenticated.userId,
