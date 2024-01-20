@@ -523,14 +523,14 @@ export class ChatController {
 	@Post('accept')
 	@UseGuards(JwtAuthGuard)
 	async acceptRequest(
-		@Query('messageid') messageId: string,
+		@Query() acceptRequestDto: AcceptRequestDto,
 		@Req() req: Request,
 		@Res() res: Response,
 	) {
 		//console.log(`Accepting request with messageId: ${messageId}`);
 		try {
 			const user: User = await this.userService.findProfileById(req.user.id);
-			await this.chatService.acceptRequest(messageId, user);
+			await this.chatService.acceptRequest(acceptRequestDto.messageid, user);
 			return res.status(HttpStatus.OK).send('Friend accepted!');
 		} catch (error) {
 			if (error instanceof Error) {

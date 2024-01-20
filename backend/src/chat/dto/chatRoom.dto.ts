@@ -131,7 +131,7 @@ export class GetFriendChatDto {
 }
 
 export class AcceptRequestDto {
-	@IsString()
 	@IsNotEmpty()
+	@IsUUID()
 	messageid: string;
 }
