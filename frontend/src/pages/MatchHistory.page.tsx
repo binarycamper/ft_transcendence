@@ -28,6 +28,7 @@ export function MatchHistory() {
 	const [matches, setMatches] = useState<MatchHistoryItem[]>([]);
 	const [userId, setUserId] = useState<string | null>(null);
 	const [noty, setNoty] = useState<string | null>(null);
+	const [userName, setUserName] = useState<string | null>(null);
 
 	function showNotification(message: string) {
 		setNoty(message);
@@ -80,6 +81,7 @@ export function MatchHistory() {
 			try {
 				const data = await getUserIdFromServer();
 				setUserId(data.id);
+				setUserName(data.name);
 			} catch (error) {
 				showNotification('Error fetching user ID, invalid user');
 				//console.error('Error retrieving user ID:', error);
@@ -123,7 +125,7 @@ export function MatchHistory() {
 					}
 					const mappedData = data.map((history) => ({
 						date: new Date(history.startTime).toISOString().replace('T', ' ').slice(0, -5),
-						opponent: history.playerTwo.name,
+						opponent: history.playerOne.name === userName ? history.playerTwo.name : history.playerOne.name,
 						result: history.winnerId === userId ? 'Won' : 'Lost',
 						score: `${history.scorePlayerOne} - ${history.scorePlayerTwo}`,
 					}));
