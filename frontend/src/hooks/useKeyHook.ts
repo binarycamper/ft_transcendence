@@ -22,7 +22,7 @@ export default function useKeyHook() {
 		};
 
 		function translateKeyEvent(event: KeyboardEvent) {
-			return mapping[event.code] ?? null;
+			return mapping[event.code];
 			/* switch (event.code) {
 				case keyMapP1.down:
 					return { key: 'down', player: 1 };

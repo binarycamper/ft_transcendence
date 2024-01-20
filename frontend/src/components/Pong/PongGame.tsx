@@ -31,22 +31,29 @@ export function PongGame({ gameSettings, gameState }: Props) {
 
 		return () => {
 			socket.emit('leave-room', id);
+			socket.off();
 		};
 	}, [id]);
 
 	useEffect(() => {
+		socket.on('disconnect', () => {
+			console.log('disconnect');
+		});
+
 		socket.on('update-game-state', (state) => {
 			setState(state);
 		});
 
 		return () => {
+			socket.off('disconnect');
 			socket.off('update-game-state');
 		};
 	}, []);
 
-	if (state.gameOver) return <div>GAME OVER</div>;
 	return (
 		<>
+			{state.status === 'finished' && <div>GAME OVER</div>}
+			{state.status === 'paused' && <div>GAME PAUSED</div>}
 			<div
 				className="game-container"
 				style={
