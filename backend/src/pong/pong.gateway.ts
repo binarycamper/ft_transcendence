@@ -66,14 +66,14 @@ export class PongGateway {
 	}
 
 	@SubscribeMessage('page-reload')
-	handleReload(@ConnectedSocket() client: Socket, @MessageBody() pageReloadDto: PageReloadDto) {
+	handleReload(@ConnectedSocket() client: Socket, @MessageBody() gameURL: string) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
 		const player = this.pongService.getPlayerStatusForGame(userId);
 		if (player !== 'player1' && player !== 'player2') return;
 
-		const game = this.pongService.getPongGameById(pageReloadDto.gameURL);
+		const game = this.pongService.getPongGameById(gameURL);
 		client.on('update-keystate', (payload: any) => {
 			this.pongService.updateKeystate(game, player, payload);
 		});
