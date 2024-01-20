@@ -107,12 +107,13 @@ customization options
   ◦ The channel owner can set a password required to access the channel, change it, and also remove it.
   ◦ A user who is an administrator of a channel can kick, ban or mute (for a limited time) other users, but not the channel owners.
 
+#### 5. Game
+
 ##### issues:
 
 - Friend online status broken.
 - ChatRooms:
 - User gets added on invitation not on acceptance (private mode)
-- Deleting the room without permissions results in deleting the last msg of the chat for everyone! Lol kk
 
 optinal:
 
@@ -122,4 +123,6 @@ optinal:
 - Deleting the chat by one user, delets it for both users (just refresh the page for the second user and it's gone). = Solution would be to disable clear chat, to save time.
 - User can still send messages after getting kicked (page not refreshed) // thats just rendered on its own clientpage which is not serverstate.
 
-#### 5. Game
+##### Fixed
+
+- Deleting the room without permissions results in deleting the last msg of the chat for everyone! Lol kk its fixed :D

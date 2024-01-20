@@ -185,6 +185,15 @@ export class ChatService {
 	}
 
 	async deleteChatRoom(roomId: string, userId: string) {
+		// Check if the user is the owner of the chat room
+		const chatRoom = await this.chatRoomRepository.findOne({
+			where: { id: roomId, ownerId: userId },
+		});
+
+		if (!chatRoom) {
+			throw new NotFoundException('Chat room not found');
+		}
+
 		// First, delete chat messages associated with the chat room
 		await this.chatMessageRepository
 			.createQueryBuilder()
@@ -193,24 +202,17 @@ export class ChatService {
 			.where('chatRoomId = :id', { id: roomId })
 			.execute();
 
-		// Then, delete the chat room itself if the user is authorized
+		// Then, delete the chat room itself
 		const deleteResult = await this.chatRoomRepository
 			.createQueryBuilder()
 			.delete()
 			.from(ChatRoom)
 			.where('id = :id', { id: roomId })
-			.andWhere('ownerId = :userId', { userId: userId })
 			.execute();
 
 		// If no chat room was deleted, it could be because it was not found or the user is not the owner
 		if (deleteResult.affected === 0) {
-			const chatRoom = await this.chatRoomRepository.findOne({ where: { id: roomId } });
-			if (!chatRoom) {
-				throw new NotFoundException('Chat room not found');
-			}
-			if (chatRoom.ownerId !== userId) {
-				throw new ForbiddenException('You do not have permission to delete this chat room');
-			}
+			throw new ForbiddenException('You do not have permission to delete this chat room');
 		}
 	}
 
