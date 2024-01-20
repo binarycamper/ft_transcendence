@@ -186,14 +186,21 @@ export class PongService {
 		const gamePromises = Array.from(this.gameMap.values()).map(async (game) => {
 			// Using async here to allow await inside the map
 			const userOne = await this.userService.findProfileById(game.player1.id);
-			const userTwo = await this.userService.findProfileById(game.player2.id);
+
+			let playerTwoName;
+			if (game.player2.computer) {
+				playerTwoName = 'Computer';
+			} else {
+				const userTwo = await this.userService.findProfileById(game.player2.id);
+				playerTwoName = userTwo ? userTwo.name : 'Unknown Player';
+			}
 
 			return {
 				gameURL: game.gameURL,
 				status: game.status,
 				startTime: game.startTime,
-				playerOneName: userOne.name,
-				playerTwoName: userTwo.name,
+				playerOneName: userOne ? userOne.name : 'Unknown Player',
+				playerTwoName: playerTwoName,
 				// ... include other properties as needed
 			};
 		});
