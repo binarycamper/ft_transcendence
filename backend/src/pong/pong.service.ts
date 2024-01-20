@@ -94,7 +94,7 @@ export class PongService {
 	private finishedGames = new Array<PongGame>();
 
 	/*                       <playerID, <gameURL, playerStatus>> */
-	private playerMap = new Map<string, { game: PongGame; status: PlayerStatus }>();
+	/* private */ playerMap = new Map<string, { game: PongGame; status: PlayerStatus }>();
 
 	/* ------- METHODS ------- */
 	startUpdateLoop() {
@@ -111,15 +111,13 @@ export class PongService {
 		this.gameMap.forEach((game, gameURL) => {
 			game.pongEngine.update();
 			this.pongGateway.server.to(gameURL).emit('update-game-state', game.gameState);
-			if (game.gameState.gameOver) {
-				game.status = 'finished';
+			if (game.gameState.status === 'finished') {
 				this.finishedGames.push(game);
 				this.gameMap.delete(gameURL);
 			}
 		});
 
 		while (this.finishedGames.length > 0) {
-			//console.log('start save history!');
 			await this.storeHistory(this.finishedGames.shift());
 		}
 	}
@@ -142,13 +140,11 @@ export class PongService {
 		player1.status = 'online';
 		player2.status = 'online';
 
-		let winnerId: string;
-		if (game.gameState.scoreL > game.gameState.scoreR) {
-			winnerId = game.player1.id;
-			player1.ladderLevel = player1.ladderLevel + 1;
-		} else if (game.gameState.scoreL < game.gameState.scoreR) {
-			winnerId = game.player2.id;
-			player2.ladderLevel = player2.ladderLevel + 1;
+		const { winnerId } = game.gameState;
+		if (winnerId === player1.id) {
+			player1.ladderLevel += 1;
+		} else if (winnerId === player2.id) {
+			player2.ladderLevel += 1;
 		} else {
 			console.log('Invalid game');
 			return;
@@ -197,7 +193,7 @@ export class PongService {
 
 			return {
 				gameURL: game.gameURL,
-				status: game.status,
+				status: game.gameState.status,
 				startTime: game.startTime,
 				playerOneName: userOne ? userOne.name : 'Unknown Player',
 				playerTwoName: playerTwoName,
@@ -209,7 +205,7 @@ export class PongService {
 		return gamesArray;
 	}
 
-	createNewGame(userId: string, gameSettings: PongGameSettings, computer = false) {
+	createNewGame(userId: string, gameSettings = this.defaultSettings, computer = false) {
 		if (!this.validateCustomSettings(gameSettings)) {
 			gameSettings = this.defaultSettings;
 		}
@@ -221,7 +217,7 @@ export class PongService {
 		this.playerMap.set(userId, { game, status: 'player1' });
 		if (computer) {
 			this.gameMap.set(gameCode, game);
-			game.status = 'running';
+			game.gameState.status = 'running';
 		} else {
 			this.pendingGames.push(game);
 		}
@@ -242,7 +238,7 @@ export class PongService {
 		return gameCode;
 	}
 
-	getUserStatusForGame(userId: string) {
+	getPlayerStatusForGame(userId: string) {
 		const player = this.playerMap.get(userId);
 		return player?.status || 'spectator';
 	}
@@ -251,14 +247,25 @@ export class PongService {
 		return this.playerMap.get(userId);
 	}
 
-	updateKeystate(game: PongGame, player: string, payload: any) {
-		// TODO check for player
+	updateKeystate(
+		game: PongGame,
+		player: 'player1' | 'player2',
+		payload: { key: string; player: number; pressed: boolean },
+	) {
 		game[player].keyState[payload.key] = payload.pressed;
 		// console.log(game[player].keyState);
+		/* if (player === 'player1' && payload.player === 1)
+			game[player].keyState[payload.key] = payload.pressed;
+		if (player === 'player2' && payload.player === 2)
+			game[player].keyState[payload.key] = payload.pressed; */
 	}
 
 	handleConnection(userId: string) {
-		if (!this.playerMap.has(userId)) {
+		const player = this.playerMap.get(userId);
+		if (player?.game) {
+			player.game[player.status].isConnected = true;
+			player.game.gameState.status = 'running';
+		} else {
 			this.playerMap.set(userId, null);
 		}
 
@@ -268,9 +275,9 @@ export class PongService {
 	async handleDisconnect(userId: string) {
 		const game = this.findActiveGame(userId);
 		if (game) {
-			if (game.status === 'pending') {
+			if (game.gameState.status === 'pending') {
 				this.cancelPendingGame(userId);
-			} else if (game.status !== 'paused' && game.status !== 'running') {
+			} else if (game.gameState.status !== 'paused' && game.gameState.status !== 'running') {
 				this.playerMap.delete(userId);
 				const user = await this.userService.findProfileById(userId);
 				user.status = 'offline';
@@ -298,16 +305,16 @@ export class PongService {
 		this.playerMap.set(userId, { game, status: 'player2' });
 		this.gameMap.set(game.gameURL, game);
 		this.pendingGames.shift();
-		game.status = 'running';
+		game.gameState.status = 'running';
 		return game;
 	}
 
 	getPlayerGameStatus(userId: string) {
 		const game = this.findActiveGame(userId);
-		if (game?.status === 'running') {
+		if (game?.gameState.status === 'running') {
 			return { gameURL: game.gameURL, queuing: false };
 		}
-		const queuing = game?.status === 'pending' || false;
+		const queuing = game?.gameState.status === 'pending' || false;
 		return { gameURL: null, queuing };
 	}
 
@@ -327,7 +334,8 @@ export class PongService {
 			if (validationErrors.length > 0) {
 				console.log(validationErrors);
 			}
-		} catch {
+		} catch (error) {
+			console.log(error);
 			return false;
 		}
 		if (classInstance.ballSpeed !== classInstance.paddleSpeed) return false;

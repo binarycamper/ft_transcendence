@@ -9,8 +9,8 @@ export default class PongGame {
 		settings?: Partial<PongGameSettings>,
 		computer?: boolean,
 	) {
-		this.gameState = new PongGameState();
 		this.gameSettings = new PongGameSettings(settings);
+		this.gameState = new PongGameState();
 		this.player1 = new PongPlayer(this.gameSettings.side);
 		this.player2 = new PongPlayer(this.gameSettings.side === 'left' ? 'right' : 'left', computer);
 		this.pongEngine = new PongGameEngine(
@@ -26,31 +26,28 @@ export default class PongGame {
 	player1: PongPlayer;
 	player2: PongPlayer;
 	pongEngine: PongGameEngine;
-	status: PongGameStatus = 'pending';
-	startTime: Date = new Date();
-	playerOneId: string;
-	playerTwoId: string;
+	startTime = new Date();
 }
-
-type PongGameStatus = 'finished' | 'paused' | 'pending' | 'running';
 
 class PongGameEngine {
 	constructor(
 		settings: PongGameSettings,
-		gameState: PongGameState,
-		player1: PongPlayer,
-		player2: PongPlayer,
+		private gameState: PongGameState,
+		private player1: PongPlayer,
+		private player2: PongPlayer,
 	) {
 		this.walls = new Wall(settings);
 		this.ball = new Ball(settings, gameState, this.walls);
-		this.score = new Score(gameState);
 
 		const playerL = player1.side === 'left' ? player1 : player2;
 		const playerR = player1.side === 'right' ? player1 : player2;
 		this.paddleL = new PaddleL(settings, gameState, playerL, this.walls);
 		this.paddleR = new PaddleR(settings, gameState, playerR, this.walls);
+
+		this.score = new Score(gameState, this.ball, this.paddleL, this.paddleR);
 	}
 
+	private readonly timeToDisconnect = 30_000;
 	private readonly ball: Ball;
 	private readonly paddleL: PaddleL;
 	private readonly paddleR: PaddleR;
@@ -59,13 +56,28 @@ class PongGameEngine {
 
 	previousTimestamp: number;
 	update(currentTimestamp = performance.now()) {
-		const delta = (currentTimestamp - this.previousTimestamp) / 1000 || 0;
+		if (this.gameState.status === 'running') {
+			const delta = (currentTimestamp - this.previousTimestamp) / 1000 || 0;
 
-		this.ball.update(delta, this.paddleL, this.paddleR);
-		this.paddleL.update(delta, this.ball);
-		this.paddleR.update(delta, this.ball);
-		this.score.update(this.ball);
-
+			this.ball.update(delta, this.paddleL, this.paddleR);
+			this.paddleL.update(delta, this.ball);
+			this.paddleR.update(delta, this.ball);
+			this.score.update();
+		} else if (this.gameState.status === 'paused') {
+			if (this.player1.isConnected && this.player2.isConnected) {
+				this.gameState.status = 'running';
+			} else if (!this.player1.isConnected) {
+				if (currentTimestamp - this.player1.timeStamp > this.timeToDisconnect) {
+					this.gameState.winnerId = this.player2.id;
+					this.gameState.status = 'finished';
+				}
+			} else if (!this.player2.isConnected) {
+				if (currentTimestamp - this.player2.timeStamp > this.timeToDisconnect) {
+					this.gameState.winnerId = this.player1.id;
+					this.gameState.status = 'finished';
+				}
+			}
+		}
 		this.previousTimestamp = currentTimestamp;
 	}
 }
@@ -94,13 +106,15 @@ export class PongGameSettings {
 
 export class PongGameState {
 	ballPos = { x: 0, y: 0 };
-	gameOver = false;
 	paddleL = 0;
 	paddleR = 0;
-	ready = false; // TODO status
 	scoreL = 0;
 	scoreR = 0;
+	status: PongGameStatus = 'pending';
+	winnerId: string;
 }
+
+type PongGameStatus = 'finished' | 'paused' | 'pending' | 'running';
 
 export class PongKeyState {
 	down = false;
@@ -114,15 +128,17 @@ export class PongPlayer {
 		readonly computer = false,
 	) {
 		if (this.computer) {
-			this.anonymous = true;
-			this.ready = true;
+			this.isConnected = true;
+			this.isReady = true;
 		} else {
 			this.keyState = new PongKeyState();
 		}
 	}
 
-	anonymous = false;
 	id = '';
+	isConnected = false;
+	isReady = false;
 	keyState: PongKeyState;
-	ready = false;
+	// status = '';
+	timeStamp = 0;
 }

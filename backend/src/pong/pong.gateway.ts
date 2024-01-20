@@ -70,20 +70,27 @@ export class PongGateway {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
-		const status = this.pongService.getUserStatusForGame(userId);
-		if (status !== 'player1' && status !== 'player2') return;
+		const player = this.pongService.getPlayerStatusForGame(userId);
+		if (player !== 'player1' && player !== 'player2') return;
 
 		const game = this.pongService.getPongGameById(pageReloadDto.gameURL);
 		client.on('update-keystate', (payload: any) => {
-			this.pongService.updateKeystate(game, status, payload);
+			this.pongService.updateKeystate(game, player, payload);
+		});
+		client.once('leave-room', (id: string) => {
+			console.log(`${id}: ${player} has left`);
+		});
+		client.once('disconnect', () => {
+			game[player].isConnected = false;
+			game[player].timeStamp = performance.now();
+			game.gameState.status = 'paused';
+
+			console.log(player, 'has disconnected');
 		});
 	}
 
 	@SubscribeMessage('join-game')
-	async handleJoinGame(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() gameSettings: PongGameSettings,
-	) {
+	async handleJoinGame(@ConnectedSocket() client: Socket) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
@@ -94,7 +101,7 @@ export class PongGateway {
 			await client.join(game.gameURL);
 			this.server.to(game.gameURL).emit('pong-game-ready', game.gameURL);
 		} else {
-			const game = this.pongService.createNewGame(userId, gameSettings);
+			const game = this.pongService.createNewGame(userId);
 			await client.join(game.gameURL);
 		}
 	}
@@ -106,6 +113,9 @@ export class PongGateway {
 	) {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
+
+		if (this.pongService.findActiveGame(userId)) return;
+
 		const pongGame = this.pongService.createNewGame(userId, gameSettings, true);
 		await client.join(pongGame.gameURL);
 		const user = await this.userService.findProfileById(userId);
@@ -122,6 +132,8 @@ export class PongGateway {
 		const userId = this.pongService.verifyAuthentication(client);
 		if (!userId) return;
 
+		if (this.pongService.findActiveGame(userId)) return;
+
 		const game = this.pongService.createNewGame(userId, gameSettings);
 		const user = await this.userService.findProfileById(userId);
 		user.status = 'ingame';
@@ -136,7 +148,7 @@ export class PongGateway {
 		if (!userId) return null;
 
 		const game = this.pongService.findActiveGame(userId);
-		if (game?.status === 'pending') {
+		if (game?.gameState.status === 'pending') {
 			this.pongService.cancelPendingGame(userId);
 		}
 
