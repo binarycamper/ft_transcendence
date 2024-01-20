@@ -177,9 +177,7 @@ export class AuthController {
 		} catch (error) {
 			if (error instanceof HttpException)
 				return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-			return res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'An unexpected error has occurred' });
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invald request' });
 		}
 	}
 
@@ -192,9 +190,7 @@ export class AuthController {
 		} catch (error) {
 			if (error instanceof HttpException)
 				return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-			return res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'An unexpected error has occurred' });
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invald request' });
 		}
 	}
 
@@ -231,9 +227,7 @@ export class AuthController {
 		} catch (error) {
 			if (error instanceof HttpException)
 				return res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-			return res
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.json({ message: 'An unexpected error has occurred' });
+			return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Invald request' });
 		}
 	}
 
