@@ -181,14 +181,6 @@ export class UserService {
 			throw new NotFoundException('User not found');
 		}
 
-		const friendRequests = await this.friendRequestRepository.find({
-			where: [{ senderId: userId }, { recipientId: userId }],
-		});
-
-		if (friendRequests.length > 0) {
-			await this.friendRequestRepository.remove(friendRequests);
-		}
-
 		const chatRoomsToDelete = await this.chatRoomRepository.find({
 			where: { ownerId: userId },
 		});
@@ -208,10 +200,11 @@ export class UserService {
 					await entityManager.remove(ChatRoom, chatRoom);
 				}
 
-				// Delete user
+				// Delete user within the same transaction
 				await entityManager.remove(User, user);
 			});
 		}
+
 		if (userImage) {
 			const imagePath: string = UPLOAD_PATH + userImage.split('?filename=').pop();
 			try {

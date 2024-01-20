@@ -9,7 +9,6 @@ import { PongGateway } from './pong.gateway';
 import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
 import { Socket } from 'socket.io';
-import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { validateSync } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
