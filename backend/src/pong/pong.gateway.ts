@@ -17,7 +17,7 @@ import { PongService } from './pong.service';
 		credentials: true,
 		origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:8090'],
 	}, */
-	cors: { credentials: true, origin: 'http://localhost:5173' },
+	cors: { credentials: true, origin: `http://${process.env.HOST_IP}:5173` },
 })
 /* export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect { */
 export class PongGateway {
