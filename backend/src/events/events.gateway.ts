@@ -22,7 +22,7 @@ import { User } from 'src/user/user.entity';
 
 @WebSocketGateway({
 	cors: {
-		origin: 'http://localhost:5173', // Replace with your frontend's origin
+		origin: `http://${process.env.HOST_IP}:5173`, // Replace with your frontend's origin
 		//methods: ['GET', 'POST'], // You can specify the allowed methods
 		credentials: true, // Important if you're using credentials like cookies or auth headers
 	},

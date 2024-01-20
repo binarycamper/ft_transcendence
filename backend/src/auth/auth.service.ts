@@ -39,7 +39,7 @@ export class AuthService {
 				client_secret: clientSecret,
 				code,
 				grant_type: 'authorization_code',
-				redirect_uri: 'http://localhost:8080/auth/callback',
+				redirect_uri: process.env.INTRA_REDIRECT_URI,
 			},
 		);
 
