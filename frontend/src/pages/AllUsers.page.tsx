@@ -48,11 +48,9 @@ const AllUsersPage: React.FC = () => {
 					},
 				},
 			);
-
 			if (!response.ok) {
 				throw new Error('Failed to fetch public profile data');
 			}
-
 			const data = await response.json();
 			setSelectedUser(data);
 		} catch (error) {

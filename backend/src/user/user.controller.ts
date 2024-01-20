@@ -431,6 +431,12 @@ export class UserController {
 		return result;
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('users')
+	async getAll(): Promise<User[]> {
+		return this.userService.findAll();
+	}
+
 	//Debug: TODO: Delete for eval
 	//This is a hypothetical service method that you would call to create a debug user.
 	@Post('create-debug-user')
@@ -459,13 +465,5 @@ export class UserController {
 			id: debugUser.id,
 			token: debugToken, // Include the token in the response
 		});
-	}
-
-	//DO NOT USE IN FRONTEND CODE!
-	//########################Debug#############################	//TODO: delete before eval
-	//returns all users for debug, TODO delete that function before eval.
-	@Get('users')
-	async getAll(): Promise<User[]> {
-		return this.userService.findAll();
 	}
 }
