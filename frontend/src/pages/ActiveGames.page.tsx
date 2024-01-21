@@ -52,7 +52,7 @@ const ActiveGamesPage: React.FC = () => {
 						<p>
 							Game URL:
 							<a
-								href={`http://localhost:5173/game/${game.gameURL}`}
+								href={fetchUrl('5173',`/game/${game.gameURL}`)}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
