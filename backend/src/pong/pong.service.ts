@@ -1,7 +1,9 @@
 import PongGame, { PongGameSettings } from './classes/PongGame';
+import { DecodedToken } from 'src/events/dto/dto';
 import { History } from './history.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { parse } from 'cookie';
 import { plainToClass } from 'class-transformer';
 import { PongGameSettingsDto } from './pong.dto';
@@ -11,8 +13,6 @@ import { Repository } from 'typeorm';
 import { Socket } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { validateSync } from 'class-validator';
-import { JwtService } from '@nestjs/jwt';
-import { DecodedToken } from 'src/events/dto/dto';
 
 @Injectable()
 export class PongService {
@@ -25,11 +25,10 @@ export class PongService {
 		private historyRepository: Repository<History>,
 	) {
 		setInterval(() => this.updateLoop(), this.updateInterval);
-		setInterval(() => this.startQueue(), this.queueInterval);
+		setInterval(() => this.updateQueue(), this.queueInterval);
 	}
 
 	/* ------- PROPERTIES ------- */
-	// private readonly defaultSettings = new PongGameSettings();
 	private readonly queueInterval = 6_000; /* milliseconds */
 	private readonly updateInterval = 1000 / 60; /* milliseconds */
 	/*                      <gameURL, pongGame> */
@@ -41,12 +40,11 @@ export class PongService {
 	/* private */ playerMap = new Map<string, { game: PongGame; status: PlayerStatus }>();
 
 	/* ------- METHODS ------- */
-	startQueue() {
+	updateQueue() {
 		while (this.pendingQueue.length >= 2) {
 			const player1 = this.pendingQueue.shift();
 			const player2 = this.pendingQueue.shift();
-			const gameURL = this.createNewDefaultGame(player1, player2);
-			this.pongGateway.server.to(player1).to(player2).emit('pong-game-created', gameURL);
+			this.createNewDefaultGame(player1, player2);
 		}
 	}
 
@@ -65,19 +63,34 @@ export class PongService {
 		//TODO
 	}
 
-	createNewDefaultGame(player1: string, player2: string) {
+	createNewGame(player1: string, player2?: string, settings?: PongGameSettings) {
 		const gameCode = this.generateRandomCode();
-		const game = new PongGame(gameCode);
+		const game = new PongGame(gameCode, settings, !player2);
 
 		game.player1.id = player1;
-		game.player2.id = player2;
 		this.playerMap.set(player1, { game, status: 'player1' });
-		this.playerMap.set(player2, { game, status: 'player2' });
+		if (player2) {
+			game.player2.id = player2;
+			this.playerMap.set(player2, { game, status: 'player2' });
+		}
 
 		this.gameMap.set(gameCode, game);
-		console.log(this.gameMap);
-
 		return game.gameURL;
+	}
+
+	createNewDefaultGame(player1: string, player2: string) {
+		const gameURL = this.createNewGame(player1, player2);
+		this.pongGateway.server.to(player1).to(player2).emit('pong-game-created', gameURL);
+	}
+
+	createNewCustomGame(player1: string, player2: string, settings: PongGameSettings) {
+		const gameURL = this.createNewGame(player1, player2, settings);
+		this.pongGateway.server.to(player1).to(player2).emit('pong-game-created', gameURL);
+	}
+
+	createNewGameWithComputer(player1: string, settings?: PongGameSettings) {
+		const gameURL = this.createNewGame(player1, null, settings);
+		this.pongGateway.server.to(player1).emit('pong-game-created', gameURL);
 	}
 
 	async updateLoop() {
@@ -86,15 +99,24 @@ export class PongService {
 			this.pongGateway.server.to(gameURL).emit('update-game-state', game.gameState);
 			if (game.gameState.status === 'finished') {
 				this.finishedGames.push(game);
-				this.playerMap.set(game.player1.id, null);
-				this.playerMap.set(game.player2.id, null);
-				this.gameMap.delete(gameURL);
+				this.deleteExistingGame(game);
+			} else if (game.gameState.status === 'aborted') {
+				this.deleteExistingGame(game);
 			}
 		});
 
 		while (this.finishedGames.length > 0) {
 			await this.storeHistory(this.finishedGames.shift());
 		}
+	}
+
+	deleteExistingGame(game: PongGame) {
+		this.playerMap.set(game.player1.id, null);
+		this.playerMap.set(game.player2.id, null);
+		/* optionally remove inactive players from stats */
+		this.playerMap.delete(game.player1.id);
+		this.playerMap.delete(game.player2.id);
+		this.gameMap.delete(game.gameURL);
 	}
 
 	markPlayerReady(userId: string, gameURL: string) {
@@ -106,9 +128,8 @@ export class PongService {
 			game.player1.isReady = true;
 		} else if (status === 'player2') {
 			game.player2.isReady = true;
-		} else {
-			return false;
-		}
+		} else return false;
+
 		if (game.player1.isReady && game.player2.isReady) {
 			game.gameState.status = 'running';
 			this.userService.setUserInMatch(game.player1.id);
@@ -200,7 +221,7 @@ export class PongService {
 			return null;
 		}
 
-		// client.data.user = decoded;
+		/* client.data.user = decoded; */
 		return decoded.id;
 	}
 
@@ -208,7 +229,8 @@ export class PongService {
 		if (game.player2.computer) return;
 
 		const endTime = new Date();
-		const timePlayed = Math.round((endTime.getTime() - game.startTime.getTime()) / 1000);
+		const { startTime } = game.gameState;
+		const timePlayed = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
 
 		const player1 = await this.userService.findProfileById(game.player1.id);
 		const player2 = await this.userService.findProfileById(game.player2.id);
@@ -232,7 +254,6 @@ export class PongService {
 			return;
 		}
 
-		// Save the updated user entity
 		await this.userService.updateUser(player1);
 		await this.userService.updateUser(player2);
 		const history = new History();
@@ -240,14 +261,14 @@ export class PongService {
 		history.playerTwo = player2;
 		history.scorePlayerOne = game.gameState.scoreL;
 		history.scorePlayerTwo = game.gameState.scoreR;
-		history.startTime = game.startTime;
-		history.endTime = new Date();
+		history.startTime = startTime;
+		history.endTime = endTime;
 		history.timePlayed = timePlayed;
 		history.winnerId = winnerId;
 		const entity = this.historyRepository.create(history);
 		await this.historyRepository.save(entity);
 
-		// this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
+		this.pongGateway.server.to('lobby').emit('lobby-stats', this.getOnlineStats());
 	}
 
 	async findAllHistory(): Promise<History[]> {
@@ -261,7 +282,7 @@ export class PongService {
 			// Using async here to allow await inside the map
 			const userOne = await this.userService.findProfileById(game.player1.id);
 
-			let playerTwoName;
+			let playerTwoName: string;
 			if (game.player2.computer) {
 				playerTwoName = 'Computer';
 			} else {
@@ -272,7 +293,7 @@ export class PongService {
 			return {
 				gameURL: game.gameURL,
 				status: game.gameState.status,
-				startTime: game.startTime,
+				startTime: game.gameState.startTime,
 				playerOneName: userOne ? userOne.name : 'Unknown Player',
 				playerTwoName: playerTwoName,
 				// ... include other properties as needed

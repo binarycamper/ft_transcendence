@@ -59,6 +59,7 @@ export class PongGateway {
 		if (!userId) return null;
 
 		this.pongService.cancelPendingGame(userId);
+		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
 
 		return 'success';
 	}
@@ -72,6 +73,7 @@ export class PongGateway {
 		if (!player?.game) return;
 
 		this.pongService.resignGame(player.game, player.status);
+		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
 	}
 
 	@SubscribeMessage('player-ready')
@@ -82,15 +84,33 @@ export class PongGateway {
 		return this.pongService.markPlayerReady(userId, gameURL);
 	}
 
+	@SubscribeMessage('play-with-computer')
+	async handlePlayWithCompyter(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() settings: PongGameSettings,
+	) {
+		const userId = this.pongService.verifyAuthentication(client);
+		if (!userId) return null;
+
+		if (!this.pongService.validateCustomSettings(settings)) settings = null;
+
+		await client.join(userId);
+		this.pongService.createNewGameWithComputer(userId, settings);
+
+		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
+		return 'success';
+	}
+
 	@SubscribeMessage('join-queue')
 	async handleJoinQueue(@ConnectedSocket() client: Socket) {
 		const userId = this.pongService.verifyAuthentication(client);
-		if (!userId) return;
+		if (!userId) return null;
 
 		this.pongService.joinQueue(userId);
 
 		await client.join(userId);
 		this.server.to('lobby').emit('lobby-stats', this.pongService.getOnlineStats());
+		return 'success';
 	}
 
 	@SubscribeMessage('leave-queue')

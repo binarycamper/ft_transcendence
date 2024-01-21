@@ -1,9 +1,8 @@
-import { Button, Loader } from '@mantine/core';
-import { useEffect, useState, useCallback } from 'react';
+import { Button, Container, Loader } from '@mantine/core';
+import { useCallback, useEffect, useState } from 'react';
 import { getGameSettings } from '../components/Pong/GameDefaults';
 import { gameSocket as socket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
-import fetchUrl from '../services/fetchUrl';
 
 interface OnlineStats {
 	games: number;
@@ -31,8 +30,9 @@ export default function PongPage() {
 	const handleRequest = useCallback(
 		(event: string) => {
 			const gameSettings = getGameSettings();
-			socket.emit(event, gameSettings);
-			setIsLoading(true);
+			socket.emit(event, gameSettings, () => {
+				setIsLoading(true);
+			});
 			socket.on('pong-game-created', (data) => {
 				socket.off('pong-game-created');
 				navigate(`/game/${data}`);
@@ -49,29 +49,47 @@ export default function PongPage() {
 
 	return (
 		<>
-			<Button onClick={() => handleRequest('join-queue')} disabled={isLoading}>
-				JOIN GAME
-			</Button>
-			<div></div>
-			{stats && (
-				<>
-					<div>
-						{stats.players} active player{stats.players !== 1 && 's'}
-						{stats.waiting !== 0 && ` (${stats.waiting} waiting)`}
-					</div>
-					<div>
-						{stats.games} game{stats.games !== 1 && 's'} in play
-					</div>
-				</>
-			)}
-			{isLoading && (
-				<>
-					<Loader color="blue" size="xl" type="dots" />
-					<Button color="red" onClick={cancelRequest}>
-						CANCEL
+			<Container w={'50vw'} my={'20'}>
+				<div>
+					<Button
+						my={'20'}
+						fullWidth
+						onClick={() => handleRequest('join-queue')}
+						disabled={isLoading}
+					>
+						JOIN GAME
 					</Button>
-				</>
-			)}
+				</div>
+				<div>
+					<Button
+						my={'20'}
+						fullWidth
+						onClick={() => handleRequest('play-with-computer')}
+						disabled={isLoading}
+					>
+						PLAY WITH THE COMPUTER
+					</Button>
+				</div>
+				{stats && (
+					<>
+						<div>
+							{stats.players} active player{stats.players !== 1 && 's'}
+							{stats.waiting !== 0 && ` (${stats.waiting} waiting)`}
+						</div>
+						<div>
+							{stats.games} game{stats.games !== 1 && 's'} in play
+						</div>
+					</>
+				)}
+				{isLoading && (
+					<>
+						<Loader color="blue" size="xl" type="dots" />
+						<Button color="red" onClick={cancelRequest}>
+							CANCEL
+						</Button>
+					</>
+				)}
+			</Container>
 		</>
 	);
 }

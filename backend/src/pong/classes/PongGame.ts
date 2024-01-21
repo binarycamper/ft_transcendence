@@ -26,7 +26,6 @@ export default class PongGame {
 	player1: PongPlayer;
 	player2: PongPlayer;
 	pongEngine: PongGameEngine;
-	startTime = new Date();
 }
 
 class PongGameEngine {
@@ -47,6 +46,7 @@ class PongGameEngine {
 		this.score = new Score(gameState, this.ball, this.paddleL, this.paddleR);
 	}
 
+	private readonly timeToAbort = 20_000;
 	private readonly timeToDisconnect = 30_000;
 	private readonly ball: Ball;
 	private readonly paddleL: PaddleL;
@@ -76,6 +76,11 @@ class PongGameEngine {
 					this.gameState.winnerId = this.player1.id;
 					this.gameState.status = 'finished';
 				}
+			}
+		} else if (this.gameState.status === 'pending') {
+			const elapsed = Math.round(new Date().getTime() - this.gameState.startTime.getTime());
+			if (elapsed > this.timeToAbort) {
+				this.gameState.status = 'aborted';
 			}
 		}
 		this.previousTimestamp = currentTimestamp;
@@ -110,11 +115,12 @@ export class PongGameState {
 	paddleR = 0;
 	scoreL = 0;
 	scoreR = 0;
+	startTime = new Date();
 	status: PongGameStatus = 'pending';
 	winnerId: string;
 }
 
-type PongGameStatus = 'finished' | 'paused' | 'pending' | 'running';
+type PongGameStatus = 'aborted' | 'finished' | 'paused' | 'pending' | 'running';
 
 export class PongKeyState {
 	down = false;

@@ -1,11 +1,11 @@
 import './PongGame.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { redirect, useLoaderData, useNavigate, useParams } from 'react-router-dom';
+import { useLoaderData, useParams } from 'react-router-dom';
+import { Button } from '@mantine/core';
 import { ErrorPage } from '../../pages/Error.page';
 import { gameSocket as socket } from '../../services/socket';
 import useKeyHook from '../../hooks/useKeyHook';
 import useTitle from '../../hooks/useTitle';
-import { Button } from '@mantine/core';
 
 // TODO take interface from backend
 type IPongGameSettings = any;
@@ -26,11 +26,8 @@ export function PongGame({ gameSettings, gameState }: Props) {
 	const [state, setState] = useState(gameState);
 	useKeyHook();
 
-	const navigate = useNavigate();
-
 	const { id } = useParams();
 	useEffect(() => {
-		// socket.emit('page-reload', id);
 		socket.emit('join-room', id);
 
 		return () => {
@@ -62,8 +59,6 @@ export function PongGame({ gameSettings, gameState }: Props) {
 
 	const resignGame = useCallback(() => {
 		socket.emit('resign-game');
-		// navigate('/');
-		// window.location.reload();
 	}, []);
 
 	return (
@@ -99,29 +94,22 @@ export function PongGame({ gameSettings, gameState }: Props) {
 				</div>
 			</div>
 			<div>
-				{!isReady && state.status !== 'running' && (
-					<div>
-						<Button color="green" onClick={playerIsReady}>
-							Ready
-						</Button>
-					</div>
+				{!isReady && state.status === 'pending' && (
+					<Button color="green" onClick={playerIsReady}>
+						Ready
+					</Button>
 				)}
+				{state.status === 'aborted' && <div>GAME ABORTED</div>}
 				{state.status === 'finished' && <div>GAME OVER</div>}
 				{state.status === 'paused' && <div>GAME PAUSED</div>}
-				{state.status === 'running' && (
-					<div>
-						<Button onClick={() => resignGame()}>RESIGN</Button>
-					</div>
-				)}
+				{state.status === 'running' && <Button onClick={() => resignGame()}>RESIGN</Button>}
 			</div>
 		</>
 	);
 }
 
 export function PongGameWrapper() {
-	// const { id } = useParams();
 	const data = useLoaderData();
-	// console.log(data);
 	if (!data) return <ErrorPage />;
 
 	// return <PongGame props={data} />;
