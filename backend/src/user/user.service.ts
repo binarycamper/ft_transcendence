@@ -148,6 +148,15 @@ export class UserService {
 			await this.userRepository.save(user);
 		}
 	}
+	
+	async setUserInMatch(userId: string): Promise<void> {
+		// Logic to set the user's status to 'online' in the database
+		const user: User = await this.userRepository.findOne({ where: { id: userId } });
+		if (user && user.status !== 'fresh' && user.status !== 'ingame') {
+			user.status = 'ingame';
+			await this.userRepository.save(user);
+		}
+	}
 	//used from socket.io it event.gateway.ts
 	async setUserOffline(userId: string): Promise<void> {
 		// Logic to set the user's status to 'offline' in the database

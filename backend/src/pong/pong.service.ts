@@ -111,6 +111,8 @@ export class PongService {
 		}
 		if (game.player1.isReady && game.player2.isReady) {
 			game.gameState.status = 'running';
+			this.userService.setUserInMatch(game.player1.id);
+			this.userService.setUserInMatch(game.player2.id);
 		}
 
 		return true;
